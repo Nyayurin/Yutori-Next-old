@@ -20,6 +20,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.nyayurn.yutori.next.message.MessageDslBuilder
 import com.github.nyayurn.yutori.next.message.MessageSegment
+import com.github.nyayurn.yutori.next.message.message
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
@@ -59,10 +60,16 @@ class Actions private constructor(
          * @param properties 配置
          */
         fun of(platform: String, selfId: String, properties: SatoriProperties, name: String) = Actions(
-            ChannelAction.of(platform, selfId, properties, name), GuildAction.of(platform, selfId, properties, name),
-            LoginAction.of(platform, selfId, properties, name), MessageAction.of(platform, selfId, properties, name),
-            ReactionAction.of(platform, selfId, properties, name), UserAction.of(platform, selfId, properties, name),
-            FriendAction.of(platform, selfId, properties, name), AdminAction.of(properties, name), properties, name
+            ChannelAction.of(platform, selfId, properties, name),
+            GuildAction.of(platform, selfId, properties, name),
+            LoginAction.of(platform, selfId, properties, name),
+            MessageAction.of(platform, selfId, properties, name),
+            ReactionAction.of(platform, selfId, properties, name),
+            UserAction.of(platform, selfId, properties, name),
+            FriendAction.of(platform, selfId, properties, name),
+            AdminAction.of(properties, name),
+            properties,
+            name
         )
 
         /**
@@ -92,7 +99,9 @@ class Actions private constructor(
          * @param dsl 配置 DSL
          */
         inline fun of(
-            event: Event, name: String, dsl: WebSocketEventService.Builder.PropertiesBuilder.() -> Unit
+            event: Event,
+            name: String,
+            dsl: WebSocketEventService.Builder.PropertiesBuilder.() -> Unit
         ) = of(event, WebSocketEventService.Builder.PropertiesBuilder().apply(dsl).build(), name)
     }
 }
@@ -161,7 +170,9 @@ class ChannelAction private constructor(private val generalAction: GeneralAction
 }
 
 class GuildAction private constructor(
-    val member: MemberAction, val role: RoleAction, private val generalAction: GeneralAction
+    val member: MemberAction,
+    val role: RoleAction,
+    private val generalAction: GeneralAction
 ) {
     /**
      * 获取群组
@@ -199,13 +210,15 @@ class GuildAction private constructor(
 
     companion object {
         fun of(platform: String, selfId: String, properties: SatoriProperties, name: String) = GuildAction(
-            MemberAction.of(platform, selfId, properties, name), RoleAction.of(platform, selfId, properties, name),
+            MemberAction.of(platform, selfId, properties, name),
+            RoleAction.of(platform, selfId, properties, name),
             GeneralAction(platform, selfId, properties, "guild", name)
         )
     }
 
     class MemberAction private constructor(
-        val role: RoleAction, private val generalAction: GeneralAction
+        val role: RoleAction,
+        private val generalAction: GeneralAction
     ) {
         /**
          * 获取群组成员
@@ -397,8 +410,7 @@ class MessageAction private constructor(private val generalAction: GeneralAction
      * @param channelId 频道 ID
      * @param block 消息内容 DSL
      */
-    inline fun create(channelId: String, block: MessageDslBuilder.() -> Unit) =
-        create(channelId, MessageDslBuilder().apply(block).build())
+    inline fun create(channelId: String, block: MessageDslBuilder.() -> Unit) = create(channelId, message(block))
 
 
     /**
@@ -455,7 +467,7 @@ class MessageAction private constructor(private val generalAction: GeneralAction
      * @param block 消息内容 DSL
      */
     inline fun update(channelId: String, messageId: String, block: MessageDslBuilder.() -> Unit) =
-        update(channelId, messageId, MessageDslBuilder().apply(block).build())
+        update(channelId, messageId, message(block))
 
     /**
      * 获取消息列表
@@ -615,7 +627,8 @@ class FriendAction private constructor(private val generalAction: GeneralAction)
 class AdminAction private constructor(val login: LoginAction, val webhook: WebhookAction) {
     companion object {
         fun of(properties: SatoriProperties, name: String) = AdminAction(
-            LoginAction.of(properties, name), WebhookAction.of(properties, name)
+            LoginAction.of(properties, name),
+            WebhookAction.of(properties, name)
         )
     }
 
@@ -676,7 +689,11 @@ class AdminAction private constructor(val login: LoginAction, val webhook: Webho
  * @property logger 日志接口
  */
 class GeneralAction(
-    val platform: String?, val selfId: String?, val properties: SatoriProperties, val resource: String, val name: String
+    val platform: String?,
+    val selfId: String?,
+    val properties: SatoriProperties,
+    val resource: String,
+    val name: String
 ) {
     val mapper: ObjectMapper = jacksonObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     val logger = GlobalLoggerFactory.getLogger(this::class.java)

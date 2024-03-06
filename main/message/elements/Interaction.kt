@@ -10,7 +10,7 @@ MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
 See the Mulan PSL v2 for more details.
  */
 
-@file:Suppress("MemberVisibilityCanBePrivate", "ConvertSecondaryConstructorToPrimary")
+@file:Suppress("MemberVisibilityCanBePrivate")
 
 package com.github.nyayurn.yutori.next.message.elements
 
@@ -22,24 +22,16 @@ package com.github.nyayurn.yutori.next.message.elements
  * @property text 待输入文本
  * @property theme 按钮的样式
  */
-class Button : NodeMessageElement {
+class Button(
+    id: String? = null,
+    type: String? = null,
+    href: String? = null,
+    text: String? = null,
+    theme: String? = null
+) : NodeMessageElement("button", "id" to id, "type" to type, "href" to href, "text" to text, "theme" to theme) {
     var id: String? by super.properties
     var type: String? by super.properties
     var href: String? by super.properties
     var text: String? by super.properties
     var theme: String? by super.properties
-
-    constructor(
-        id: String? = null,
-        type: String? = null,
-        href: String? = null,
-        text: String? = null,
-        theme: String? = null
-    ) : super("button") {
-        this.id = id
-        this.type = type
-        this.href = href
-        this.text = text
-        this.theme = theme
-    }
 }

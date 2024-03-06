@@ -10,7 +10,7 @@ MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
 See the Mulan PSL v2 for more details.
  */
 
-@file:Suppress("MemberVisibilityCanBePrivate", "ConvertSecondaryConstructorToPrimary")
+@file:Suppress("MemberVisibilityCanBePrivate")
 
 package com.github.nyayurn.yutori.next.message.elements
 
@@ -29,8 +29,8 @@ fun interface MessageElement {
  * @property properties 属性
  * @property children 子元素
  */
-abstract class NodeMessageElement(val nodeName: String) : MessageElement {
-    val properties: MutableMap<String, Any?> = mutableMapOf()
+abstract class NodeMessageElement(val nodeName: String, vararg pairs: Pair<String, Any?>) : MessageElement {
+    val properties: MutableMap<String, Any?> = mutableMapOf(*pairs)
     val children: MutableList<MessageElement> = mutableListOf()
 
     /**
@@ -113,11 +113,10 @@ abstract class NodeMessageElement(val nodeName: String) : MessageElement {
         for (item in properties) {
             val key = item.key
             val value = item.value ?: continue
-            append(" ")
-            append(
+            append(" ").append(
                 when (value) {
-                    is String -> "${key}=\"${value.encode()}\""
-                    is Number -> "${key}=${value}"
+                    is String -> "$key=\"${value.encode()}\""
+                    is Number -> "$key=$value"
                     is Boolean -> if (value) key else ""
                     else -> throw Exception("Invalid type")
                 }
@@ -156,23 +155,16 @@ class Custom(var content: String) : MessageElement {
  * @property role 目标角色
  * @property type 特殊操作，例如 all 表示 @全体成员，here 表示 @在线成员
  */
-class At : NodeMessageElement {
+class At(
+    id: String? = null,
+    name: String? = null,
+    role: String? = null,
+    type: String? = null
+) : NodeMessageElement("at", "id" to id, "name" to name, "role" to role, "type" to type) {
     var id: String? by super.properties
     var name: String? by super.properties
     var role: String? by super.properties
     var type: String? by super.properties
-
-    constructor(
-        id: String? = null,
-        name: String? = null,
-        role: String? = null,
-        type: String? = null
-    ) : super("at") {
-        this.id = id
-        this.name = name
-        this.role = role
-        this.type = type
-    }
 }
 
 /**
@@ -180,24 +172,15 @@ class At : NodeMessageElement {
  * @property id 目标频道的 ID
  * @property name 目标频道的名称
  */
-class Sharp : NodeMessageElement {
+class Sharp(id: String, name: String? = null) : NodeMessageElement("sharp", "id" to id, "name" to name) {
     var id: String by super.properties
     var name: String? by super.properties
-
-    constructor(id: String, name: String? = null) : super("sharp") {
-        this.id = id
-        this.name = name
-    }
 }
 
 /**
  * 链接
  * @property href 链接的 URL
  */
-class Href : NodeMessageElement {
+class Href(href: String) : NodeMessageElement("a", "href" to href) {
     var href: String by super.properties
-
-    constructor(href: String) : super("a") {
-        this.href = href
-    }
 }

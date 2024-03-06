@@ -15,7 +15,7 @@ package com.github.nyayurn.yutori.next.message.elements
 /**
  * 修饰元素
  */
-abstract class DecorationElement(nodeName: String) : NodeMessageElement(nodeName)
+abstract class DecorationElement(name: String, vararg pairs: Pair<String, Any?>) : NodeMessageElement(name, *pairs)
 
 /**
  * 粗体

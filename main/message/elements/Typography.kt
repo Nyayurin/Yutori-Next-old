@@ -10,7 +10,7 @@ MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
 See the Mulan PSL v2 for more details.
  */
 
-@file:Suppress("MemberVisibilityCanBePrivate", "ConvertSecondaryConstructorToPrimary")
+@file:Suppress("MemberVisibilityCanBePrivate")
 
 package com.github.nyayurn.yutori.next.message.elements
 
@@ -29,15 +29,10 @@ class Paragraph : NodeMessageElement("p")
  * @property id 消息的 ID
  * @property forward 是否为转发消息
  */
-class Message : NodeMessageElement {
+class Message(
+    id: String? = null,
+    forward: Boolean? = null
+) : NodeMessageElement("message", "id" to id, "forward" to forward) {
     var id: String? by super.properties
     var forward: Boolean? by super.properties
-
-    constructor(
-        id: String? = null,
-        forward: Boolean? = null
-    ) : super("message") {
-        this.id = id
-        this.forward = forward
-    }
 }

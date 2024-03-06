@@ -8,7 +8,7 @@ group = "com.github.Nyayurn"
 
 val jacksonVersion = "2.16.1"
 val jsoupVersion = "1.17.2"
-val ktorVersion = "2.3.7"
+val ktorVersion = "2.3.9"
 val junitVersion = "5.10.1"
 
 repositories {
