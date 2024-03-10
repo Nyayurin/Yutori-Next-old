@@ -10,14 +10,20 @@ MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
 See the Mulan PSL v2 for more details.
  */
 
-@file:Suppress("MemberVisibilityCanBePrivate")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
 
 package com.github.nyayurn.yutori.next.message.elements
 
 /**
  * 引用
  */
-class Quote : NodeMessageElement("quote")
+class Quote(
+    id: String? = null,
+    forward: Boolean? = null
+) : NodeMessageElement("quote", "id" to id, "forward" to forward) {
+    var id: String? by super.properties
+    var forward: Boolean? by super.properties
+}
 
 /**
  * 作者

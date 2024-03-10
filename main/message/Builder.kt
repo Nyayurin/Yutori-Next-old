@@ -313,8 +313,10 @@ class MessageBuilder : MessageDslBuilder(), PropertiedBuilder {
 
 @MessageDSL
 class QuoteBuilder : MessageDslBuilder(), PropertiedBuilder {
-    override val properties = mutableMapOf<String, Any?>()
-    override fun buildElement() = this.buildElement(Quote())
+    override val properties = mutableMapOf<String, Any?>("id" to null, "forward" to null)
+    var id: String? by properties
+    var forward: Boolean? by properties
+    override fun buildElement() = this.buildElement(Quote(id, forward))
 }
 
 @MessageDSL

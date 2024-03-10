@@ -17,7 +17,7 @@ object AiCommand : Command {
         regex.matchEntire(msg)?.groupValues?.get(1)?.let {
             run(actions, event, it)
         } ?: actions.message.create(event.channel.id) {
-            quote { this["id"] = event.message.id }
+            quote { id = event.message.id }
             text { "缺少参数" }
         }
     }
@@ -33,7 +33,7 @@ object HelpCommand : Command {
 
     override fun command(actions: Actions, event: MessageEvent, msg: String) {
         actions.message.create(event.channel.id) {
-            quote { this["id"] = event.message.id }
+            quote { id = event.message.id }
             text {
                 """
                     反馈问题请找Bot姐姐(799712878)
@@ -63,7 +63,7 @@ object EchoCommand : Command {
             return
         }
         actions.message.create(event.channel.id) {
-            quote { this["id"] = event.message.id }
+            quote { id = event.message.id }
             text { "你不是Bot姐姐或Bot姐姐的男盆友, 别乱用指令!" }
         }
     }

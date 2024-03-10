@@ -96,7 +96,7 @@ object AiUtil {
             if (entity.header.code != 0) {
                 val code = entity.header.code
                 actions.message.create(event.channel.id) {
-                    quote { this["id"] = event.message.id }
+                    quote { id = event.message.id }
                     text { "code: $code\n" }
                     text { entity.header.message }
                 }
@@ -110,7 +110,7 @@ object AiUtil {
             if (entity.header.status == 2) {
                 val content = answer.toString()
                 actions.message.create(event.channel.id) {
-                    quote { this["id"] = event.message.id }
+                    quote { id = event.message.id }
                     img {
                         src = "data:image/jpeg;base64," + T2IUtil(T2IConstant()).drawImageToBase64(content).substring(9)
                     }

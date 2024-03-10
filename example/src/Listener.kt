@@ -31,7 +31,7 @@ object CommandListener : Listener<MessageEvent> {
                     )
                     it.command(actions, event, msg)
                 } ?: actions.message.create(event.channel.id) {
-                    quote { this["id"] = event.message.id }
+                    quote { id = event.message.id }
                     text { "未知命令: ${msg.split(" ")[0]}" }
                 }
             }
@@ -59,7 +59,7 @@ object OpenGraphListener : Listener<MessageEvent> {
                 if (title != null || desc != null || img != null || url != null) {
                     logger.info(actions.name, "User ${event.user.id} 触发监听器: $OpenGraphListener")
                     actions.message.create(event.channel.id) {
-                        quote { this["id"] = event.message.id }
+                        quote { id = event.message.id }
                         title?.let {
                             text { title }
                         }
@@ -82,7 +82,7 @@ object OpenGraphListener : Listener<MessageEvent> {
             } catch (e: IOException) {
                 if (request.status.value != 200) {
                     actions.message.create(event.channel.id) {
-                        quote { this["id"] = event.message.id }
+                        quote { id = event.message.id }
                         text { "OpenGraph: 获取失败: ${request.status}" }
                     }
                 }
@@ -109,7 +109,7 @@ object YzListener : Listener<MessageEvent> {
     override fun invoke(actions: Actions, event: MessageEvent) {
         if (event.user.id == "3583477473") {
             actions.message.delete(event.channel.id, actions.message.create(event.channel.id) {
-                quote { this["id"] = event.message.id }
+                quote { id = event.message.id }
                 text { "#撤回" }
             }[0].id)
         }
