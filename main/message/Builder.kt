@@ -18,10 +18,10 @@ import com.github.nyayurn.yutori.next.message.elements.*
 
 /**
  * 消息 DSL 构造器
- * @param dsl DSL
- * @return 消息
+ * @param block DSL 块
+ * @return 消息段(MessageSegment)
  */
-inline fun message(dsl: MessageDslBuilder.() -> Unit) = MessageDslBuilder().apply(dsl).toString()
+inline fun message(block: MessageDslBuilder.() -> Unit) = MessageDslBuilder().apply(block).buildSegment()
 
 @DslMarker
 annotation class MessageDSL

@@ -38,7 +38,7 @@ class ListenersContainer private constructor() {
 
     fun runEvent(event: Event, properties: SatoriProperties, name: String) {
         try {
-            val actions = Actions.of(event, properties, name)
+            val actions = Actions(event, properties, name)
             for (listener in this.any) listener(actions, event)
             when (event) {
                 is GuildEvent -> guild.runEvent(actions, event, name)
@@ -81,10 +81,10 @@ class ListenersContainer private constructor() {
         }
 
         fun runEvent(actions: Actions, event: GuildEvent, name: String) = when (event.type) {
-            GuildEvents.ADDED -> added.forEach { it(actions, event) }
-            GuildEvents.UPDATED -> updated.forEach { it(actions, event) }
-            GuildEvents.REMOVED -> removed.forEach { it(actions, event) }
-            GuildEvents.REQUEST -> request.forEach { it(actions, event) }
+            GuildEvents.Added -> added.forEach { it(actions, event) }
+            GuildEvents.Updated -> updated.forEach { it(actions, event) }
+            GuildEvents.Removed -> removed.forEach { it(actions, event) }
+            GuildEvents.Request -> request.forEach { it(actions, event) }
             else -> logger.warn(name, "Unsupported event: $event")
         }
 
@@ -112,10 +112,10 @@ class ListenersContainer private constructor() {
             }
 
             fun runEvent(actions: Actions, event: GuildMemberEvent, name: String) = when (event.type) {
-                GuildMemberEvents.ADDED -> added.forEach { it(actions, event) }
-                GuildMemberEvents.UPDATED -> updated.forEach { it(actions, event) }
-                GuildMemberEvents.REMOVED -> removed.forEach { it(actions, event) }
-                GuildMemberEvents.REQUEST -> request.forEach { it(actions, event) }
+                GuildMemberEvents.Added -> added.forEach { it(actions, event) }
+                GuildMemberEvents.Updated -> updated.forEach { it(actions, event) }
+                GuildMemberEvents.Removed -> removed.forEach { it(actions, event) }
+                GuildMemberEvents.Request -> request.forEach { it(actions, event) }
                 else -> logger.warn(name, "Unsupported event: $event")
             }
         }
@@ -139,9 +139,9 @@ class ListenersContainer private constructor() {
             }
 
             fun runEvent(actions: Actions, event: GuildRoleEvent, name: String) = when (event.type) {
-                GuildRoleEvents.CREATED -> created.forEach { it(actions, event) }
-                GuildRoleEvents.UPDATED -> updated.forEach { it(actions, event) }
-                GuildRoleEvents.DELETED -> deleted.forEach { it(actions, event) }
+                GuildRoleEvents.Created -> created.forEach { it(actions, event) }
+                GuildRoleEvents.Updated -> updated.forEach { it(actions, event) }
+                GuildRoleEvents.Deleted -> deleted.forEach { it(actions, event) }
                 else -> logger.warn(name, "Unsupported event: $event")
             }
         }
@@ -186,9 +186,9 @@ class ListenersContainer private constructor() {
         }
 
         fun runEvent(actions: Actions, event: LoginEvent, name: String) = when (event.type) {
-            LoginEvents.ADDED -> added.forEach { it(actions, event) }
-            LoginEvents.REMOVED -> removed.forEach { it(actions, event) }
-            LoginEvents.UPDATED -> updated.forEach { it(actions, event) }
+            LoginEvents.Added -> added.forEach { it(actions, event) }
+            LoginEvents.Removed -> removed.forEach { it(actions, event) }
+            LoginEvents.Updated -> updated.forEach { it(actions, event) }
             else -> logger.warn(name, "Unsupported event: $event")
         }
     }
@@ -212,9 +212,9 @@ class ListenersContainer private constructor() {
         }
 
         fun runEvent(actions: Actions, event: MessageEvent, name: String) = when (event.type) {
-            MessageEvents.CREATED -> created.forEach { it(actions, event) }
-            MessageEvents.UPDATED -> updated.forEach { it(actions, event) }
-            MessageEvents.DELETED -> deleted.forEach { it(actions, event) }
+            MessageEvents.Created -> created.forEach { it(actions, event) }
+            MessageEvents.Updated -> updated.forEach { it(actions, event) }
+            MessageEvents.Deleted -> deleted.forEach { it(actions, event) }
             else -> logger.warn(name, "Unsupported event: $event")
         }
     }
@@ -233,8 +233,8 @@ class ListenersContainer private constructor() {
         }
 
         fun runEvent(actions: Actions, event: ReactionEvent, name: String) = when (event.type) {
-            ReactionEvents.ADDED -> added.forEach { it(actions, event) }
-            ReactionEvents.REMOVED -> removed.forEach { it(actions, event) }
+            ReactionEvents.Added -> added.forEach { it(actions, event) }
+            ReactionEvents.Removed -> removed.forEach { it(actions, event) }
             else -> logger.warn(name, "Unsupported event: $event")
         }
     }
@@ -248,7 +248,7 @@ class ListenersContainer private constructor() {
         }
 
         fun runEvent(actions: Actions, event: UserEvent, name: String) = when (event.type) {
-            UserEvents.FRIEND_REQUEST -> request.forEach { it(actions, event) }
+            UserEvents.Friend_Request -> request.forEach { it(actions, event) }
             else -> logger.warn(name, "Unsupported event: $event")
         }
     }

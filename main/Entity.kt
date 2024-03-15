@@ -10,7 +10,7 @@ MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
 See the Mulan PSL v2 for more details.
  */
 
-@file:Suppress("unused", "UNUSED_PARAMETER")
+@file:Suppress("unused", "MemberVisibilityCanBePrivate")
 
 package com.github.nyayurn.yutori.next
 
@@ -23,169 +23,161 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.nyayurn.yutori.next.message.MessageSegment
 
+abstract class Entity(vararg pairs: Pair<String, Any?>) {
+    protected val properties = mapOf(*pairs)
+    override fun toString() = jsonObj { for ((key, value) in properties) put(key, value) }
+}
+
 /**
- * 频道, 参考 https://satori.chat/zh-CN/resources/channel.html#channel
+ * 频道
  * @property id 频道 ID
  * @property type 频道类型
  * @property name 频道名称
- * @property parentId 父频道 ID
+ * @property parent_id 父频道 ID
  */
-data class Channel(
-    val id: String,
-    val type: Type,
-    val name: String? = null,
-    @JsonProperty("parent_id") val parentId: String? = null
+class Channel(id: String, type: Type, name: String? = null, parent_id: String? = null) : Entity(
+    "id" to id, "type" to type, "name" to name, "parent_id" to parent_id
 ) {
-    /**
-     * Channel.Type, 参考 https://satori.chat/zh-CN/resources/channel.html#channel-type
-     */
-    enum class Type(type: Number) {
-        /**
-         * 文本频道
-         */
-        TEXT(0),
+    val id: String by super.properties
+    val type: Type by super.properties
+    val name: String? by super.properties
+    val parent_id: String? by super.properties
 
-        /**
-         * 语音频道
-         */
-        VOICE(1),
+    enum class Type(val number: Number) {
+        TEXT(0), VOICE(1), CATEGORY(2), DIRECT(3);
 
-        /**
-         * 分类频道
-         */
-        CATEGORY(2),
-
-        /**
-         * 私聊频道
-         */
-        DIRECT(3)
+        override fun toString() = number.toString()
     }
 }
 
 /**
- * 群组, 参考 https://satori.chat/zh-CN/resources/guild.html#guild
+ * 群组
  * @property id 群组 ID
  * @property name 群组名称
  * @property avatar 群组头像
  */
-data class Guild(
-    val id: String,
-    val name: String? = null,
-    val avatar: String? = null,
-)
+class Guild(id: String, name: String? = null, avatar: String? = null) : Entity(
+    "id" to id, "name" to name, "avatar" to avatar
+) {
+    val id: String by super.properties
+    val name: String? by super.properties
+    val avatar: String? by super.properties
+}
 
 /**
- * 群组成员, 参考 https://satori.chat/zh-CN/resources/member.html#guildmember
+ * 群组成员
  * @property user 用户对象
  * @property nick 用户在群组中的名称
  * @property avatar 用户在群组中的头像
- * @property joinedAt 加入时间
+ * @property joined_at 加入时间
  */
-data class GuildMember(
-    val user: User? = null,
-    val nick: String? = null,
-    val avatar: String? = null,
-    @JsonProperty("joined_at") val joinedAt: Number?
-)
+class GuildMember(user: User? = null, nick: String? = null, avatar: String? = null, joined_at: Number?) : Entity(
+    "user" to user, "nick" to nick, "avatar" to avatar, "joined_at" to joined_at
+) {
+    val user: User? by super.properties
+    val nick: String? by super.properties
+    val avatar: String? by super.properties
+    val joined_at: Number? by super.properties
+}
 
 /**
- * 群组角色, 参考 https://satori.chat/zh-CN/resources/role.html#guildrole
+ * 群组角色
  * @property id 角色 ID
  * @property name 角色名称
  */
-data class GuildRole(
-    val id: String,
-    val name: String? = null
-)
+class GuildRole(id: String, name: String? = null) : Entity("id" to id, "name" to name) {
+    val id: String by super.properties
+    val name: String? by super.properties
+}
 
 /**
- * 交互, 参考 https://satori.chat/zh-CN/resources/interaction.html
+ * 交互
  */
 interface Interaction {
     /**
-     * Argv, 参考 https://satori.chat/zh-CN/resources/interaction.html#argv
+     * Argv
      * @property name 指令名称
      * @property arguments 参数
      * @property options 选项
      */
-    data class Argv(
-        val name: String,
-        val arguments: List<Any>,
-        val options: Any
-    ) : Interaction
+    class Argv(name: String, arguments: List<Any>, options: Any) : Entity(
+        "name" to name, "arguments" to arguments, "options" to options
+    ), Interaction {
+        val name: String by super.properties
+        val arguments: List<Any> by super.properties
+        val options: Any by super.properties
+    }
 
     /**
-     * Button, 参考 https://satori.chat/zh-CN/resources/interaction.html#button
+     * Button
      * @property id 按钮 ID
      */
-    data class Button(val id: String) : Interaction
-}
-
-/**
- * 登录信息, 参考 https://satori.chat/zh-CN/resources/login.html#login
- * @property user 用户对象
- * @property selfId 平台账号
- * @property platform 平台名称
- * @property status 登录状态
- */
-data class Login(
-    val user: User? = null,
-    @JsonProperty("self_id") val selfId: String? = null,
-    val platform: String? = null,
-    val status: Status
-) {
-    /**
-     * Status, 参考 https://satori.chat/zh-CN/resources/login.html#status
-     */
-    enum class Status(val value: Number) {
-        /**
-         * 离线
-         */
-        OFFLINE(0),
-
-        /**
-         * 在线
-         */
-        ONLINE(1),
-
-        /**
-         * 连接中
-         */
-        CONNECT(2),
-
-        /**
-         * 断开连接
-         */
-        DISCONNECT(3),
-
-        /**
-         * 重新连接
-         */
-        RECONNECT(4)
+    class Button(id: String) : Entity("id" to id), Interaction {
+        val id: String by super.properties
     }
 }
 
 /**
- * 消息, 参考 https://satori.chat/zh-CN/resources/message.html#message
+ * 登录信息
+ * @property user 用户对象
+ * @property self_id 平台账号
+ * @property platform 平台名称
+ * @property status 登录状态
+ */
+class Login(user: User? = null, self_id: String? = null, platform: String? = null, status: Status) : Entity(
+    "user" to user, "self_id" to self_id, "platform" to platform, "status" to status
+) {
+    val user: User? by super.properties
+    val self_id: String? by super.properties
+    val platform: String? by super.properties
+    val status: Status by super.properties
+
+    enum class Status(val number: Number) {
+        OFFLINE(0), ONLINE(1), CONNECT(2), DISCONNECT(3), RECONNECT(4);
+
+        override fun toString() = number.toString()
+    }
+}
+
+/**
+ * 消息
  * @property id 消息 ID
  * @property content 消息内容
  * @property channel 频道对象
  * @property guild 群组对象
  * @property member 成员对象
  * @property user 用户对象
- * @property createdAt 消息发送的时间戳
- * @property updatedAt 消息修改的时间戳
+ * @property created_at 消息发送的时间戳
+ * @property updated_at 消息修改的时间戳
  */
-data class Message(
-    val id: String,
-    val content: MessageSegment,
-    val channel: Channel? = null,
-    val guild: Guild? = null,
-    val member: GuildMember? = null,
-    val user: User? = null,
-    @JsonProperty("created_at") val createdAt: Number? = null,
-    @JsonProperty("updated_at") val updatedAt: Number? = null
+class Message(
+    id: String,
+    content: MessageSegment,
+    channel: Channel? = null,
+    guild: Guild? = null,
+    member: GuildMember? = null,
+    user: User? = null,
+    created_at: Number? = null,
+    updated_at: Number? = null
+) : Entity(
+    "id" to id,
+    "content" to content,
+    "channel" to channel,
+    "guild" to guild,
+    "member" to member,
+    "user" to user,
+    "created_at" to created_at,
+    "updated_at" to updated_at
 ) {
+    val id: String by super.properties
+    val content: MessageSegment by super.properties
+    val channel: Channel? by super.properties
+    val guild: Guild? by super.properties
+    val member: GuildMember? by super.properties
+    val user: User? by super.properties
+    val created_at: Number? by super.properties
+    val updated_at: Number? by super.properties
+
     @JsonCreator
     constructor(
         @JsonProperty("id") id: String,
@@ -196,31 +188,38 @@ data class Message(
         @JsonProperty("user") user: User? = null,
         @JsonProperty("created_at") createdAt: Number? = null,
         @JsonProperty("updated_at") updatedAt: Number? = null
-    ): this(id, MessageSegment.of(content), channel, guild, member, user, createdAt, updatedAt)
+    ) : this(id, MessageSegment.of(content), channel, guild, member, user, createdAt, updatedAt)
 }
 
 /**
- * 用户, 参考 https://satori.chat/zh-CN/resources/user.html#user
+ * 用户
  * @property id 用户 ID
  * @property name 用户名称
  * @property nick 用户昵称
  * @property avatar 用户头像
- * @property isBot 是否为机器人
+ * @property is_bot 是否为机器人
  */
-data class User(
-    val id: String,
-    val name: String? = null,
-    val nick: String? = null,
-    val avatar: String? = null,
-    @JsonProperty("is_bot") val isBot: Boolean? = null
-)
+class User(
+    id: String, name: String? = null, nick: String? = null, avatar: String? = null, is_bot: Boolean? = null
+) : Entity(
+    "id" to id, "name" to name, "nick" to nick, "avatar" to avatar, "is_bot" to is_bot
+) {
+    val id: String by super.properties
+    val name: String? by super.properties
+    val nick: String? by super.properties
+    val avatar: String? by super.properties
+    val is_bot: Boolean? by super.properties
+}
 
 /**
- * 信令, 参考 https://satori.chat/zh-CN/protocol/events.html#websocket
+ * 信令
  * @property op 信令类型
  * @property body 信令数据
  */
-data class Signaling(val op: Int, var body: Body? = null) {
+class Signaling(op: Int, body: Body? = null) : Entity("op" to op, "body" to body) {
+    val op: Int by super.properties
+    val body: Body? by super.properties
+
     interface Body
 
     companion object {
@@ -244,8 +243,8 @@ data class Signaling(val op: Int, var body: Body? = null) {
                 type.startsWith("guild-member-") -> GuildMemberEvent.parse(event)
                 type.startsWith("guild-role-") -> GuildRoleEvent.parse(event)
                 type.startsWith("guild-") -> GuildEvent.parse(event)
-                type == InteractionEvents.BUTTON -> InteractionButtonEvent.parse(event)
-                type == InteractionEvents.COMMAND -> InteractionCommandEvent.parse(event)
+                type == InteractionEvents.Button -> InteractionButtonEvent.parse(event)
+                type == InteractionEvents.Command -> InteractionCommandEvent.parse(event)
                 type.startsWith("login-") -> LoginEvent.parse(event)
                 type.startsWith("message-") -> MessageEvent.parse(event)
                 type.startsWith("reaction-") -> ReactionEvent.parse(event)
@@ -294,13 +293,15 @@ data class Ready(val logins: List<Login>) : Signaling.Body
  * @property token 鉴权令牌
  * @property sequence 序列号
  */
-data class Identify(
-    var token: String? = null,
-    var sequence: Number? = null
-) : Signaling.Body
+class Identify(token: String? = null, sequence: Number? = null) : Entity(
+    "token" to token, "sequence" to sequence
+), Signaling.Body {
+    val token: String? by super.properties
+    val sequence: Number? by super.properties
+}
 
 /**
- * 分页数据, 参考 https://satori.chat/zh-CN/protocol/api.html#%E5%88%86%E9%A1%B5
+ * 分页数据
  * @param T 数据类型
  * @property data 数据
  * @property next 下一页的令牌

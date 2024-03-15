@@ -53,10 +53,13 @@ fun main() {
     WebSocketEventService.connect {
         listeners {
             message.created { actions, event ->
-                if (event.message.content == "在吗") {
-                    actions.message.create(event.channel.id) {
-                        at { id = event.user.id }
-                        text { " 我在!" }
+                if (event.message.content.equals("在吗")) {
+                    actions.message.create {
+                        channel_id = event.channel.id
+                        content {
+                            at { id = event.user.id }
+                            text { " 我在!" }
+                        }
                     }
                 }
             }

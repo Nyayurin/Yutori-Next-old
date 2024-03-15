@@ -105,13 +105,7 @@ class WebSocketEventService(
 
     private suspend fun sendIdentity(session: DefaultClientWebSocketSession) {
         val token = properties.token
-        val content = jsonObj {
-            put("op", Signaling.IDENTIFY)
-            if (token != null || sequence != null) putJsonObj("body") {
-                put("token", token)
-                put("sequence", sequence)
-            }
-        }
+        val content = Signaling(Signaling.IDENTIFY, Identify(token, sequence)).toString()
         logger.info(name, "发送身份验证: $content")
         session.send(content)
     }
@@ -122,7 +116,7 @@ class WebSocketEventService(
             Signaling.READY -> {
                 val ready = signaling.body as Ready
                 logger.info(name, "成功建立事件推送服务: ${
-                    ready.logins.joinToString(", ") { "${it.platform}(${it.selfId}, ${it.status})" }
+                    ready.logins.joinToString(", ") { "${it.platform}(${it.self_id}, ${it.status})" }
                 }")
                 // 心跳
                 launch {
@@ -138,7 +132,7 @@ class WebSocketEventService(
                 val event = signaling.body as Event
                 when (event) {
                     is MessageEvent -> logger.info(name, buildString {
-                        append("${event.platform}(${event.selfId}) 接收事件(${event.type}): ")
+                        append("${event.platform}(${event.self_id}) 接收事件(${event.type}): ")
                         append("\u001B[38;5;4m").append("${event.channel.name}(${event.channel.id})")
                         append("\u001B[38;5;8m").append("-")
                         append("\u001B[38;5;6m")
@@ -146,7 +140,7 @@ class WebSocketEventService(
                         append("\u001B[0m").append(": ").append(event.message.content)
                     })
 
-                    else -> logger.info(name, "${event.platform}(${event.selfId}) 接收事件: ${event.type}")
+                    else -> logger.info(name, "${event.platform}(${event.self_id}) 接收事件: ${event.type}")
                 }
                 logger.debug(name, "事件详细信息: $body")
                 sequence = event.id
@@ -236,7 +230,7 @@ class WebHookEventService(
                             launch {
                                 when (event) {
                                     is MessageEvent -> logger.info(name, buildString {
-                                        append("${event.platform}(${event.selfId}) 接收事件(${event.type}): ")
+                                        append("${event.platform}(${event.self_id}) 接收事件(${event.type}): ")
                                         append("\u001B[38;5;4m").append("${event.channel.name}(${event.channel.id})")
                                         append("\u001B[38;5;6m")
                                         append(event.member?.nick ?: event.user.nick ?: event.user.name)
@@ -245,7 +239,7 @@ class WebHookEventService(
                                     })
 
                                     else -> logger.info(
-                                        name, "${event.platform}(${event.selfId}) 接收事件: ${event.type}"
+                                        name, "${event.platform}(${event.self_id}) 接收事件: ${event.type}"
                                     )
                                 }
                                 logger.debug(name, "事件详细信息: $body")
@@ -261,9 +255,10 @@ class WebHookEventService(
                 }
             }.start()
             logger.info(name, "成功启动 HTTP 服务器")
-            @Suppress("HttpUrlsUsage") AdminAction.of(properties.server, name).webhook.create(
-                "http://${properties.serverHost}:${properties.serverPort}", properties.server.token
-            )
+            @Suppress("HttpUrlsUsage") AdminAction(properties.server, name).webhook.create {
+                url = "http://${properties.serverHost}:${properties.serverPort}"
+                token = properties.server.token
+            }
         }
         return this
     }

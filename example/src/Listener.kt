@@ -30,9 +30,12 @@ object CommandListener : Listener<MessageEvent> {
                         "User ${event.user.id} 触发命令: ${it::class.simpleName}(${event.message.content})"
                     )
                     it.command(actions, event, msg)
-                } ?: actions.message.create(event.channel.id) {
-                    quote { id = event.message.id }
-                    text { "未知命令: ${msg.split(" ")[0]}" }
+                } ?: actions.message.create {
+                    channel_id = event.channel.id
+                    content {
+                        quote { id = event.message.id }
+                        text { "未知命令: ${msg.split(" ")[0]}" }
+                    }
                 }
             }
         }
@@ -58,32 +61,38 @@ object OpenGraphListener : Listener<MessageEvent> {
                 val url = head.getElementsByAttributeValue("property", "og:url").first()?.attr("content")
                 if (title != null || desc != null || img != null || url != null) {
                     logger.info(actions.name, "User ${event.user.id} 触发监听器: $OpenGraphListener")
-                    actions.message.create(event.channel.id) {
-                        quote { id = event.message.id }
-                        title?.let {
-                            text { title }
-                        }
-                        desc?.let {
-                            if (title != null) {
-                                text { "\n" }
+                    actions.message.create {
+                        channel_id = event.channel.id
+                        content {
+                            quote { id = event.message.id }
+                            title?.let {
+                                text { title }
                             }
-                            text { desc }
-                        }
-                        img?.let {
-                            img { src = img }
-                        }
-                        url?.let {
-                            a {
-                                href = url
+                            desc?.let {
+                                if (title != null) {
+                                    text { "\n" }
+                                }
+                                text { desc }
+                            }
+                            img?.let {
+                                img { src = img }
+                            }
+                            url?.let {
+                                a {
+                                    href = url
+                                }
                             }
                         }
                     }
                 }
             } catch (e: IOException) {
                 if (request.status.value != 200) {
-                    actions.message.create(event.channel.id) {
-                        quote { id = event.message.id }
-                        text { "OpenGraph: 获取失败: ${request.status}" }
+                    actions.message.create {
+                        channel_id = event.channel.id
+                        content {
+                            quote { id = event.message.id }
+                            text { "OpenGraph: 获取失败: ${request.status}" }
+                        }
                     }
                 }
                 e.printStackTrace()
@@ -96,7 +105,7 @@ object AtListener : Listener<MessageEvent> {
     override fun invoke(actions: Actions, event: MessageEvent) {
         if (qqHelperFilter(event)) return
         val msg = event.message.content.filterIsInstance<Text>().joinToString { it.toString() }
-        val atBot = event.message.content[0].let { it is At && it.id == event.selfId }
+        val atBot = event.message.content[0].let { it is At && it.id == event.self_id }
         if (atBot && msg.isNotEmpty()) {
             GlobalLoggerFactory.getLogger(this::class.java)
                 .info(actions.name, "User ${event.user.id} 触发命令: $AiCommand")
@@ -108,10 +117,16 @@ object AtListener : Listener<MessageEvent> {
 object YzListener : Listener<MessageEvent> {
     override fun invoke(actions: Actions, event: MessageEvent) {
         if (event.user.id == "3583477473") {
-            actions.message.delete(event.channel.id, actions.message.create(event.channel.id) {
-                quote { id = event.message.id }
-                text { "#撤回" }
-            }[0].id)
+            actions.message.delete {
+                channel_id = event.channel.id
+                message_id = actions.message.create {
+                    channel_id = event.channel.id
+                    content {
+                        quote { id = event.message.id }
+                        text { "#撤回" }
+                    }
+                }[0].id
+            }
         }
     }
 }

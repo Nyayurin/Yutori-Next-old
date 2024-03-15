@@ -10,7 +10,7 @@ MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
 See the Mulan PSL v2 for more details.
  */
 
-@file:Suppress("unused")
+@file:Suppress("unused", "MemberVisibilityCanBePrivate")
 
 package com.github.nyayurn.yutori.next
 
@@ -25,24 +25,24 @@ inline fun jsonObj(dsl: JsonObjectDSLBuilder.() -> Unit) = JsonObjectDSLBuilder(
 inline fun jsonArr(dsl: JsonArrayDSLBuilder.() -> Unit) = JsonArrayDSLBuilder().apply(dsl).toString()
 
 class JsonObjectDSLBuilder {
-    private val map = mutableMapOf<String, Any>()
+    val map = mutableMapOf<String, Any?>()
     fun put(key: String, value: Any?) {
-        value?.let { map[key] = it }
+        map[key] = value
     }
 
-    fun put(key: String, dsl: () -> Any?) {
-        dsl()?.let { map[key] = it }
+    fun put(key: String, block: () -> Any?) {
+        map[key] = block()
     }
 
     fun putJsonObj(key: String, dsl: JsonObjectDSLBuilder.() -> Unit) {
         map[key] = JsonObjectDSLBuilder().apply(dsl)
     }
 
-    fun putJsonArr(key: String, dsl: JsonArrayDSLBuilder.() -> Unit) {
-        map[key] = JsonArrayDSLBuilder().apply(dsl)
+    fun putJsonArr(key: String, block: JsonArrayDSLBuilder.() -> Unit) {
+        map[key] = JsonArrayDSLBuilder().apply(block)
     }
 
-    override fun toString() = map.entries.joinToString(",", "{", "}") { (key, value) ->
+    override fun toString() = map.entries.filter { it.value != null }.joinToString(",", "{", "}") { (key, value) ->
         buildString {
             append("\"$key\":")
             append(
@@ -56,24 +56,24 @@ class JsonObjectDSLBuilder {
 }
 
 class JsonArrayDSLBuilder {
-    private val list = mutableListOf<Any>()
+    val list = mutableListOf<Any?>()
     fun add(value: Any?) {
-        value?.let { list += it }
+        list += value
     }
 
-    fun add(dsl: () -> Any?) {
-        dsl()?.let { list += it }
+    fun add(block: () -> Any?) {
+        list += block
     }
 
     fun addJsonArr(dsl: JsonArrayDSLBuilder.() -> Unit) {
         list += JsonArrayDSLBuilder().apply(dsl)
     }
 
-    fun addJsonObj(dsl: JsonObjectDSLBuilder.() -> Unit) {
-        list += JsonObjectDSLBuilder().apply(dsl)
+    fun addJsonObj(block: JsonObjectDSLBuilder.() -> Unit) {
+        list += JsonObjectDSLBuilder().apply(block)
     }
 
-    override fun toString() = list.joinToString(",", "[", "]") { value ->
+    override fun toString() = list.filterNotNull().joinToString(",", "[", "]") { value ->
         buildString {
             append(
                 when (value) {

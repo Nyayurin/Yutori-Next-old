@@ -12,14 +12,12 @@ See the Mulan PSL v2 for more details.
 
 package com.github.nyayurn.yutori.next
 
-import com.fasterxml.jackson.annotation.JsonProperty
-
 /**
- * 事件, 参考 https://satori.chat/zh-CN/protocol/events.html#event
+ * 事件
  * @property id 事件 ID
  * @property type 事件类型
  * @property platform 接收者的平台名称
- * @property selfId 接收者的平台账号
+ * @property self_id 接收者的平台账号
  * @property timestamp 事件的时间戳
  * @property argv 交互指令
  * @property button 交互按钮
@@ -36,7 +34,7 @@ open class Event(
     val id: Number,
     val type: String,
     val platform: String,
-    @JsonProperty("self_id") val selfId: String,
+    val self_id: String,
     val timestamp: Number,
     open val argv: Interaction.Argv? = null,
     open val button: Interaction.Button? = null,
@@ -51,18 +49,18 @@ open class Event(
     val raw: String
 ) : Signaling.Body {
     override fun toString(): String {
-        return "Event(id=$id, type='$type', platform='$platform', selfId='$selfId', timestamp=$timestamp, argv=$argv, button=$button, channel=$channel, guild=$guild, login=$login, member=$member, message=$message, operator=$operator, role=$role, user=$user)"
+        return "Event(id=$id, type='$type', platform='$platform', self_id='$self_id', timestamp=$timestamp, argv=$argv, button=$button, channel=$channel, guild=$guild, login=$login, member=$member, message=$message, operator=$operator, role=$role, user=$user, raw='$raw')"
     }
 }
 
 /**
- * 群组事件列表, 参考 https://satori.chat/zh-CN/resources/guild.html#%E4%BA%8B%E4%BB%B6
+ * 群组事件列表
  */
 object GuildEvents {
-    const val ADDED = "guild-added"
-    const val UPDATED = "guild-updated"
-    const val REMOVED = "guild-removed"
-    const val REQUEST = "guild-request"
+    const val Added = "guild-added"
+    const val Updated = "guild-updated"
+    const val Removed = "guild-removed"
+    const val Request = "guild-request"
 }
 
 /**
@@ -72,7 +70,7 @@ class GuildEvent(
     id: Number,
     type: String,
     platform: String,
-    @JsonProperty("self_id") selfId: String,
+    self_id: String,
     timestamp: Number,
     argv: Interaction.Argv? = null,
     button: Interaction.Button? = null,
@@ -89,7 +87,7 @@ class GuildEvent(
     id,
     type,
     platform,
-    selfId,
+    self_id,
     timestamp,
     argv,
     button,
@@ -109,7 +107,7 @@ class GuildEvent(
             event.id,
             event.type,
             event.platform,
-            event.selfId,
+            event.self_id,
             event.timestamp,
             event.argv,
             event.button,
@@ -127,13 +125,13 @@ class GuildEvent(
 }
 
 /**
- * 群组成员事件列表, 参考 https://satori.chat/zh-CN/resources/member.html#%E4%BA%8B%E4%BB%B6
+ * 群组成员事件列表
  */
 object GuildMemberEvents {
-    const val ADDED = "guild-member-added"
-    const val UPDATED = "guild-member-updated"
-    const val REMOVED = "guild-member-removed"
-    const val REQUEST = "guild-member-request"
+    const val Added = "guild-member-added"
+    const val Updated = "guild-member-updated"
+    const val Removed = "guild-member-removed"
+    const val Request = "guild-member-request"
 }
 
 /**
@@ -143,7 +141,7 @@ class GuildMemberEvent(
     id: Number,
     type: String,
     platform: String,
-    @JsonProperty("self_id") selfId: String,
+    self_id: String,
     timestamp: Number,
     argv: Interaction.Argv? = null,
     button: Interaction.Button? = null,
@@ -160,7 +158,7 @@ class GuildMemberEvent(
     id,
     type,
     platform,
-    selfId,
+    self_id,
     timestamp,
     argv,
     button,
@@ -180,7 +178,7 @@ class GuildMemberEvent(
             event.id,
             event.type,
             event.platform,
-            event.selfId,
+            event.self_id,
             event.timestamp,
             event.argv,
             event.button,
@@ -198,12 +196,12 @@ class GuildMemberEvent(
 }
 
 /**
- * 群组角色事件列表, 参考 https://satori.chat/zh-CN/resources/role.html#%E4%BA%8B%E4%BB%B6
+ * 群组角色事件列表
  */
 object GuildRoleEvents {
-    const val CREATED = "guild-role-created"
-    const val UPDATED = "guild-role-updated"
-    const val DELETED = "guild-role-deleted"
+    const val Created = "guild-role-created"
+    const val Updated = "guild-role-updated"
+    const val Deleted = "guild-role-deleted"
 }
 
 /**
@@ -213,7 +211,7 @@ class GuildRoleEvent(
     id: Number,
     type: String,
     platform: String,
-    @JsonProperty("self_id") selfId: String,
+    self_id: String,
     timestamp: Number,
     argv: Interaction.Argv? = null,
     button: Interaction.Button? = null,
@@ -230,7 +228,7 @@ class GuildRoleEvent(
     id,
     type,
     platform,
-    selfId,
+    self_id,
     timestamp,
     argv,
     button,
@@ -250,7 +248,7 @@ class GuildRoleEvent(
             event.id,
             event.type,
             event.platform,
-            event.selfId,
+            event.self_id,
             event.timestamp,
             event.argv,
             event.button,
@@ -268,11 +266,11 @@ class GuildRoleEvent(
 }
 
 /**
- * 交互事件列表, 参考 https://satori.chat/zh-CN/resources/interaction.html#%E4%BA%8B%E4%BB%B6
+ * 交互事件列表
  */
 object InteractionEvents {
-    const val BUTTON = "interaction/button"
-    const val COMMAND = "interaction/command"
+    const val Button = "interaction/button"
+    const val Command = "interaction/command"
 }
 
 /**
@@ -282,7 +280,7 @@ class InteractionButtonEvent(
     id: Number,
     type: String,
     platform: String,
-    @JsonProperty("self_id") selfId: String,
+    self_id: String,
     timestamp: Number,
     argv: Interaction.Argv? = null,
     override val button: Interaction.Button,
@@ -299,7 +297,7 @@ class InteractionButtonEvent(
     id,
     type,
     platform,
-    selfId,
+    self_id,
     timestamp,
     argv,
     button,
@@ -319,7 +317,7 @@ class InteractionButtonEvent(
             event.id,
             event.type,
             event.platform,
-            event.selfId,
+            event.self_id,
             event.timestamp,
             event.argv,
             event.button!!,
@@ -343,7 +341,7 @@ class InteractionCommandEvent(
     id: Number,
     type: String,
     platform: String,
-    @JsonProperty("self_id") selfId: String,
+    self_id: String,
     timestamp: Number,
     argv: Interaction.Argv? = null,
     button: Interaction.Button? = null,
@@ -360,7 +358,7 @@ class InteractionCommandEvent(
     id,
     type,
     platform,
-    selfId,
+    self_id,
     timestamp,
     argv,
     button,
@@ -380,7 +378,7 @@ class InteractionCommandEvent(
             event.id,
             event.type,
             event.platform,
-            event.selfId,
+            event.self_id,
             event.timestamp,
             event.argv,
             event.button,
@@ -398,12 +396,12 @@ class InteractionCommandEvent(
 }
 
 /**
- * 登录事件列表, 参考 https://satori.chat/zh-CN/resources/login.html#%E4%BA%8B%E4%BB%B6
+ * 登录事件列表
  */
 object LoginEvents {
-    const val ADDED = "login-added"
-    const val REMOVED = "login-removed"
-    const val UPDATED = "login-updated"
+    const val Added = "login-added"
+    const val Removed = "login-removed"
+    const val Updated = "login-updated"
 }
 
 /**
@@ -413,7 +411,7 @@ class LoginEvent(
     id: Number,
     type: String,
     platform: String,
-    @JsonProperty("self_id") selfId: String,
+    self_id: String,
     timestamp: Number,
     argv: Interaction.Argv? = null,
     button: Interaction.Button? = null,
@@ -430,7 +428,7 @@ class LoginEvent(
     id,
     type,
     platform,
-    selfId,
+    self_id,
     timestamp,
     argv,
     button,
@@ -450,7 +448,7 @@ class LoginEvent(
             event.id,
             event.type,
             event.platform,
-            event.selfId,
+            event.self_id,
             event.timestamp,
             event.argv,
             event.button,
@@ -468,12 +466,12 @@ class LoginEvent(
 }
 
 /**
- * 消息事件列表, 参考 https://satori.chat/zh-CN/resources/message.html#%E4%BA%8B%E4%BB%B6
+ * 消息事件列表
  */
 object MessageEvents {
-    const val CREATED = "message-created"
-    const val UPDATED = "message-updated"
-    const val DELETED = "message-deleted"
+    const val Created = "message-created"
+    const val Updated = "message-updated"
+    const val Deleted = "message-deleted"
 }
 
 /**
@@ -483,7 +481,7 @@ class MessageEvent(
     id: Number,
     type: String,
     platform: String,
-    @JsonProperty("self_id") selfId: String,
+    self_id: String,
     timestamp: Number,
     argv: Interaction.Argv? = null,
     button: Interaction.Button? = null,
@@ -500,7 +498,7 @@ class MessageEvent(
     id,
     type,
     platform,
-    selfId,
+    self_id,
     timestamp,
     argv,
     button,
@@ -520,7 +518,7 @@ class MessageEvent(
             event.id,
             event.type,
             event.platform,
-            event.selfId,
+            event.self_id,
             event.timestamp,
             event.argv,
             event.button,
@@ -538,11 +536,11 @@ class MessageEvent(
 }
 
 /**
- * 表态事件列表, 参考 https://satori.chat/zh-CN/resources/reaction.html#%E4%BA%8B%E4%BB%B6
+ * 表态事件列表
  */
 object ReactionEvents {
-    const val ADDED = "reaction-added"
-    const val REMOVED = "reaction-removed"
+    const val Added = "reaction-added"
+    const val Removed = "reaction-removed"
 }
 
 /**
@@ -552,7 +550,7 @@ class ReactionEvent(
     id: Number,
     type: String,
     platform: String,
-    @JsonProperty("self_id") selfId: String,
+    self_id: String,
     timestamp: Number,
     argv: Interaction.Argv? = null,
     button: Interaction.Button? = null,
@@ -569,7 +567,7 @@ class ReactionEvent(
     id,
     type,
     platform,
-    selfId,
+    self_id,
     timestamp,
     argv,
     button,
@@ -589,7 +587,7 @@ class ReactionEvent(
             event.id,
             event.type,
             event.platform,
-            event.selfId,
+            event.self_id,
             event.timestamp,
             event.argv,
             event.button,
@@ -607,10 +605,10 @@ class ReactionEvent(
 }
 
 /**
- * 用户事件列表, 参考 https://satori.chat/zh-CN/resources/user.html#%E4%BA%8B%E4%BB%B6
+ * 用户事件列表
  */
 object UserEvents {
-    const val FRIEND_REQUEST = "friend-request"
+    const val Friend_Request = "friend-request"
 }
 
 /**
@@ -620,7 +618,7 @@ class UserEvent(
     id: Number,
     type: String,
     platform: String,
-    @JsonProperty("self_id") selfId: String,
+    self_id: String,
     timestamp: Number,
     argv: Interaction.Argv? = null,
     button: Interaction.Button? = null,
@@ -637,7 +635,7 @@ class UserEvent(
     id,
     type,
     platform,
-    selfId,
+    self_id,
     timestamp,
     argv,
     button,
@@ -657,7 +655,7 @@ class UserEvent(
             event.id,
             event.type,
             event.platform,
-            event.selfId,
+            event.self_id,
             event.timestamp,
             event.argv,
             event.button,
