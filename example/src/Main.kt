@@ -6,8 +6,8 @@ import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 
 fun main() {
-    GlobalLoggerFactory.factory = MyLoggerFactory(Level.INFO)
-    val server = System.getenv("SatoriServer") ?: "Chronocat"
+    //GlobalLoggerFactory.factory = MyLoggerFactory(Level.INFO)
+    val server = System.getenv("Satori-Server") ?: "Chronocat"
     val client = WebSocketEventService.connect(server) {
         listeners {
             message.created += CommandListener
@@ -17,24 +17,28 @@ fun main() {
         }
         properties {
             when (server) {
-                "Chronocat" -> token = "Chronocat"
+                "Chronocat" -> {
+                    host = "[fe80::f0cf:dbff:fede:18bb]"
+                    token = "Chronocat"
+                }
                 "Koishi" -> {
+                    host = "[::1]"
                     port = 5140
                     path = "/satori"
                     token = "Koishi"
                 }
             }
 
-            System.getenv("SatoriHost")?.let {
+            System.getenv("Satori-Host")?.let {
                 host = it
             }
-            System.getenv("SatoriPort")?.toIntOrNull()?.let {
+            System.getenv("Satori-Port")?.toIntOrNull()?.let {
                 port = it
             }
-            System.getenv("SatoriPath")?.let {
+            System.getenv("Satori-Path")?.let {
                 path = it
             }
-            System.getenv("SatoriToken")?.let {
+            System.getenv("Satori-Token")?.let {
                 token = it
             }
         }

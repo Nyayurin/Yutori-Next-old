@@ -50,7 +50,7 @@ implementation 'com.github.Nyayurn:Yutori:${version}'
 
 ```kotlin
 fun main() {
-    WebSocketEventService.connect {
+    val client = WebSocketEventService.connect {
         listeners {
             message.created { actions, event ->
                 if (event.message.content.equals("在吗")) {
@@ -68,5 +68,7 @@ fun main() {
             token = "token"
         }
     }
+    while (readln() != "exit") continue
+    client.close()
 }
 ```

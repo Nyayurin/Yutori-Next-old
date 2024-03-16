@@ -6,24 +6,24 @@ plugins {
 
 group = "com.github.Nyayurn"
 
-val jacksonVersion = "2.16.1"
-val jsoupVersion = "1.17.2"
-val ktorVersion = "2.3.9"
-val junitVersion = "5.10.1"
+val jackson_version = "2.17.0"
+val jsoup_version = "1.17.2"
+val ktor_version = "2.3.9"
+val junit_version = "5.10.1"
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    api("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
-    api("org.jsoup:jsoup:$jsoupVersion")
-    api("io.ktor:ktor-server-core:$ktorVersion")
-    api("io.ktor:ktor-server-cio:$ktorVersion")
-    api("io.ktor:ktor-client-core:$ktorVersion")
-    api("io.ktor:ktor-client-cio:$ktorVersion")
-    api("io.ktor:ktor-client-websockets:$ktorVersion")
-    testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
+    api("com.fasterxml.jackson.module:jackson-module-kotlin:$jackson_version")
+    api("org.jsoup:jsoup:$jsoup_version")
+    api("io.ktor:ktor-server-core:$ktor_version")
+    api("io.ktor:ktor-server-cio:$ktor_version")
+    api("io.ktor:ktor-client-core:$ktor_version")
+    api("io.ktor:ktor-client-cio:$ktor_version")
+    api("io.ktor:ktor-client-websockets:$ktor_version")
+    testImplementation("org.junit.jupiter:junit-jupiter:$junit_version")
 }
 
 sourceSets {

@@ -50,7 +50,7 @@ object HelpCommand : Command {
                         help
                     其他内容:
                         如果发送的消息是符合OpenGraph的网址的链接(如github), 会自动发送预览图
-                """.trimIndent()
+                    """.trimIndent()
                 }
             }
         }

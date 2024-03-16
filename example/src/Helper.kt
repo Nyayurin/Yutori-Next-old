@@ -20,9 +20,9 @@ import javax.crypto.spec.SecretKeySpec
 @Suppress("SpellCheckingInspection", "SameParameterValue")
 object AiUtil {
     private const val URL = "https://spark-api.xf-yun.com/v3.1/chat"
-    private val APP_ID = System.getenv("Spark_APP_ID")
-    private val API_SECRET = System.getenv("Spark_API_SECRET")
-    private val API_KEY = System.getenv("Spark_API_KEY")
+    private val APP_ID = System.getenv("Spark-App-Id")
+    private val API_SECRET = System.getenv("Spark-Api-Secret")
+    private val API_KEY = System.getenv("Spark-Api-Key")
 
     fun send(text: String, actions: Actions, event: MessageEvent) {
         val jsonObject = jsonObj {
