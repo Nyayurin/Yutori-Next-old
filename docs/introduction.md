@@ -53,7 +53,7 @@ fun main() {
     val client = WebSocketEventService.connect {
         listeners {
             message.created { actions, event ->
-                if (event.message.content.equals("在吗")) {
+                if (event.message.content.toString() == "在吗") {
                     actions.message.create {
                         channel_id = event.channel.id
                         content {

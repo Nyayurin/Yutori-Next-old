@@ -21,20 +21,6 @@ import org.jsoup.nodes.TextNode
 class MessageSegment(private val elements: List<MessageElement>): List<MessageElement> by elements {
     override fun toString() = elements.joinToString("") { it.toString() }
 
-    override fun equals(other: Any?): Boolean {
-        if (other is String) return toString() == other
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as MessageSegment
-
-        return elements == other.elements
-    }
-
-    override fun hashCode(): Int {
-        return elements.hashCode()
-    }
-
     companion object {
         fun of(str: String): MessageSegment {
             val nodes = Jsoup.parse(str).body().childNodes()
