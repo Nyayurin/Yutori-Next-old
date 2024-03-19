@@ -217,7 +217,7 @@ class WebSocketEventService(
  * @param properties Satori WebHook 配置
  * @param name 用于区分不同 Satori 事件服务的名称
  */
-class WebHookEventService(
+class WebhookEventService(
     val container: ListenersContainer,
     val properties: WebHookProperties,
     val name: String = "Satori"
@@ -287,7 +287,7 @@ class WebHookEventService(
             container: ListenersContainer,
             properties: WebHookProperties = WebHookProperties(server = SatoriProperties()),
             name: String = "Satori",
-        ) = WebHookEventService(container, properties, name)
+        ) = WebhookEventService(container, properties, name)
 
         fun of(name: String = "Satori", dsl: Builder.() -> Unit) = Builder(name).apply(dsl).build()
 
@@ -295,7 +295,7 @@ class WebHookEventService(
             container: ListenersContainer,
             properties: WebHookProperties = WebHookProperties(server = SatoriProperties()),
             name: String = "Satori",
-        ) = WebHookEventService(container, properties, name).connect()
+        ) = WebhookEventService(container, properties, name).connect()
 
         fun connect(name: String = "Satori", dsl: Builder.() -> Unit) = Builder(name).apply(dsl).build().connect()
     }
@@ -316,7 +316,7 @@ class WebHookEventService(
             this.properties = lambda()
         }
 
-        fun build() = WebHookEventService(container, properties, name)
+        fun build() = WebhookEventService(container, properties, name)
 
         class PropertiesBuilder {
             var server: Server = Server()
