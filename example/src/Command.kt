@@ -58,7 +58,7 @@ object HelpCommand : Command {
 }
 
 object EchoCommand : Command {
-    private val regex = Regex("^[Ee]cho ([\\w\\W]*)\$")
+    private val regex = Regex("^[Ee]cho ([\\w\\W]*)$")
     override fun test(actions: Actions, event: MessageEvent, msg: String) = regex.matches(msg)
 
     override fun command(actions: Actions, event: MessageEvent, msg: String) {
@@ -76,6 +76,29 @@ object EchoCommand : Command {
             content {
                 quote { id = event.message.id }
                 text { "你不是Bot姐姐或Bot姐姐的男盆友, 别乱用指令!" }
+            }
+        }
+    }
+}
+
+object StatusCommand : Command {
+    private val regex = Regex("^[Ss]tatus( [\\w\\W]*)?$")
+    override fun test(actions: Actions, event: MessageEvent, msg: String) = regex.matches(msg)
+
+    override fun command(actions: Actions, event: MessageEvent, msg: String) {
+        actions.message.create {
+            channel_id = event.channel.id
+            content {
+                text { "处理器: " }
+                text { String.format("%.2f%%", MonitorHelper.cpu_percent * 100) }
+                text { "\n" }
+                text { "物理内存: " }
+                text { String.format("%.2f%%", MonitorHelper.memory_percent * 100) }
+                text { String.format("(%.2f MiB free)", MonitorHelper.memory_available.toDouble() / 1024 / 1024) }
+                text { "\n" }
+                text { "交换内存: " }
+                text { String.format("%.2f%%", MonitorHelper.swap_percent * 100) }
+                text { String.format("(%.2f MiB free)", MonitorHelper.swap_available.toDouble() / 1024 / 1024) }
             }
         }
     }

@@ -52,8 +52,9 @@ class WebSocketEventService(
     val properties: SatoriProperties,
     val name: String = "Satori"
 ) : SatoriEventService {
+    private var is_received_pong = false
     private var sequence: Number? = null
-    private var isConnected = false
+    private var is_connected = false
     private val client = HttpClient {
         install(WebSockets)
     }
@@ -61,6 +62,8 @@ class WebSocketEventService(
 
     @OptIn(DelicateCoroutinesApi::class)
     override fun connect(): SatoriEventService {
+        is_connected = false
+        is_received_pong = false
         GlobalScope.launch {
             try {
                 client.webSocket(
@@ -70,7 +73,7 @@ class WebSocketEventService(
                     "${properties.path}/${properties.version}/events"
                 ) {
                     logger.info(name, "成功建立 WebSocket 连接")
-                    isConnected = true
+                    is_connected = true
                     launch { sendIdentity(this@webSocket) }
                     for (frame in incoming) {
                         frame as? Frame.Text ?: continue
@@ -85,7 +88,6 @@ class WebSocketEventService(
             } catch (e: Exception) {
                 logger.warn(name, "WebSocket 连接断开: ${e.localizedMessage}")
                 e.printStackTrace()
-                isConnected = false
                 // 重连
                 launch {
                     logger.info(name, "将在5秒后尝试重新连接")
@@ -99,7 +101,7 @@ class WebSocketEventService(
     }
 
     override fun close() {
-        isConnected = false
+        is_connected = false
         client.close()
     }
 
@@ -118,12 +120,21 @@ class WebSocketEventService(
                 logger.info(name, "成功建立事件推送服务: ${
                     ready.logins.joinToString(", ") { "${it.platform}(${it.self_id}, ${it.status})" }
                 }")
+                is_received_pong = true
                 // 心跳
                 launch {
-                    val content = jsonObj { put("op", Signaling.PING) }
-                    while (isConnected) {
+                    val content = Signaling(Signaling.PING).toString()
+                    while (is_connected) {
                         delay(10000)
-                        send(content)
+                        if (is_received_pong) {
+                            is_received_pong = false
+                            logger.debug(name, "发送 PING")
+                            launch { send(content) }
+                        } else {
+                            logger.warn(name, "WebSocket 连接断开: PONG 响应超时")
+                            logger.info(name, "尝试重新连接")
+                            connect()
+                        }
                     }
                 }
             }
@@ -147,7 +158,11 @@ class WebSocketEventService(
                 container.runEvent(event, properties, name)
             }
 
-            Signaling.PONG -> logger.debug(name, "收到 PONG")
+            Signaling.PONG -> {
+                logger.debug(name, "收到 PONG")
+                is_received_pong = true
+            }
+
             else -> logger.error(name, "Unsupported $signaling")
         }
     }

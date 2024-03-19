@@ -9,11 +9,15 @@ import com.reine.text2image.T2IUtil
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.drafts.Draft_6455
 import org.java_websocket.handshake.ServerHandshake
+import oshi.SystemInfo
+import oshi.hardware.CentralProcessor
+import oshi.hardware.HardwareAbstractionLayer
 import java.net.URI
 import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.TimeUnit
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
@@ -133,4 +137,25 @@ object AiUtil {
             // method is empty
         }
     }
+}
+
+object MonitorHelper {
+    private val hardware: HardwareAbstractionLayer = SystemInfo().hardware
+    val cpu_percent: Double
+        get() {
+            val pre_ticks = hardware.processor.systemCpuLoadTicks
+            TimeUnit.SECONDS.sleep(1)
+            val ticks = hardware.processor.systemCpuLoadTicks
+            val idle = ticks[CentralProcessor.TickType.IDLE.index] - pre_ticks[CentralProcessor.TickType.IDLE.index]
+            val total = ticks.sum() - pre_ticks.sum()
+            return 1 - (idle.toDouble() / total)
+        }
+    val memory_percent: Double
+        get() = (1 - memory_available.toDouble() / hardware.memory.total)
+    val memory_available: Long
+        get() = hardware.memory.available
+    val swap_percent: Double
+        get() = hardware.memory.virtualMemory.swapUsed.toDouble() / hardware.memory.virtualMemory.swapTotal
+    val swap_available: Long
+        get() = hardware.memory.virtualMemory.swapTotal - hardware.memory.virtualMemory.swapUsed
 }

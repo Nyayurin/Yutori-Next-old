@@ -16,7 +16,7 @@ import java.io.IOException
 import java.util.regex.Pattern
 
 object CommandListener : Listener<MessageEvent> {
-    private val commands: Array<Command> = arrayOf(AiCommand, HelpCommand, EchoCommand)
+    private val commands: Array<Command> = arrayOf(AiCommand, HelpCommand, EchoCommand, StatusCommand)
     private val logger = GlobalLoggerFactory.getLogger(this::class.java)
     override fun invoke(actions: Actions, event: MessageEvent) {
         if (qqHelperFilter(event)) return
@@ -126,6 +126,30 @@ object YzListener : Listener<MessageEvent> {
                         text { "#撤回" }
                     }
                 }[0].id
+            }
+        }
+    }
+}
+
+object TestListener : Listener<MessageEvent> {
+    override fun invoke(actions: Actions, event: MessageEvent) {
+        if (event.message.content.equals("test")) {
+            val response = actions.message.create {
+                channel_id = "private:${event.self_id}"
+                content {
+                    text { "测试转发消息" }
+                }
+            }
+            actions.message.create {
+                channel_id = event.channel.id
+                content {
+                    message {
+                        forward = true
+                        message {
+                            id = response[0].id
+                        }
+                    }
+                }
             }
         }
     }
