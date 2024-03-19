@@ -53,7 +53,7 @@ fun main() {
     val client = WebSocketEventService.connect {
         listeners {
             message.created { actions, event ->
-                if (event.message.content.toString() == "在吗") {
+                if (event.message.content == "在吗" as Any) {
                     actions.message.create {
                         channel_id = event.channel.id
                         content {
@@ -70,5 +70,18 @@ fun main() {
     }
     while (readln() != "exit") continue
     client.close()
+}
+```
+
+由于 Kotlin 语法限制, 导致 content(MessageSegment) 无法直接使用 == 运算符与 String 做判断, 所以请通过以下方式判断:
+
+```kotlin
+fun run(content: MessageSegment) {
+    content == "test" as Any
+    content.toString() == "test"
+    "$content" == "test"
+    "" + content == "test"
+    content.equals("test")
+    // 如果你有其他方式进行判断, 欢迎告诉我
 }
 ```

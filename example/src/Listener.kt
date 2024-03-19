@@ -133,7 +133,7 @@ object YzListener : Listener<MessageEvent> {
 
 object TestListener : Listener<MessageEvent> {
     override fun invoke(actions: Actions, event: MessageEvent) {
-        if (event.message.content.equals("test")) {
+        if (event.message.content == "test" as Any) {
             val response = actions.message.create {
                 channel_id = "private:${event.self_id}"
                 content {
