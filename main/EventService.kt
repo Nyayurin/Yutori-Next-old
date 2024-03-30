@@ -74,7 +74,14 @@ class WebSocketEventService(
                 ) {
                     logger.info(name, "成功建立 WebSocket 连接")
                     is_connected = true
-                    launch { sendIdentity(this@webSocket) }
+                    launch {
+                        sendIdentity(this@webSocket)
+                        delay(10000)
+                        if (!is_received_pong) {
+                            logger.warn(name, "无法建立事件推送服务: READY 响应超时")
+                            this@WebSocketEventService.close()
+                        }
+                    }
                     for (frame in incoming) {
                         frame as? Frame.Text ?: continue
                         try {

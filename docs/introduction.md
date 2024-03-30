@@ -73,7 +73,7 @@ fun main() {
 }
 ```
 
-运行时如果正常日志应该会打印"成功建立消息推送服务", 如若成功建立 WS 连接却未打印该日志, 可能是 Token 不正确
+如果日志打印"无法建立事件推送服务: READY 响应超时", 可能是 Token 错误(Chronocat)
 
 由于 Kotlin 语法限制, 导致 content(MessageSegment) 无法直接使用 == 运算符与 String 做判断, 所以请通过以下方式判断:
 
