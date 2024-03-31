@@ -239,16 +239,16 @@ class Signaling(op: Int, body: Body? = null) : Entity("op" to op, "body" to body
 
         private fun parseEvent(event: Event) = try {
             val type = event.type
-            when {
-                type.startsWith("guild-member-") -> GuildMemberEvent.parse(event)
-                type.startsWith("guild-role-") -> GuildRoleEvent.parse(event)
-                type.startsWith("guild-") -> GuildEvent.parse(event)
-                type == InteractionEvents.Button -> InteractionButtonEvent.parse(event)
-                type == InteractionEvents.Command -> InteractionCommandEvent.parse(event)
-                type.startsWith("login-") -> LoginEvent.parse(event)
-                type.startsWith("message-") -> MessageEvent.parse(event)
-                type.startsWith("reaction-") -> ReactionEvent.parse(event)
-                type.startsWith("friend-") -> UserEvent.parse(event)
+            when (type) {
+                in GuildMemberEvents.Types -> GuildMemberEvent.parse(event)
+                in GuildRoleEvents.Types -> GuildRoleEvent.parse(event)
+                in GuildEvents.Types -> GuildEvent.parse(event)
+                InteractionEvents.Button -> InteractionButtonEvent.parse(event)
+                InteractionEvents.Command -> InteractionCommandEvent.parse(event)
+                in LoginEvents.Types -> LoginEvent.parse(event)
+                in MessageEvents.Types -> MessageEvent.parse(event)
+                in ReactionEvents.Types -> ReactionEvent.parse(event)
+                in UserEvents.Types -> UserEvent.parse(event)
                 else -> event
             }
         } catch (e: Throwable) {

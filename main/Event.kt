@@ -10,6 +10,8 @@ MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
 See the Mulan PSL v2 for more details.
  */
 
+@file:Suppress("unused")
+
 package com.github.nyayurn.yutori.next
 
 /**
@@ -61,6 +63,7 @@ object GuildEvents {
     const val Updated = "guild-updated"
     const val Removed = "guild-removed"
     const val Request = "guild-request"
+    val Types = arrayOf(Added, Updated, Removed, Request)
 }
 
 /**
@@ -132,6 +135,7 @@ object GuildMemberEvents {
     const val Updated = "guild-member-updated"
     const val Removed = "guild-member-removed"
     const val Request = "guild-member-request"
+    val Types = arrayOf(Added, Updated, Removed, Request)
 }
 
 /**
@@ -202,6 +206,7 @@ object GuildRoleEvents {
     const val Created = "guild-role-created"
     const val Updated = "guild-role-updated"
     const val Deleted = "guild-role-deleted"
+    val Types = arrayOf(Created, Updated, Deleted)
 }
 
 /**
@@ -271,6 +276,7 @@ class GuildRoleEvent(
 object InteractionEvents {
     const val Button = "interaction/button"
     const val Command = "interaction/command"
+    val Types = arrayOf(Button, Command)
 }
 
 /**
@@ -402,6 +408,7 @@ object LoginEvents {
     const val Added = "login-added"
     const val Removed = "login-removed"
     const val Updated = "login-updated"
+    val Types = arrayOf(Added, Removed, Updated)
 }
 
 /**
@@ -472,6 +479,7 @@ object MessageEvents {
     const val Created = "message-created"
     const val Updated = "message-updated"
     const val Deleted = "message-deleted"
+    val Types = arrayOf(Created, Updated, Deleted)
 }
 
 /**
@@ -541,6 +549,7 @@ class MessageEvent(
 object ReactionEvents {
     const val Added = "reaction-added"
     const val Removed = "reaction-removed"
+    val Types = arrayOf(Added, Removed)
 }
 
 /**
@@ -609,6 +618,7 @@ class ReactionEvent(
  */
 object UserEvents {
     const val Friend_Request = "friend-request"
+    val Types = arrayOf(Friend_Request)
 }
 
 /**
