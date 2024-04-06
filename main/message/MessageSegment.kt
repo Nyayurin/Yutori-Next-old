@@ -10,9 +10,9 @@ MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
 See the Mulan PSL v2 for more details.
  */
 
-package com.github.nyayurn.yutori.next.message
+package github.nyayurn.yutori_next.message
 
-import com.github.nyayurn.yutori.next.message.elements.*
+import github.nyayurn.yutori_next.message.elements.*
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.Node

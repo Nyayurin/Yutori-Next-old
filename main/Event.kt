@@ -12,7 +12,7 @@ See the Mulan PSL v2 for more details.
 
 @file:Suppress("unused")
 
-package com.github.nyayurn.yutori.next
+package github.nyayurn.yutori_next
 
 /**
  * 事件

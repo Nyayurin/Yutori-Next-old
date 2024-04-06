@@ -1,11 +1,11 @@
-package com.github.nyayurn.qbot
+package github.nyayurn.qbot
 
-import com.github.nyayurn.yutori.next.Actions
-import com.github.nyayurn.yutori.next.GlobalLoggerFactory
-import com.github.nyayurn.yutori.next.Listener
-import com.github.nyayurn.yutori.next.MessageEvent
-import com.github.nyayurn.yutori.next.message.elements.At
-import com.github.nyayurn.yutori.next.message.elements.Text
+import github.nyayurn.yutori_next.Actions
+import github.nyayurn.yutori_next.GlobalLoggerFactory
+import github.nyayurn.yutori_next.Listener
+import github.nyayurn.yutori_next.MessageEvent
+import github.nyayurn.yutori_next.message.elements.At
+import github.nyayurn.yutori_next.message.elements.Text
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*

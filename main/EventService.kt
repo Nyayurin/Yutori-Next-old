@@ -12,7 +12,7 @@ See the Mulan PSL v2 for more details.
 
 @file:Suppress("MemberVisibilityCanBePrivate", "unused")
 
-package com.github.nyayurn.yutori.next
+package github.nyayurn.yutori_next
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper

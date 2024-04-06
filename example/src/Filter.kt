@@ -1,5 +1,5 @@
-package com.github.nyayurn.qbot
+package github.nyayurn.qbot
 
-import com.github.nyayurn.yutori.next.MessageEvent
+import github.nyayurn.yutori_next.MessageEvent
 
 val qqHelperFilter = { event: MessageEvent -> event.platform == "chronocat" && event.user.id == "2854196310" }

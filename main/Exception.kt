@@ -10,6 +10,7 @@ MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
 See the Mulan PSL v2 for more details.
  */
 
-package com.github.nyayurn.yutori.next
+package github.nyayurn.yutori_next
 
-class EventParsingException(e: Throwable) : Exception(e)
+class EventParsingException(e: Throwable) : RuntimeException(e)
+class ResponseParsingException(message: String) : RuntimeException(message)

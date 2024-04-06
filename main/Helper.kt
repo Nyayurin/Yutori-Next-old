@@ -12,7 +12,7 @@ See the Mulan PSL v2 for more details.
 
 @file:Suppress("unused", "MemberVisibilityCanBePrivate")
 
-package com.github.nyayurn.yutori.next
+package github.nyayurn.yutori_next
 
 /**
  * JsonObject 字符串 DSL 构建器

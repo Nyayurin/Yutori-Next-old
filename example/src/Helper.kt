@@ -1,11 +1,11 @@
-package com.github.nyayurn.qbot
+package github.nyayurn.qbot
 
 import com.alibaba.fastjson2.parseObject
-import com.github.nyayurn.yutori.next.Actions
-import com.github.nyayurn.yutori.next.MessageEvent
-import com.github.nyayurn.yutori.next.jsonObj
 import com.reine.text2image.T2IConstant
 import com.reine.text2image.T2IUtil
+import github.nyayurn.yutori_next.Actions
+import github.nyayurn.yutori_next.MessageEvent
+import github.nyayurn.yutori_next.jsonObj
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.drafts.Draft_6455
 import org.java_websocket.handshake.ServerHandshake

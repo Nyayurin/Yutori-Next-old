@@ -1,4 +1,4 @@
-package com.github.nyayurn.qbot
+package github.nyayurn.qbot
 
 import com.alibaba.fastjson2.annotation.JSONField
 

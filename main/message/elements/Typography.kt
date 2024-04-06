@@ -12,7 +12,7 @@ See the Mulan PSL v2 for more details.
 
 @file:Suppress("MemberVisibilityCanBePrivate")
 
-package com.github.nyayurn.yutori.next.message.elements
+package github.nyayurn.yutori_next.message.elements
 
 /**
  * 换行

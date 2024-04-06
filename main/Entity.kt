@@ -12,7 +12,7 @@ See the Mulan PSL v2 for more details.
 
 @file:Suppress("unused", "MemberVisibilityCanBePrivate")
 
-package com.github.nyayurn.yutori.next
+package github.nyayurn.yutori_next
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.databind.node.TextNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.github.nyayurn.yutori.next.message.MessageSegment
+import github.nyayurn.yutori_next.message.MessageSegment
 
 abstract class Entity(vararg pairs: Pair<String, Any?>) {
     protected val properties = mapOf(*pairs)
