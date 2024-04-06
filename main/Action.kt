@@ -95,7 +95,7 @@ class ChannelAction private constructor(private val action: GeneralAction) {
      */
     fun get(block: GetBuilder.() -> Unit): Channel {
         val builder = GetBuilder().apply(block)
-        return action.sendWithSerialize("get") {
+        return action.send_with_deserialize("get") {
             put("channel_id", builder.channel_id)
         }
     }
@@ -105,7 +105,7 @@ class ChannelAction private constructor(private val action: GeneralAction) {
      */
     fun list(block: ListBuilder.() -> Unit): List<PaginatedData<Channel>> {
         val builder = ListBuilder().apply(block)
-        return action.sendWithSerialize("list") {
+        return action.send_with_deserialize("list") {
             put("guild_id", builder.guild_id)
             put("next", builder.next)
         }
@@ -116,7 +116,7 @@ class ChannelAction private constructor(private val action: GeneralAction) {
      */
     fun create(block: CreateBuilder.() -> Unit): Channel {
         val builder = CreateBuilder().apply(block)
-        return action.sendWithSerialize("create") {
+        return action.send_with_deserialize("create") {
             put("guild_id", builder.guild_id)
             put("data", builder.data)
         }
@@ -187,7 +187,7 @@ class GuildAction private constructor(
      */
     fun get(block: GetBuilder.() -> Unit): Guild {
         val builder = GetBuilder().apply(block)
-        return action.sendWithSerialize("get") {
+        return action.send_with_deserialize("get") {
             put("guild_id", builder.guild_id)
         }
     }
@@ -197,7 +197,7 @@ class GuildAction private constructor(
      */
     fun list(block: ListBuilder.() -> Unit): List<PaginatedData<Guild>> {
         val builder = ListBuilder().apply(block)
-        return action.sendWithSerialize("list") {
+        return action.send_with_deserialize("list") {
             put("next", builder.next)
         }
     }
@@ -242,7 +242,7 @@ class GuildAction private constructor(
          */
         fun get(block: GetBuilder.() -> Unit): GuildMember {
             val builder = GetBuilder().apply(block)
-            return action.sendWithSerialize("get") {
+            return action.send_with_deserialize("get") {
                 put("guild_id", builder.guild_id)
                 put("user_id", builder.user_id)
             }
@@ -253,7 +253,7 @@ class GuildAction private constructor(
          */
         fun list(block: ListBuilder.() -> Unit): List<PaginatedData<GuildMember>> {
             val builder = ListBuilder().apply(block)
-            return action.sendWithSerialize("list") {
+            return action.send_with_deserialize("list") {
                 put("guild_id", builder.guild_id)
                 put("next", builder.next)
             }
@@ -364,7 +364,7 @@ class GuildAction private constructor(
          */
         fun list(block: ListBuilder.() -> Unit): List<PaginatedData<GuildRole>> {
             val builder = ListBuilder().apply(block)
-            return action.sendWithSerialize("list") {
+            return action.send_with_deserialize("list") {
                 put("guild_id", builder.guild_id)
                 put("next", builder.next)
             }
@@ -375,7 +375,7 @@ class GuildAction private constructor(
          */
         fun create(block: CreateBuilder.() -> Unit): GuildRole {
             val builder = CreateBuilder().apply(block)
-            return action.sendWithSerialize("create") {
+            return action.send_with_deserialize("create") {
                 put("guild_id", builder.guild_id)
                 put("role", builder.role)
             }
@@ -439,7 +439,7 @@ class LoginAction private constructor(private val action: GeneralAction) {
     /**
      * 获取登录信息
      */
-    fun get(): Login = action.sendWithSerialize("get")
+    fun get(): Login = action.send_with_deserialize("get")
 }
 
 class MessageAction private constructor(private val action: GeneralAction) {
@@ -452,7 +452,7 @@ class MessageAction private constructor(private val action: GeneralAction) {
      */
     fun create(block: CreateBuilder.() -> Unit): List<Message> {
         val builder = CreateBuilder().apply(block)
-        return action.sendWithSerialize("create") {
+        return action.send_with_deserialize("create") {
             put("channel_id", builder.channel_id)
             put("content", builder.content.toString().replace("\n", "\\n").replace("\"", "\\\""))
         }
@@ -463,7 +463,7 @@ class MessageAction private constructor(private val action: GeneralAction) {
      */
     fun get(block: GetBuilder.() -> Unit): Message {
         val builder = GetBuilder().apply(block)
-        return action.sendWithSerialize("get") {
+        return action.send_with_deserialize("get") {
             put("channel_id", builder.channel_id)
             put("message_id", builder.message_id)
         }
@@ -497,7 +497,7 @@ class MessageAction private constructor(private val action: GeneralAction) {
      */
     fun list(block: ListBuilder.() -> Unit): List<PaginatedData<Message>> {
         val builder = ListBuilder().apply(block)
-        return action.sendWithSerialize("list") {
+        return action.send_with_deserialize("list") {
             put("channel_id", builder.channel_id)
             put("next", builder.next)
         }
@@ -598,7 +598,7 @@ class ReactionAction private constructor(private val action: GeneralAction) {
      */
     fun list(block: ListBuilder.() -> Unit): List<PaginatedData<User>> {
         val builder = ListBuilder().apply(block)
-        return action.sendWithSerialize("list") {
+        return action.send_with_deserialize("list") {
             put("channel_id", builder.channel_id)
             put("message_id", builder.message_id)
             put("emoji", builder.emoji)
@@ -647,7 +647,7 @@ class UserAction private constructor(val channel: ChannelAction, private val act
      */
     fun get(block: GetBuilder.() -> Unit): User {
         val builder = GetBuilder().apply(block)
-        return action.sendWithSerialize("get") {
+        return action.send_with_deserialize("get") {
             put("user_id", builder.user_id)
         }
     }
@@ -667,7 +667,7 @@ class UserAction private constructor(val channel: ChannelAction, private val act
          */
         fun create(block: CreateBuilder.() -> Unit): Channel {
             val builder = CreateBuilder().apply(block)
-            return action.sendWithSerialize("create") {
+            return action.send_with_deserialize("create") {
                 put("user_id", builder.user_id)
                 put("guild_id", builder.guild_id)
             }
@@ -691,7 +691,7 @@ class FriendAction private constructor(private val action: GeneralAction) {
      */
     fun list(block: ListBuilder.() -> Unit): List<PaginatedData<User>> {
         val builder = ListBuilder().apply(block)
-        return action.sendWithSerialize("list") {
+        return action.send_with_deserialize("list") {
             put("next", builder.next)
         }
     }
@@ -735,7 +735,7 @@ class AdminAction private constructor(val login: LoginAction, val webhook: Webho
         /**
          * 获取登录信息列表
          */
-        fun list(): List<Login> = action.sendWithSerialize("list")
+        fun list(): List<Login> = action.send_with_deserialize("list")
     }
 
 
@@ -830,10 +830,13 @@ class GeneralAction(
 
     inline fun send(method: String, block: JsonObjectDSLBuilder.() -> Unit) = send(method, jsonObj(block))
 
-    inline fun <reified T> sendWithSerialize(method: String, block: JsonObjectDSLBuilder.() -> Unit = {}): T = try {
-        mapper.readValue<T>(send(method, jsonObj(block)))
-    } catch (e: Exception) {
-        logger.warn(name, e.localizedMessage)
-        throw e
+    inline fun <reified T> send_with_deserialize(method: String, block: JsonObjectDSLBuilder.() -> Unit = {}): T {
+        val content = send(method, jsonObj(block))
+        return try {
+            mapper.readValue<T>(content)
+        } catch (e: Exception) {
+            logger.warn(name, content)
+            throw e
+        }
     }
 }
