@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.databind.node.TextNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import github.nyayurn.yutori_next.message.MessageSegment
+import github.nyayurn.yutori_next.message.ExplainedMessage
 
 abstract class Entity(vararg pairs: Pair<String, Any?>) {
     protected val properties = mapOf(*pairs)
@@ -152,7 +152,7 @@ class Login(user: User? = null, self_id: String? = null, platform: String? = nul
  */
 class Message(
     id: String,
-    content: MessageSegment,
+    content: ExplainedMessage,
     channel: Channel? = null,
     guild: Guild? = null,
     member: GuildMember? = null,
@@ -170,7 +170,7 @@ class Message(
     "updated_at" to updated_at
 ) {
     val id: String by super.properties
-    val content: MessageSegment by super.properties
+    val content: ExplainedMessage by super.properties
     val channel: Channel? by super.properties
     val guild: Guild? by super.properties
     val member: GuildMember? by super.properties
@@ -188,7 +188,7 @@ class Message(
         @JsonProperty("user") user: User? = null,
         @JsonProperty("created_at") createdAt: Number? = null,
         @JsonProperty("updated_at") updatedAt: Number? = null
-    ) : this(id, MessageSegment.of(content), channel, guild, member, user, createdAt, updatedAt)
+    ) : this(id, ExplainedMessage.parse(content), channel, guild, member, user, createdAt, updatedAt)
 }
 
 /**

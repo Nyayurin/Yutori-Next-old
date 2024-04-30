@@ -14,21 +14,16 @@ package github.nyayurn.yutori_next.message
 
 import github.nyayurn.yutori_next.message.elements.*
 import org.jsoup.Jsoup
-import org.jsoup.nodes.Element
-import org.jsoup.nodes.Node
-import org.jsoup.nodes.TextNode
+import org.jsoup.nodes.*
 
-class MessageSegment(private val elements: List<MessageElement>): List<MessageElement> by elements {
+class ExplainedMessage(private val elements: List<MessageElement>): List<MessageElement> by elements {
     override fun toString() = elements.joinToString("") { it.toString() }
 
     override fun equals(other: Any?): Boolean {
         if (other is String) return toString() == other
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
-
-        other as MessageSegment
-
-        return elements == other.elements
+        return elements == (other as ExplainedMessage).elements
     }
 
     override fun hashCode(): Int {
@@ -36,9 +31,10 @@ class MessageSegment(private val elements: List<MessageElement>): List<MessageEl
     }
 
     companion object {
-        fun of(str: String): MessageSegment {
+        fun parse(str: String): ExplainedMessage {
             val nodes = Jsoup.parse(str).body().childNodes()
-            return MessageSegment(List(nodes.size) { i -> parseElement(nodes[i]) })
+            nodes.removeIf { it is Comment || it is DocumentType }
+            return ExplainedMessage(List(nodes.size) { i -> parseElement(nodes[i]) })
         }
 
         private fun parseElement(node: Node): MessageElement = when (node) {
@@ -69,13 +65,13 @@ class MessageSegment(private val elements: List<MessageElement>): List<MessageEl
                               "quote" -> Quote()
                               "author" -> Author()
                               "button" -> Button()
-                              else -> null
-                          }?.apply {
+                              else -> NodeMessageElement(node.tagName())
+                          }.apply {
                 for (attr in node.attributes()) this[attr.key] = attr.value
                 for (child in node.childNodes()) this += parseElement(child)
-            } ?: Custom(node.toString())
+            }
 
-            else -> Custom(node.toString())
+            else -> throw UnsupportedOperationException(node.toString())
         }
     }
 }

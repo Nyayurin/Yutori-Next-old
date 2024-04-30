@@ -21,7 +21,7 @@ import github.nyayurn.yutori_next.message.elements.*
  * @param block DSL 块
  * @return 消息段(MessageSegment)
  */
-inline fun message(block: MessageDslBuilder.() -> Unit) = MessageDslBuilder().apply(block).buildSegment()
+inline fun message(block: MessageDslBuilder.() -> Unit) = MessageDslBuilder().apply(block).buildMessage()
 
 @DslMarker
 annotation class MessageDSL
@@ -33,7 +33,7 @@ interface ChildedBuilder {
         elements[index] = element
     }
 
-    fun buildSegment(): MessageSegment
+    fun buildMessage(): ExplainedMessage
 }
 
 interface PropertiedBuilder : ChildedBuilder {
@@ -58,8 +58,9 @@ open class MessageDslBuilder : ChildedBuilder {
     fun text(element: Text) = element.apply { elements += this }
     inline fun text(block: () -> String) = Text(block()).apply { elements += this }
 
-    fun custom(element: Custom) = element.apply { elements += this }
-    inline fun custom(block: () -> String) = Custom(block()).apply { elements += this }
+    fun node(element: NodeMessageElement) = element.apply { elements += this }
+    inline fun node(block: NodeBuilder.() -> Unit) =
+        NodeBuilder().apply(block).buildElement().apply { elements += this }
 
     fun at(element: At) = element.apply { elements += this }
     inline fun at(block: AtBuilder.() -> Unit) = AtBuilder().apply(block).buildElement().apply { elements += this }
@@ -154,8 +155,15 @@ open class MessageDslBuilder : ChildedBuilder {
     inline fun button(block: ButtonBuilder.() -> Unit) =
         ButtonBuilder().apply(block).buildElement().apply { elements += this }
 
-    override fun buildSegment() = MessageSegment(elements)
+    override fun buildMessage() = ExplainedMessage(elements)
     override fun toString() = elements.joinToString("") { it.toString() }
+}
+
+@MessageDSL
+class NodeBuilder : MessageDslBuilder(), PropertiedBuilder {
+    override val properties = mutableMapOf<String, Any?>()
+    lateinit var node_name: String
+    override fun buildElement() = this.buildElement(NodeMessageElement(node_name))
 }
 
 @MessageDSL

@@ -25,11 +25,11 @@ fun interface MessageElement {
 
 /**
  * 节点消息元素
- * @property nodeName 节点名称
+ * @property node_name 节点名称
  * @property properties 属性
  * @property children 子元素
  */
-abstract class NodeMessageElement(val nodeName: String, vararg pairs: Pair<String, Any?>) : MessageElement {
+open class NodeMessageElement(val node_name: String, vararg pairs: Pair<String, Any?>) : MessageElement {
     val properties: MutableMap<String, Any?> = mutableMapOf(*pairs)
     val children: MutableList<MessageElement> = mutableListOf()
 
@@ -109,7 +109,7 @@ abstract class NodeMessageElement(val nodeName: String, vararg pairs: Pair<Strin
     }
 
     override fun toString() = buildString {
-        append("<$nodeName")
+        append("<$node_name")
         for (item in properties) {
             val key = item.key
             val value = item.value ?: continue
@@ -127,8 +127,18 @@ abstract class NodeMessageElement(val nodeName: String, vararg pairs: Pair<Strin
         } else {
             append(">")
             for (item in children) append(item)
-            append("</$nodeName>")
+            append("</$node_name>")
         }
+    }
+
+    fun select(element: String): MessageElement? {
+        for (child in children) {
+            if (element == "text" && child is Text) return child
+            child as NodeMessageElement
+            if (child.node_name == element) return child
+            return child.select(element) ?: continue
+        }
+        return null
     }
 }
 
@@ -138,14 +148,6 @@ abstract class NodeMessageElement(val nodeName: String, vararg pairs: Pair<Strin
  */
 class Text(var text: String) : MessageElement {
     override fun toString() = text.encode()
-}
-
-/**
- * 自定义
- * @property content 内容
- */
-class Custom(var content: String) : MessageElement {
-    override fun toString() = content
 }
 
 /**
