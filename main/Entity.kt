@@ -329,12 +329,14 @@ data class SatoriProperties(
 
 /**
  * Satori WebHook 配置
- * @property serverHost WebHook Server 监听主机
- * @property serverPort WebHook Server 监听端口
+ * @property host WebHook Server 监听主机
+ * @property port WebHook Server 监听端口
+ * @property path WebHook Server 监听路径
  * @property server Satori Server 配置
  */
 data class WebHookProperties(
-    val serverHost: String = "0.0.0.0",
-    val serverPort: Int = 8080,
+    val host: String = "0.0.0.0",
+    val port: Int = 8080,
+    val path: String = "/",
     val server: SatoriProperties
 )

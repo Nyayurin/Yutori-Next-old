@@ -69,8 +69,9 @@ class EventService {
     }
 
     class WebHookModule : Module {
-        var self_host: String = "0.0.0.0"
-        var self_port: Int = 8080
+        var webhook_host: String = "0.0.0.0"
+        var webhook_port: Int = 8080
+        var webhook_path: String = "/"
         var host: String = "127.0.0.1"
         var port: Int = 5500
         var path: String = ""
@@ -81,7 +82,7 @@ class EventService {
         override fun install(satori: Satori) {
             service = WebhookEventService(
                 satori.config.container, WebHookProperties(
-                    self_host, self_port, SatoriProperties(
+                    webhook_host, webhook_port, webhook_path, SatoriProperties(
                         host, port, path, token, version
                     )
                 ), satori.config.name
@@ -247,9 +248,9 @@ class WebhookEventService(
     @OptIn(DelicateCoroutinesApi::class)
     override fun connect(): SatoriEventService {
         GlobalScope.launch {
-            client = embeddedServer(CIO, properties.serverPort, properties.serverHost) {
+            client = embeddedServer(CIO, properties.port, properties.host) {
                 routing {
-                    post("/") {
+                    post(properties.path) {
                         val authorization = call.request.headers["Authorization"]
                         if (authorization != properties.server.token) {
                             call.response.status(HttpStatusCode.Unauthorized)
@@ -290,7 +291,7 @@ class WebhookEventService(
             }.start()
             logger.info(name, "成功启动 HTTP 服务器")
             @Suppress("HttpUrlsUsage") AdminAction(properties.server, name).webhook.create {
-                url = "http://${properties.serverHost}:${properties.serverPort}"
+                url = "http://${properties.host}:${properties.port}${properties.path}"
                 token = properties.server.token
             }
         }
