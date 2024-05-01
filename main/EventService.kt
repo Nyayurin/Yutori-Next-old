@@ -41,6 +41,61 @@ interface SatoriEventService : AutoCloseable {
     fun connect(): SatoriEventService
 }
 
+class EventService {
+    companion object {
+        fun webSocket() = WebSocketModule()
+        fun webHook() = WebHookModule()
+    }
+
+    class WebSocketModule : Module {
+        var host: String = "127.0.0.1"
+        var port: Int = 5500
+        var path: String = ""
+        var token: String? = null
+        var version: String = "v1"
+        private var service: WebSocketEventService? = null
+
+        override fun install(satori: Satori) {
+            service = WebSocketEventService(
+                satori.config.container, SatoriProperties(host, port, path, token, version), satori.config.name
+            )
+            service!!.connect()
+        }
+
+        override fun uninstall(satori: Satori) {
+            service?.close()
+            service = null
+        }
+    }
+
+    class WebHookModule : Module {
+        var self_host: String = "0.0.0.0"
+        var self_port: Int = 8080
+        var host: String = "127.0.0.1"
+        var port: Int = 5500
+        var path: String = ""
+        var token: String? = null
+        var version: String = "v1"
+        private var service: WebhookEventService? = null
+
+        override fun install(satori: Satori) {
+            service = WebhookEventService(
+                satori.config.container, WebHookProperties(
+                    self_host, self_port, SatoriProperties(
+                        host, port, path, token, version
+                    )
+                ), satori.config.name
+            )
+            service!!.connect()
+        }
+
+        override fun uninstall(satori: Satori) {
+            service?.close()
+            service = null
+        }
+    }
+}
+
 /**
  * Satori 事件服务的 WebSocket 实现
  * @param container 监听器容器
@@ -50,7 +105,7 @@ interface SatoriEventService : AutoCloseable {
 class WebSocketEventService(
     val container: ListenersContainer,
     val properties: SatoriProperties,
-    val name: String = "Satori"
+    val name: String
 ) : SatoriEventService {
     private var is_received_pong = false
     private var sequence: Number? = null
@@ -173,49 +228,6 @@ class WebSocketEventService(
             else -> logger.error(name, "Unsupported $signaling")
         }
     }
-
-    companion object {
-        fun of(
-            container: ListenersContainer,
-            properties: SatoriProperties = SatoriProperties(),
-            name: String = "Satori"
-        ) = WebSocketEventService(container, properties, name)
-
-        inline fun of(name: String = "Satori", dsl: Builder.() -> Unit) = Builder(name).apply(dsl).build()
-
-        fun connect(
-            container: ListenersContainer,
-            properties: SatoriProperties = SatoriProperties(),
-            name: String = "Satori"
-        ) = WebSocketEventService(container, properties, name).connect()
-
-        inline fun connect(name: String = "Satori", dsl: Builder.() -> Unit) =
-            Builder(name).apply(dsl).build().connect()
-    }
-
-    class Builder(var name: String) {
-        var container: ListenersContainer = ListenersContainer.of()
-        var properties: SatoriProperties = SatoriProperties()
-
-        fun listeners(lambda: ListenersContainer.() -> Unit) {
-            container = ListenersContainer.of(lambda)
-        }
-
-        fun properties(lambda: PropertiesBuilder.() -> Unit) {
-            properties = PropertiesBuilder().apply(lambda).build()
-        }
-
-        fun build() = WebSocketEventService(container, properties, name)
-
-        class PropertiesBuilder {
-            var host: String = "127.0.0.1"
-            var port: Int = 5500
-            var path: String = ""
-            var token: String? = null
-            var version: String = "v1"
-            fun build() = SatoriProperties(host, port, path, token, version)
-        }
-    }
 }
 
 /**
@@ -227,7 +239,7 @@ class WebSocketEventService(
 class WebhookEventService(
     val container: ListenersContainer,
     val properties: WebHookProperties,
-    val name: String = "Satori"
+    val name: String
 ) : SatoriEventService {
     private var client: ApplicationEngine? = null
     private val logger = GlobalLoggerFactory.getLogger(this::class.java)
@@ -287,58 +299,5 @@ class WebhookEventService(
 
     override fun close() {
         client?.stop()
-    }
-
-    companion object {
-        fun of(
-            container: ListenersContainer,
-            properties: WebHookProperties = WebHookProperties(server = SatoriProperties()),
-            name: String = "Satori",
-        ) = WebhookEventService(container, properties, name)
-
-        fun of(name: String = "Satori", dsl: Builder.() -> Unit) = Builder(name).apply(dsl).build()
-
-        fun connect(
-            container: ListenersContainer,
-            properties: WebHookProperties = WebHookProperties(server = SatoriProperties()),
-            name: String = "Satori",
-        ) = WebhookEventService(container, properties, name).connect()
-
-        fun connect(name: String = "Satori", dsl: Builder.() -> Unit) = Builder(name).apply(dsl).build().connect()
-    }
-
-    class Builder(var name: String) {
-        var container: ListenersContainer = ListenersContainer.of()
-        var properties: WebHookProperties = WebHookProperties(server = SatoriProperties())
-
-        fun listeners(lambda: ListenersContainer.() -> Unit) {
-            container = ListenersContainer.of(lambda)
-        }
-
-        fun properties(lambda: PropertiesBuilder.() -> Unit) {
-            properties = PropertiesBuilder().apply(lambda).build()
-        }
-
-        fun properties(lambda: () -> WebHookProperties) {
-            this.properties = lambda()
-        }
-
-        fun build() = WebhookEventService(container, properties, name)
-
-        class PropertiesBuilder {
-            var server: Server = Server()
-            var host: String = "127.0.0.1"
-            var port: Int = 5500
-            var path: String = ""
-            var token: String? = null
-            var version: String = "v1"
-            fun build() =
-                WebHookProperties(server.host, server.port, SatoriProperties(host, port, path, token, version))
-
-            class Server {
-                var host: String = "0.0.0.0"
-                var port: Int = 8080
-            }
-        }
     }
 }
