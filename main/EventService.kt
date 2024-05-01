@@ -299,6 +299,9 @@ class WebhookEventService(
     }
 
     override fun close() {
+        @Suppress("HttpUrlsUsage") AdminAction(properties.server, name).webhook.delete {
+            url = "http://${properties.host}:${properties.port}${properties.path}"
+        }
         client?.stop()
     }
 }
