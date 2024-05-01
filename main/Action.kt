@@ -67,22 +67,9 @@ class Actions private constructor(
         AdminAction(properties, name), properties, name
     )
 
-    constructor(
-        platform: String,
-        self_id: String,
-        name: String,
-        dsl: WebSocketEventService.Builder.PropertiesBuilder.() -> Unit
-    ) : this(platform, self_id, WebSocketEventService.Builder.PropertiesBuilder().apply(dsl).build(), name)
-
     constructor(event: Event, properties: SatoriProperties, name: String) : this(
         event.platform, event.self_id, properties, name
     )
-
-    constructor(
-        event: Event,
-        name: String,
-        dsl: WebSocketEventService.Builder.PropertiesBuilder.() -> Unit
-    ) : this(event, WebSocketEventService.Builder.PropertiesBuilder().apply(dsl).build(), name)
 }
 
 class ChannelAction private constructor(private val action: GeneralAction) {
@@ -811,8 +798,12 @@ class GeneralAction(
                 contentType(ContentType.Application.Json)
                 headers {
                     properties.token?.let { append(HttpHeaders.Authorization, "Bearer ${properties.token}") }
-                    platform?.let { append("X-Platform", platform) }
-                    self_id?.let { append("X-Self-ID", self_id) }
+                    platform?.let {
+                        @Suppress("UastIncorrectHttpHeaderInspection") append("X-Platform", platform)
+                    }
+                    self_id?.let {
+                        @Suppress("UastIncorrectHttpHeaderInspection") append("X-Self-ID", self_id)
+                    }
                 }
                 body?.let { setBody(body) }
                 logger.debug(

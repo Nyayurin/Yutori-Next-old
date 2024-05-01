@@ -10,6 +10,8 @@ MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
 See the Mulan PSL v2 for more details.
  */
 
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+
 package github.nyayurn.yutori_next
 
 class Satori(val config: Config) {
@@ -32,8 +34,13 @@ class Satori(val config: Config) {
     class SatoriBuilder(var name: String) {
         var container: ListenersContainer = ListenersContainer.of()
         var modules: MutableList<Module> = mutableListOf()
+
         fun <T : Module> install(func: () -> T, block: T.() -> Unit) {
             modules += func().apply(block)
+        }
+
+        fun <T : Module> install(func: () -> T) {
+            modules += func()
         }
 
         fun listening(lambda: ListenersContainer.() -> Unit) {

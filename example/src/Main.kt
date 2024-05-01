@@ -8,15 +8,8 @@ import javax.net.ssl.X509TrustManager
 fun main() {
     GlobalLoggerFactory.factory = DefaultLoggerFactory(Level.DEBUG)
     val server = System.getenv("Satori-Server") ?: "Chronocat"
-    val client = WebSocketEventService.connect(server) {
-        listeners {
-            message.created += CommandListener
-            message.created += OpenGraphListener
-            message.created += AtListener
-            message.created += YzListener
-//            message.created += TestListener
-        }
-        properties {
+    val satori = Satori.of {
+        install(EventService::webSocket) {
             when (server) {
                 "Chronocat" -> {
                     token = "Chronocat"
@@ -42,9 +35,17 @@ fun main() {
                 token = it
             }
         }
+        listening {
+            message.created += CommandListener
+            message.created += OpenGraphListener
+            message.created += AtListener
+            message.created += YzListener
+//            message.created += TestListener
+        }
     }
+    satori.start()
     while (readln() != "exit") continue
-    client.close()
+    satori.stop()
 }
 
 val trustAllCerts: TrustManager = object : X509TrustManager {
