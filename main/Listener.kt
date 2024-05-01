@@ -15,7 +15,7 @@ See the Mulan PSL v2 for more details.
 package github.nyayurn.yutori_next
 
 fun interface Listener<T : Event> {
-    operator fun invoke(actions: Actions, event: T)
+    operator fun invoke(context: Context<T>)
 }
 
 class ListenersContainer private constructor() {
@@ -28,27 +28,27 @@ class ListenersContainer private constructor() {
     val friend = FriendContainer()
     private val logger = GlobalLoggerFactory.getLogger(this::class.java)
 
-    fun any(listener: Listener<Event>) {
-        any += listener
+    fun any(listener: Context<Event>.() -> Unit) {
+        any += Listener { it.listener() }
     }
 
     companion object {
         fun of(apply: ListenersContainer.() -> Unit = {}) = ListenersContainer().apply(apply)
     }
 
-    fun runEvent(event: Event, properties: SatoriProperties, name: String) {
+    fun runEvent(event: Event, properties: SatoriProperties, name: String, config: Config) {
         try {
             val actions = Actions(event, properties, name)
-            for (listener in this.any) listener(actions, event)
+            for (listener in this.any) listener(Context(actions, event, config))
             when (event) {
-                is GuildEvent -> guild.runEvent(actions, event, name)
-                is GuildMemberEvent -> guild.member.runEvent(actions, event, name)
-                is GuildRoleEvent -> guild.role.runEvent(actions, event, name)
-                is InteractionButtonEvent, is InteractionCommandEvent -> interaction.runEvent(actions, event, name)
-                is LoginEvent -> login.runEvent(actions, event, name)
-                is MessageEvent -> message.runEvent(actions, event, name)
-                is ReactionEvent -> reaction.runEvent(actions, event, name)
-                is UserEvent -> friend.runEvent(actions, event, name)
+                is GuildEvent -> guild.runEvent(actions, event, name, config)
+                is GuildMemberEvent -> guild.member.runEvent(actions, event, name, config)
+                is GuildRoleEvent -> guild.role.runEvent(actions, event, name, config)
+                is InteractionButtonEvent, is InteractionCommandEvent -> interaction.runEvent(actions, event, name, config)
+                is LoginEvent -> login.runEvent(actions, event, name, config)
+                is MessageEvent -> message.runEvent(actions, event, name, config)
+                is ReactionEvent -> reaction.runEvent(actions, event, name, config)
+                is UserEvent -> friend.runEvent(actions, event, name, config)
             }
         } catch (e: EventParsingException) {
             logger.error(name, "$e, event: $event")
@@ -64,27 +64,27 @@ class ListenersContainer private constructor() {
         val role = RoleContainer()
         private val logger = GlobalLoggerFactory.getLogger(this::class.java)
 
-        fun added(listener: Listener<GuildEvent>) {
-            added += listener
+        fun added(listener: Context<GuildEvent>.() -> Unit) {
+            added += Listener { it.listener() }
         }
 
-        fun updated(listener: Listener<GuildEvent>) {
-            updated += listener
+        fun updated(listener: Context<GuildEvent>.() -> Unit) {
+            updated += Listener { it.listener() }
         }
 
-        fun removed(listener: Listener<GuildEvent>) {
-            removed += listener
+        fun removed(listener: Context<GuildEvent>.() -> Unit) {
+            removed += Listener { it.listener() }
         }
 
-        fun request(listener: Listener<GuildEvent>) {
-            request += listener
+        fun request(listener: Context<GuildEvent>.() -> Unit) {
+            request += Listener { it.listener() }
         }
 
-        fun runEvent(actions: Actions, event: GuildEvent, name: String) = when (event.type) {
-            GuildEvents.Added -> added.forEach { it(actions, event) }
-            GuildEvents.Updated -> updated.forEach { it(actions, event) }
-            GuildEvents.Removed -> removed.forEach { it(actions, event) }
-            GuildEvents.Request -> request.forEach { it(actions, event) }
+        fun runEvent(actions: Actions, event: GuildEvent, name: String, config: Config) = when (event.type) {
+            GuildEvents.Added -> added.forEach { it(Context(actions, event, config)) }
+            GuildEvents.Updated -> updated.forEach { it(Context(actions, event, config)) }
+            GuildEvents.Removed -> removed.forEach { it(Context(actions, event, config)) }
+            GuildEvents.Request -> request.forEach { it(Context(actions, event, config)) }
             else -> logger.warn(name, "Unsupported event: $event")
         }
 
@@ -95,27 +95,27 @@ class ListenersContainer private constructor() {
             val request = mutableListOf<Listener<GuildMemberEvent>>()
             private val logger = GlobalLoggerFactory.getLogger(this::class.java)
 
-            fun added(listener: Listener<GuildMemberEvent>) {
-                added += listener
+            fun added(listener: Context<GuildMemberEvent>.() -> Unit) {
+                added += Listener { it.listener() }
             }
 
-            fun updated(listener: Listener<GuildMemberEvent>) {
-                updated += listener
+            fun updated(listener: Context<GuildMemberEvent>.() -> Unit) {
+                updated += Listener { it.listener() }
             }
 
-            fun removed(listener: Listener<GuildMemberEvent>) {
-                removed += listener
+            fun removed(listener: Context<GuildMemberEvent>.() -> Unit) {
+                removed += Listener { it.listener() }
             }
 
-            fun request(listener: Listener<GuildMemberEvent>) {
-                request += listener
+            fun request(listener: Context<GuildMemberEvent>.() -> Unit) {
+                request += Listener { it.listener() }
             }
 
-            fun runEvent(actions: Actions, event: GuildMemberEvent, name: String) = when (event.type) {
-                GuildMemberEvents.Added -> added.forEach { it(actions, event) }
-                GuildMemberEvents.Updated -> updated.forEach { it(actions, event) }
-                GuildMemberEvents.Removed -> removed.forEach { it(actions, event) }
-                GuildMemberEvents.Request -> request.forEach { it(actions, event) }
+            fun runEvent(actions: Actions, event: GuildMemberEvent, name: String, config: Config) = when (event.type) {
+                GuildMemberEvents.Added -> added.forEach { it(Context(actions, event, config)) }
+                GuildMemberEvents.Updated -> updated.forEach { it(Context(actions, event, config)) }
+                GuildMemberEvents.Removed -> removed.forEach { it(Context(actions, event, config)) }
+                GuildMemberEvents.Request -> request.forEach { it(Context(actions, event, config)) }
                 else -> logger.warn(name, "Unsupported event: $event")
             }
         }
@@ -126,22 +126,22 @@ class ListenersContainer private constructor() {
             val deleted = mutableListOf<Listener<GuildRoleEvent>>()
             private val logger = GlobalLoggerFactory.getLogger(this::class.java)
 
-            fun created(listener: Listener<GuildRoleEvent>) {
-                created += listener
+            fun created(listener: Context<GuildRoleEvent>.() -> Unit) {
+                created += Listener { it.listener() }
             }
 
-            fun updated(listener: Listener<GuildRoleEvent>) {
-                updated += listener
+            fun updated(listener: Context<GuildRoleEvent>.() -> Unit) {
+                updated += Listener { it.listener() }
             }
 
-            fun deleted(listener: Listener<GuildRoleEvent>) {
-                deleted += listener
+            fun deleted(listener: Context<GuildRoleEvent>.() -> Unit) {
+                deleted += Listener { it.listener() }
             }
 
-            fun runEvent(actions: Actions, event: GuildRoleEvent, name: String) = when (event.type) {
-                GuildRoleEvents.Created -> created.forEach { it(actions, event) }
-                GuildRoleEvents.Updated -> updated.forEach { it(actions, event) }
-                GuildRoleEvents.Deleted -> deleted.forEach { it(actions, event) }
+            fun runEvent(actions: Actions, event: GuildRoleEvent, name: String, config: Config) = when (event.type) {
+                GuildRoleEvents.Created -> created.forEach { it(Context(actions, event, config)) }
+                GuildRoleEvents.Updated -> updated.forEach { it(Context(actions, event, config)) }
+                GuildRoleEvents.Deleted -> deleted.forEach { it(Context(actions, event, config)) }
                 else -> logger.warn(name, "Unsupported event: $event")
             }
         }
@@ -152,17 +152,17 @@ class ListenersContainer private constructor() {
         val command = mutableListOf<Listener<InteractionCommandEvent>>()
         private val logger = GlobalLoggerFactory.getLogger(this::class.java)
 
-        fun button(listener: Listener<InteractionButtonEvent>) {
-            button += listener
+        fun button(listener: Context<InteractionButtonEvent>.() -> Unit) {
+            button += Listener { it.listener() }
         }
 
-        fun command(listener: Listener<InteractionCommandEvent>) {
-            command += listener
+        fun command(listener: Context<InteractionCommandEvent>.() -> Unit) {
+            command += Listener { it.listener() }
         }
 
-        fun runEvent(actions: Actions, event: Event, name: String) = when (event) {
-            is InteractionButtonEvent -> button.forEach { it(actions, event) }
-            is InteractionCommandEvent -> command.forEach { it(actions, event) }
+        fun runEvent(actions: Actions, event: Event, name: String, config: Config) = when (event) {
+            is InteractionButtonEvent -> button.forEach { it(Context(actions, event, config)) }
+            is InteractionCommandEvent -> command.forEach { it(Context(actions, event, config)) }
             else -> logger.warn(name, "Unsupported event: $event")
         }
     }
@@ -173,22 +173,22 @@ class ListenersContainer private constructor() {
         val updated = mutableListOf<Listener<LoginEvent>>()
         private val logger = GlobalLoggerFactory.getLogger(this::class.java)
 
-        fun added(listener: Listener<LoginEvent>) {
-            added += listener
+        fun added(listener: Context<LoginEvent>.() -> Unit) {
+            added += Listener { it.listener() }
         }
 
-        fun removed(listener: Listener<LoginEvent>) {
-            removed += listener
+        fun removed(listener: Context<LoginEvent>.() -> Unit) {
+            removed += Listener { it.listener() }
         }
 
-        fun updated(listener: Listener<LoginEvent>) {
-            updated += listener
+        fun updated(listener: Context<LoginEvent>.() -> Unit) {
+            updated += Listener { it.listener() }
         }
 
-        fun runEvent(actions: Actions, event: LoginEvent, name: String) = when (event.type) {
-            LoginEvents.Added -> added.forEach { it(actions, event) }
-            LoginEvents.Removed -> removed.forEach { it(actions, event) }
-            LoginEvents.Updated -> updated.forEach { it(actions, event) }
+        fun runEvent(actions: Actions, event: LoginEvent, name: String, config: Config) = when (event.type) {
+            LoginEvents.Added -> added.forEach { it(Context(actions, event, config)) }
+            LoginEvents.Removed -> removed.forEach { it(Context(actions, event, config)) }
+            LoginEvents.Updated -> updated.forEach { it(Context(actions, event, config)) }
             else -> logger.warn(name, "Unsupported event: $event")
         }
     }
@@ -199,22 +199,22 @@ class ListenersContainer private constructor() {
         val deleted = mutableListOf<Listener<MessageEvent>>()
         private val logger = GlobalLoggerFactory.getLogger(this::class.java)
 
-        fun created(listener: Listener<MessageEvent>) {
-            created += listener
+        fun created(listener: Context<MessageEvent>.() -> Unit) {
+            created += Listener { it.listener() }
         }
 
-        fun updated(listener: Listener<MessageEvent>) {
-            updated += listener
+        fun updated(listener: Context<MessageEvent>.() -> Unit) {
+            updated += Listener { it.listener() }
         }
 
-        fun deleted(listener: Listener<MessageEvent>) {
-            deleted += listener
+        fun deleted(listener: Context<MessageEvent>.() -> Unit) {
+            deleted += Listener { it.listener() }
         }
 
-        fun runEvent(actions: Actions, event: MessageEvent, name: String) = when (event.type) {
-            MessageEvents.Created -> created.forEach { it(actions, event) }
-            MessageEvents.Updated -> updated.forEach { it(actions, event) }
-            MessageEvents.Deleted -> deleted.forEach { it(actions, event) }
+        fun runEvent(actions: Actions, event: MessageEvent, name: String, config: Config) = when (event.type) {
+            MessageEvents.Created -> created.forEach { it(Context(actions, event, config)) }
+            MessageEvents.Updated -> updated.forEach { it(Context(actions, event, config)) }
+            MessageEvents.Deleted -> deleted.forEach { it(Context(actions, event, config)) }
             else -> logger.warn(name, "Unsupported event: $event")
         }
     }
@@ -224,17 +224,17 @@ class ListenersContainer private constructor() {
         val removed = mutableListOf<Listener<ReactionEvent>>()
         private val logger = GlobalLoggerFactory.getLogger(this::class.java)
 
-        fun added(listener: Listener<ReactionEvent>) {
-            added += listener
+        fun added(listener: Context<ReactionEvent>.() -> Unit) {
+            added += Listener { it.listener() }
         }
 
-        fun removed(listener: Listener<ReactionEvent>) {
-            removed += listener
+        fun removed(listener: Context<ReactionEvent>.() -> Unit) {
+            removed += Listener { it.listener() }
         }
 
-        fun runEvent(actions: Actions, event: ReactionEvent, name: String) = when (event.type) {
-            ReactionEvents.Added -> added.forEach { it(actions, event) }
-            ReactionEvents.Removed -> removed.forEach { it(actions, event) }
+        fun runEvent(actions: Actions, event: ReactionEvent, name: String, config: Config) = when (event.type) {
+            ReactionEvents.Added -> added.forEach { it(Context(actions, event, config)) }
+            ReactionEvents.Removed -> removed.forEach { it(Context(actions, event, config)) }
             else -> logger.warn(name, "Unsupported event: $event")
         }
     }
@@ -243,12 +243,12 @@ class ListenersContainer private constructor() {
         val request = mutableListOf<Listener<UserEvent>>()
         private val logger = GlobalLoggerFactory.getLogger(this::class.java)
 
-        fun request(listener: Listener<UserEvent>) {
-            request += listener
+        fun request(listener: Context<UserEvent>.() -> Unit) {
+            request += Listener { it.listener() }
         }
 
-        fun runEvent(actions: Actions, event: UserEvent, name: String) = when (event.type) {
-            UserEvents.Friend_Request -> request.forEach { it(actions, event) }
+        fun runEvent(actions: Actions, event: UserEvent, name: String, config: Config) = when (event.type) {
+            UserEvents.Friend_Request -> request.forEach { it(Context(actions, event, config)) }
             else -> logger.warn(name, "Unsupported event: $event")
         }
     }

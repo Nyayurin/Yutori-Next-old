@@ -14,6 +14,10 @@ See the Mulan PSL v2 for more details.
 
 package github.nyayurn.yutori_next
 
+import github.nyayurn.yutori_next.message.elements.ElementModule
+import github.nyayurn.yutori_next.message.elements.NodeMessageElement
+import org.jsoup.nodes.Element
+
 class Satori(val config: Config) {
     fun start() {
         for (module in config.modules) {
@@ -33,7 +37,7 @@ class Satori(val config: Config) {
 
     class SatoriBuilder(var name: String) {
         var container: ListenersContainer = ListenersContainer.of()
-        var modules: MutableList<Module> = mutableListOf()
+        var modules: MutableList<Module> = mutableListOf(ElementModule())
 
         fun <T : Module> install(func: () -> T, block: T.() -> Unit) {
             modules += func().apply(block)
@@ -56,4 +60,6 @@ interface Module {
     fun uninstall(satori: Satori)
 }
 
-class Config(val name: String, val container: ListenersContainer, val modules: MutableList<Module>)
+class Config(val name: String, val container: ListenersContainer, val modules: MutableList<Module>) {
+    val elements = mutableMapOf<String, (Element) -> NodeMessageElement>()
+}

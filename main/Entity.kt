@@ -14,14 +14,11 @@ See the Mulan PSL v2 for more details.
 
 package github.nyayurn.yutori_next
 
-import com.fasterxml.jackson.annotation.JsonCreator
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.databind.node.TextNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import github.nyayurn.yutori_next.message.ExplainedMessage
 
 abstract class Entity(vararg pairs: Pair<String, Any?>) {
     protected val properties = mapOf(*pairs)
@@ -152,7 +149,7 @@ class Login(user: User? = null, self_id: String? = null, platform: String? = nul
  */
 class Message(
     id: String,
-    content: ExplainedMessage,
+    content: String,
     channel: Channel? = null,
     guild: Guild? = null,
     member: GuildMember? = null,
@@ -170,25 +167,13 @@ class Message(
     "updated_at" to updated_at
 ) {
     val id: String by super.properties
-    val content: ExplainedMessage by super.properties
+    val content: String by super.properties
     val channel: Channel? by super.properties
     val guild: Guild? by super.properties
     val member: GuildMember? by super.properties
     val user: User? by super.properties
     val created_at: Number? by super.properties
     val updated_at: Number? by super.properties
-
-    @JsonCreator
-    constructor(
-        @JsonProperty("id") id: String,
-        @JsonProperty("content") content: String,
-        @JsonProperty("channel") channel: Channel? = null,
-        @JsonProperty("guild") guild: Guild? = null,
-        @JsonProperty("member") member: GuildMember? = null,
-        @JsonProperty("user") user: User? = null,
-        @JsonProperty("created_at") createdAt: Number? = null,
-        @JsonProperty("updated_at") updatedAt: Number? = null
-    ) : this(id, ExplainedMessage.parse(content), channel, guild, member, user, createdAt, updatedAt)
 }
 
 /**
@@ -340,3 +325,5 @@ data class WebHookProperties(
     val path: String = "/",
     val server: SatoriProperties
 )
+
+data class Context<T : Event>(val actions: Actions, val event: T, val config: Config)

@@ -56,9 +56,7 @@ class EventService {
         private var service: WebSocketEventService? = null
 
         override fun install(satori: Satori) {
-            service = WebSocketEventService(
-                satori.config.container, SatoriProperties(host, port, path, token, version), satori.config.name
-            )
+            service = WebSocketEventService(SatoriProperties(host, port, path, token, version), satori.config)
             service!!.connect()
         }
 
@@ -81,11 +79,11 @@ class EventService {
 
         override fun install(satori: Satori) {
             service = WebhookEventService(
-                satori.config.container, WebHookProperties(
+                WebHookProperties(
                     webhook_host, webhook_port, webhook_path, SatoriProperties(
                         host, port, path, token, version
                     )
-                ), satori.config.name
+                ), satori.config
             )
             service!!.connect()
         }
@@ -103,11 +101,7 @@ class EventService {
  * @param properties Satori Server 配置
  * @param name 用于区分不同 Satori 事件服务的名称
  */
-class WebSocketEventService(
-    val container: ListenersContainer,
-    val properties: SatoriProperties,
-    val name: String
-) : SatoriEventService {
+class WebSocketEventService(val properties: SatoriProperties, val config: Config) : SatoriEventService {
     private var is_received_pong = false
     private var sequence: Number? = null
     private var is_connected = false
@@ -128,13 +122,13 @@ class WebSocketEventService(
                     properties.port,
                     "${properties.path}/${properties.version}/events"
                 ) {
-                    logger.info(name, "成功建立 WebSocket 连接")
+                    logger.info(config.name, "成功建立 WebSocket 连接")
                     is_connected = true
                     launch {
                         sendIdentity(this@webSocket)
                         delay(10000)
                         if (!is_received_pong) {
-                            logger.warn(name, "无法建立事件推送服务: READY 响应超时")
+                            logger.warn(config.name, "无法建立事件推送服务: READY 响应超时")
                             this@WebSocketEventService.close()
                         }
                     }
@@ -143,19 +137,19 @@ class WebSocketEventService(
                         try {
                             onEvent(frame.readText())
                         } catch (e: Exception) {
-                            logger.warn(name, "处理事件时出错(${frame.readText()}): ${e.localizedMessage}")
+                            logger.warn(config.name, "处理事件时出错(${frame.readText()}): ${e.localizedMessage}")
                             e.printStackTrace()
                         }
                     }
                 }
             } catch (e: Exception) {
-                logger.warn(name, "WebSocket 连接断开: ${e.localizedMessage}")
+                logger.warn(config.name, "WebSocket 连接断开: ${e.localizedMessage}")
                 e.printStackTrace()
                 // 重连
                 launch {
-                    logger.info(name, "将在5秒后尝试重新连接")
+                    logger.info(config.name, "将在5秒后尝试重新连接")
                     delay(5000)
-                    logger.info(name, "尝试重新连接")
+                    logger.info(config.name, "尝试重新连接")
                     connect()
                 }
             }
@@ -171,7 +165,7 @@ class WebSocketEventService(
     private suspend fun sendIdentity(session: DefaultClientWebSocketSession) {
         val token = properties.token
         val content = Signaling(Signaling.IDENTIFY, Identify(token, sequence)).toString()
-        logger.info(name, "发送身份验证: $content")
+        logger.info(config.name, "发送身份验证: $content")
         session.send(content)
     }
 
@@ -180,7 +174,7 @@ class WebSocketEventService(
         when (signaling.op) {
             Signaling.READY -> {
                 val ready = signaling.body as Ready
-                logger.info(name, "成功建立事件推送服务: ${
+                logger.info(config.name, "成功建立事件推送服务: ${
                     ready.logins.joinToString(", ") { "${it.platform}(${it.self_id}, ${it.status})" }
                 }")
                 is_received_pong = true
@@ -191,11 +185,11 @@ class WebSocketEventService(
                         delay(10000)
                         if (is_received_pong) {
                             is_received_pong = false
-                            logger.debug(name, "发送 PING")
+                            logger.debug(config.name, "发送 PING")
                             launch { send(content) }
                         } else {
-                            logger.warn(name, "WebSocket 连接断开: PONG 响应超时")
-                            logger.info(name, "尝试重新连接")
+                            logger.warn(config.name, "WebSocket 连接断开: PONG 响应超时")
+                            logger.info(config.name, "尝试重新连接")
                             connect()
                         }
                     }
@@ -205,7 +199,7 @@ class WebSocketEventService(
             Signaling.EVENT -> launch {
                 val event = signaling.body as Event
                 when (event) {
-                    is MessageEvent -> logger.info(name, buildString {
+                    is MessageEvent -> logger.info(config.name, buildString {
                         append("${event.platform}(${event.self_id}) 接收事件(${event.type}): ")
                         append("\u001B[38;5;4m").append("${event.channel.name}(${event.channel.id})")
                         append("\u001B[38;5;8m").append("-")
@@ -214,19 +208,19 @@ class WebSocketEventService(
                         append("\u001B[0m").append(": ").append(event.message.content)
                     })
 
-                    else -> logger.info(name, "${event.platform}(${event.self_id}) 接收事件: ${event.type}")
+                    else -> logger.info(config.name, "${event.platform}(${event.self_id}) 接收事件: ${event.type}")
                 }
-                logger.debug(name, "事件详细信息: $body")
+                logger.debug(config.name, "事件详细信息: $body")
                 sequence = event.id
-                container.runEvent(event, properties, name)
+                config.container.runEvent(event, properties, config.name, config)
             }
 
             Signaling.PONG -> {
-                logger.debug(name, "收到 PONG")
+                logger.debug(config.name, "收到 PONG")
                 is_received_pong = true
             }
 
-            else -> logger.error(name, "Unsupported $signaling")
+            else -> logger.error(config.name, "Unsupported $signaling")
         }
     }
 }
@@ -237,11 +231,7 @@ class WebSocketEventService(
  * @param properties Satori WebHook 配置
  * @param name 用于区分不同 Satori 事件服务的名称
  */
-class WebhookEventService(
-    val container: ListenersContainer,
-    val properties: WebHookProperties,
-    val name: String
-) : SatoriEventService {
+class WebhookEventService(val properties: WebHookProperties, val config: Config) : SatoriEventService {
     private var client: ApplicationEngine? = null
     private val logger = GlobalLoggerFactory.getLogger(this::class.java)
 
@@ -264,7 +254,7 @@ class WebhookEventService(
                             val event = mapper.readValue<Event>(body)
                             launch {
                                 when (event) {
-                                    is MessageEvent -> logger.info(name, buildString {
+                                    is MessageEvent -> logger.info(config.name, buildString {
                                         append("${event.platform}(${event.self_id}) 接收事件(${event.type}): ")
                                         append("\u001B[38;5;4m").append("${event.channel.name}(${event.channel.id})")
                                         append("\u001B[38;5;6m")
@@ -274,23 +264,23 @@ class WebhookEventService(
                                     })
 
                                     else -> logger.info(
-                                        name, "${event.platform}(${event.self_id}) 接收事件: ${event.type}"
+                                        config.name, "${event.platform}(${event.self_id}) 接收事件: ${event.type}"
                                     )
                                 }
-                                logger.debug(name, "事件详细信息: $body")
-                                container.runEvent(event, properties.server, name)
+                                logger.debug(config.name, "事件详细信息: $body")
+                                config.container.runEvent(event, properties.server, config.name, config)
                             }
                             call.response.status(HttpStatusCode.OK)
                         } catch (e: Exception) {
-                            logger.warn(name, "处理事件时出错(${body}): ${e.localizedMessage}")
+                            logger.warn(config.name, "处理事件时出错(${body}): ${e.localizedMessage}")
                             e.printStackTrace()
                             call.response.status(HttpStatusCode.InternalServerError)
                         }
                     }
                 }
             }.start()
-            logger.info(name, "成功启动 HTTP 服务器")
-            @Suppress("HttpUrlsUsage") AdminAction(properties.server, name).webhook.create {
+            logger.info(config.name, "成功启动 HTTP 服务器")
+            @Suppress("HttpUrlsUsage") AdminAction(properties.server, config.name).webhook.create {
                 url = "http://${properties.host}:${properties.port}${properties.path}"
                 token = properties.server.token
             }
@@ -299,7 +289,7 @@ class WebhookEventService(
     }
 
     override fun close() {
-        @Suppress("HttpUrlsUsage") AdminAction(properties.server, name).webhook.delete {
+        @Suppress("HttpUrlsUsage") AdminAction(properties.server, config.name).webhook.delete {
             url = "http://${properties.host}:${properties.port}${properties.path}"
         }
         client?.stop()

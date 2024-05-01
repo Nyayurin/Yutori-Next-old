@@ -14,6 +14,11 @@ See the Mulan PSL v2 for more details.
 
 package github.nyayurn.yutori_next
 
+import github.nyayurn.yutori_next.message.elements.*
+import org.jsoup.Jsoup
+import org.jsoup.nodes.*
+import org.jsoup.nodes.Element
+
 /**
  * JsonObject 字符串 DSL 构建器
  */
@@ -88,4 +93,23 @@ class JsonArrayDSLBuilder {
 object MessageUtil {
     fun String.encode() = replace("&", "&amp;").replace("\"", "&quot;").replace("<", "&lt;").replace(">", "&gt;")
     fun String.decode() = replace("&gt;", ">").replace("&lt;", "<").replace("&quot;", "\"").replace("&amp;", "&")
+    fun parse(config: Config, str: String): List<MessageElement> {
+        val nodes = Jsoup.parse(str).body().childNodes().stream().filter {
+            it !is Comment && it !is DocumentType
+        }.toList()
+        return List(nodes.size) { i -> parseElement(config, nodes[i]) }
+    }
+
+    private fun parseElement(config: Config, node: Node): MessageElement = when (node) {
+        is TextNode -> Text(node.text())
+        is Element -> {
+            val function = config.elements[node.tagName()] ?: { NodeMessageElement(it.tagName()) }
+            function(node).apply {
+                for (attr in node.attributes()) this[attr.key] = attr.value
+                for (child in node.childNodes()) this += parseElement(config, child)
+            }
+        }
+
+        else -> throw UnsupportedOperationException(node.toString())
+    }
 }

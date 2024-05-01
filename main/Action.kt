@@ -18,7 +18,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import github.nyayurn.yutori_next.message.ExplainedMessage
 import github.nyayurn.yutori_next.message.MessageDslBuilder
 import github.nyayurn.yutori_next.message.message
 import io.ktor.client.*
@@ -493,11 +492,7 @@ class MessageAction private constructor(private val action: GeneralAction) {
     @ActionDSL
     class CreateBuilder {
         lateinit var channel_id: String
-        lateinit var content: ExplainedMessage
-
-        fun content(text: String) {
-            content = ExplainedMessage.parse(text)
-        }
+        lateinit var content: String
 
         fun content(block: MessageDslBuilder.() -> Unit) {
             content = message(block)
@@ -520,11 +515,7 @@ class MessageAction private constructor(private val action: GeneralAction) {
     class UpdateBuilder {
         lateinit var channel_id: String
         lateinit var message_id: String
-        lateinit var content: ExplainedMessage
-
-        fun content(text: String) {
-            content = ExplainedMessage.parse(text)
-        }
+        lateinit var content: String
 
         fun content(block: MessageDslBuilder.() -> Unit) {
             content = message(block)

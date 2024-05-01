@@ -33,7 +33,7 @@ interface ChildedBuilder {
         elements[index] = element
     }
 
-    fun buildMessage(): ExplainedMessage
+    fun buildMessage(): String
 }
 
 interface PropertiedBuilder : ChildedBuilder {
@@ -155,7 +155,7 @@ open class MessageDslBuilder : ChildedBuilder {
     inline fun button(block: ButtonBuilder.() -> Unit) =
         ButtonBuilder().apply(block).buildElement().apply { elements += this }
 
-    override fun buildMessage() = ExplainedMessage(elements)
+    override fun buildMessage() = elements.joinToString("") { it.toString() }
     override fun toString() = elements.joinToString("") { it.toString() }
 }
 
