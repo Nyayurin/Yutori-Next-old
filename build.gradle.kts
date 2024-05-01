@@ -56,5 +56,5 @@ publishing.publications.create<MavenPublication>("maven") {
 }
 
 kotlin {
-    jvmToolchain(8)
+    jvmToolchain(17)
 }

@@ -16,7 +16,7 @@ import github.nyayurn.yutori_next.message.elements.*
 import org.jsoup.Jsoup
 import org.jsoup.nodes.*
 
-class ExplainedMessage(private val elements: List<MessageElement>): List<MessageElement> by elements {
+class ExplainedMessage(private val elements: List<MessageElement>) : List<MessageElement> by elements {
     override fun toString() = elements.joinToString("") { it.toString() }
 
     override fun equals(other: Any?): Boolean {
@@ -32,41 +32,42 @@ class ExplainedMessage(private val elements: List<MessageElement>): List<Message
 
     companion object {
         fun parse(str: String): ExplainedMessage {
-            val nodes = Jsoup.parse(str).body().childNodes()
-            nodes.removeIf { it is Comment || it is DocumentType }
+            val nodes = Jsoup.parse(str).body().childNodes().stream().filter {
+                it !is Comment && it !is DocumentType
+            }.toList()
             return ExplainedMessage(List(nodes.size) { i -> parseElement(nodes[i]) })
         }
 
         private fun parseElement(node: Node): MessageElement = when (node) {
             is TextNode -> Text(node.text())
             is Element -> when (node.tagName()) {
-                              "at" -> At()
-                              "sharp" -> Sharp(node.attr("id"))
-                              "a" -> Href(node.attr("href"))
-                              "img" -> Image(node.attr("src"))
-                              "audio" -> Audio(node.attr("src"))
-                              "video" -> Video(node.attr("src"))
-                              "file" -> File(node.attr("src"))
-                              "b" -> Bold()
-                              "strong" -> Strong()
-                              "i" -> Idiomatic()
-                              "em" -> Em()
-                              "u" -> Underline()
-                              "ins" -> Ins()
-                              "s" -> Strikethrough()
-                              "del" -> Delete()
-                              "spl" -> Spl()
-                              "code" -> Code()
-                              "sup" -> Sup()
-                              "sub" -> Sub()
-                              "br" -> Br()
-                              "p" -> Paragraph()
-                              "message" -> Message()
-                              "quote" -> Quote()
-                              "author" -> Author()
-                              "button" -> Button()
-                              else -> NodeMessageElement(node.tagName())
-                          }.apply {
+                "at" -> At()
+                "sharp" -> Sharp(node.attr("id"))
+                "a" -> Href(node.attr("href"))
+                "img" -> Image(node.attr("src"))
+                "audio" -> Audio(node.attr("src"))
+                "video" -> Video(node.attr("src"))
+                "file" -> File(node.attr("src"))
+                "b" -> Bold()
+                "strong" -> Strong()
+                "i" -> Idiomatic()
+                "em" -> Em()
+                "u" -> Underline()
+                "ins" -> Ins()
+                "s" -> Strikethrough()
+                "del" -> Delete()
+                "spl" -> Spl()
+                "code" -> Code()
+                "sup" -> Sup()
+                "sub" -> Sub()
+                "br" -> Br()
+                "p" -> Paragraph()
+                "message" -> Message()
+                "quote" -> Quote()
+                "author" -> Author()
+                "button" -> Button()
+                else -> NodeMessageElement(node.tagName())
+            }.apply {
                 for (attr in node.attributes()) this[attr.key] = attr.value
                 for (child in node.childNodes()) this += parseElement(child)
             }
