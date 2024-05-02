@@ -35,6 +35,32 @@ class ElementModule : Module {
     }
 
     override fun uninstall(satori: Satori) {
-        TODO("Not yet implemented")
+        satori.config.apply {
+            elements.remove("at")
+            elements.remove("sharp")
+            elements.remove("a")
+            elements.remove("img")
+            elements.remove("audio")
+            elements.remove("video")
+            elements.remove("file")
+            elements.remove("b")
+            elements.remove("strong")
+            elements.remove("i")
+            elements.remove("em")
+            elements.remove("u")
+            elements.remove("ins")
+            elements.remove("s")
+            elements.remove("del")
+            elements.remove("spl")
+            elements.remove("code")
+            elements.remove("sup")
+            elements.remove("sub")
+            elements.remove("br")
+            elements.remove("p")
+            elements.remove("message")
+            elements.remove("quote")
+            elements.remove("author")
+            elements.remove("button")
+        }
     }
 }
