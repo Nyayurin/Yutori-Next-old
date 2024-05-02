@@ -312,4 +312,4 @@ data class SatoriProperties(
     val version: String = "v1"
 )
 
-data class Context<T : Event>(val actions: Actions, val event: T, val config: Config)
+data class Context<T : Event>(val actions: Actions, val event: T, val satori: Satori)

@@ -96,20 +96,20 @@ class JsonArrayDSLBuilder {
 object MessageUtil {
     fun String.encode() = replace("&", "&amp;").replace("\"", "&quot;").replace("<", "&lt;").replace(">", "&gt;")
     fun String.decode() = replace("&gt;", ">").replace("&lt;", "<").replace("&quot;", "\"").replace("&amp;", "&")
-    fun parse(config: Config, str: String): List<MessageElement> {
+    fun parse(satori: Satori, str: String): List<MessageElement> {
         val nodes = Jsoup.parse(str).body().childNodes().stream().filter {
             it !is Comment && it !is DocumentType
         }.toList()
-        return List(nodes.size) { i -> parseElement(config, nodes[i]) }
+        return List(nodes.size) { i -> parseElement(satori, nodes[i]) }
     }
 
-    private fun parseElement(config: Config, node: Node): MessageElement = when (node) {
+    private fun parseElement(satori: Satori, node: Node): MessageElement = when (node) {
         is TextNode -> Text(node.text())
         is Element -> {
-            val function = config.elements[node.tagName()] ?: { NodeMessageElement(it.tagName()) }
+            val function = satori.elements[node.tagName()] ?: { NodeMessageElement(it.tagName()) }
             function(node).apply {
                 for (attr in node.attributes()) this[attr.key] = attr.value
-                for (child in node.childNodes()) this += parseElement(config, child)
+                for (child in node.childNodes()) this += parseElement(satori, child)
             }
         }
 

@@ -18,18 +18,11 @@ import github.nyayurn.yutori_next.message.elements.ElementModule
 import github.nyayurn.yutori_next.message.elements.NodeMessageElement
 import org.jsoup.nodes.Element
 
-class Satori(val config: Config) {
-    fun start() {
-        for (module in config.modules) {
-            module.install(this)
-        }
-    }
+class Satori(val name: String, val container: ListenersContainer, val modules: MutableList<Module>) {
+    val elements = mutableMapOf<String, (Element) -> NodeMessageElement>()
 
-    fun stop() {
-        for (module in config.modules) {
-            module.uninstall(this)
-        }
-    }
+    fun start() = modules.forEach { module -> module.install(this) }
+    fun stop() = modules.forEach { module -> module.uninstall(this) }
 }
 
 fun satori(name: String = "Satori", block: SatoriBuilder.() -> Unit) = SatoriBuilder(name).apply(block).build()
@@ -51,14 +44,10 @@ class SatoriBuilder(var name: String) {
         container = ListenersContainer.of(lambda)
     }
 
-    fun build() = Satori(Config(name, container, modules))
+    fun build() = Satori(name, container, modules)
 }
 
 interface Module {
     fun install(satori: Satori)
     fun uninstall(satori: Satori)
-}
-
-class Config(val name: String, val container: ListenersContainer, val modules: MutableList<Module>) {
-    val elements = mutableMapOf<String, (Element) -> NodeMessageElement>()
 }

@@ -10,7 +10,7 @@ MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
 See the Mulan PSL v2 for more details.
  */
 
-@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused", "HttpUrlsUsage")
 
 package github.nyayurn.yutori_next
 
@@ -53,8 +53,8 @@ class SatoriAdapter : Adapter {
 
     override fun install(satori: Satori) {
         val properties = SatoriProperties(host, port, path, token, version)
-        service = webhook?.run { WebhookEventService(listen, port, path, properties, satori.config) }
-                  ?: WebSocketEventService(properties, satori.config)
+        service = webhook?.run { WebhookEventService(listen, port, path, properties, satori) }
+                  ?: WebSocketEventService(properties, satori)
         service!!.connect()
     }
 
@@ -110,13 +110,13 @@ class SatoriActionService(val properties: SatoriProperties, val name: String) : 
 /**
  * Satori 事件服务的 WebSocket 实现
  * @param properties Satori Server 配置
- * @param config Satori 配置
+ * @param satori Satori 配置
  */
-class WebSocketEventService(val properties: SatoriProperties, val config: Config) : EventService {
+class WebSocketEventService(val properties: SatoriProperties, val satori: Satori) : EventService {
     private var is_received_pong = false
     private var sequence: Number? = null
     private var is_connected = false
-    private val service = SatoriActionService(properties, config.name)
+    private val service = SatoriActionService(properties, satori.name)
     private val client = HttpClient {
         install(WebSockets)
     }
@@ -131,13 +131,13 @@ class WebSocketEventService(val properties: SatoriProperties, val config: Config
                 client.webSocket(
                     HttpMethod.Get, properties.host, properties.port, "${properties.path}/${properties.version}/events"
                 ) {
-                    logger.info(config.name, "成功建立 WebSocket 连接")
+                    logger.info(satori.name, "成功建立 WebSocket 连接")
                     is_connected = true
                     launch {
                         sendIdentity(this@webSocket)
                         delay(10000)
                         if (!is_received_pong) {
-                            logger.warn(config.name, "无法建立事件推送服务: READY 响应超时")
+                            logger.warn(satori.name, "无法建立事件推送服务: READY 响应超时")
                             this@WebSocketEventService.close()
                         }
                     }
@@ -146,19 +146,19 @@ class WebSocketEventService(val properties: SatoriProperties, val config: Config
                         try {
                             onEvent(frame.readText())
                         } catch (e: Exception) {
-                            logger.warn(config.name, "处理事件时出错(${frame.readText()}): ${e.localizedMessage}")
+                            logger.warn(satori.name, "处理事件时出错(${frame.readText()}): ${e.localizedMessage}")
                             e.printStackTrace()
                         }
                     }
                 }
             } catch (e: Exception) {
-                logger.warn(config.name, "WebSocket 连接断开: ${e.localizedMessage}")
+                logger.warn(satori.name, "WebSocket 连接断开: ${e.localizedMessage}")
                 e.printStackTrace()
                 // 重连
                 launch {
-                    logger.info(config.name, "将在5秒后尝试重新连接")
+                    logger.info(satori.name, "将在5秒后尝试重新连接")
                     delay(5000)
-                    logger.info(config.name, "尝试重新连接")
+                    logger.info(satori.name, "尝试重新连接")
                     connect()
                 }
             }
@@ -174,7 +174,7 @@ class WebSocketEventService(val properties: SatoriProperties, val config: Config
     private suspend fun sendIdentity(session: DefaultClientWebSocketSession) {
         val token = properties.token
         val content = Signaling(Signaling.IDENTIFY, Identify(token, sequence)).toString()
-        logger.info(config.name, "发送身份验证: $content")
+        logger.info(satori.name, "发送身份验证: $content")
         session.send(content)
     }
 
@@ -183,7 +183,7 @@ class WebSocketEventService(val properties: SatoriProperties, val config: Config
         when (signaling.op) {
             Signaling.READY -> {
                 val ready = signaling.body as Ready
-                logger.info(config.name, "成功建立事件推送服务: ${
+                logger.info(satori.name, "成功建立事件推送服务: ${
                     ready.logins.joinToString(", ") { "${it.platform}(${it.self_id}, ${it.status})" }
                 }")
                 is_received_pong = true
@@ -194,11 +194,11 @@ class WebSocketEventService(val properties: SatoriProperties, val config: Config
                         delay(10000)
                         if (is_received_pong) {
                             is_received_pong = false
-                            logger.debug(config.name, "发送 PING")
+                            logger.debug(satori.name, "发送 PING")
                             launch { send(content) }
                         } else {
-                            logger.warn(config.name, "WebSocket 连接断开: PONG 响应超时")
-                            logger.info(config.name, "尝试重新连接")
+                            logger.warn(satori.name, "WebSocket 连接断开: PONG 响应超时")
+                            logger.info(satori.name, "尝试重新连接")
                             connect()
                         }
                     }
@@ -208,7 +208,7 @@ class WebSocketEventService(val properties: SatoriProperties, val config: Config
             Signaling.EVENT -> launch {
                 val event = signaling.body as Event
                 when (event) {
-                    is MessageEvent -> logger.info(config.name, buildString {
+                    is MessageEvent -> logger.info(satori.name, buildString {
                         append("${event.platform}(${event.self_id}) 接收事件(${event.type}): ")
                         append("\u001B[38;5;4m").append("${event.channel.name}(${event.channel.id})")
                         append("\u001B[38;5;8m").append("-")
@@ -217,19 +217,19 @@ class WebSocketEventService(val properties: SatoriProperties, val config: Config
                         append("\u001B[0m").append(": ").append(event.message.content)
                     })
 
-                    else -> logger.info(config.name, "${event.platform}(${event.self_id}) 接收事件: ${event.type}")
+                    else -> logger.info(satori.name, "${event.platform}(${event.self_id}) 接收事件: ${event.type}")
                 }
-                logger.debug(config.name, "事件详细信息: $body")
+                logger.debug(satori.name, "事件详细信息: $body")
                 sequence = event.id
-                config.container.runEvent(event, config, service)
+                satori.container.runEvent(event, satori, service)
             }
 
             Signaling.PONG -> {
-                logger.debug(config.name, "收到 PONG")
+                logger.debug(satori.name, "收到 PONG")
                 is_received_pong = true
             }
 
-            else -> logger.error(config.name, "Unsupported $signaling")
+            else -> logger.error(satori.name, "Unsupported $signaling")
         }
     }
 }
@@ -238,13 +238,17 @@ class WebSocketEventService(val properties: SatoriProperties, val config: Config
 /**
  * Satori 事件服务的 WebHook 实现
  * @param properties Satori WebHook 配置
- * @param config Satori 配置
+ * @param satori Satori 配置
  */
 class WebhookEventService(
-    val listen: String, val port: Int, val path: String, val properties: SatoriProperties, val config: Config
+    val listen: String,
+    val port: Int,
+    val path: String,
+    val properties: SatoriProperties,
+    val satori: Satori
 ) : EventService {
     private var client: ApplicationEngine? = null
-    private val service = SatoriActionService(properties, config.name)
+    private val service = SatoriActionService(properties, satori.name)
     private val logger = GlobalLoggerFactory.getLogger(this::class.java)
 
     @OptIn(DelicateCoroutinesApi::class)
@@ -266,7 +270,7 @@ class WebhookEventService(
                             val event = mapper.readValue<Event>(body)
                             launch {
                                 when (event) {
-                                    is MessageEvent -> logger.info(config.name, buildString {
+                                    is MessageEvent -> logger.info(satori.name, buildString {
                                         append("${event.platform}(${event.self_id}) 接收事件(${event.type}): ")
                                         append("\u001B[38;5;4m").append("${event.channel.name}(${event.channel.id})")
                                         append("\u001B[38;5;6m")
@@ -276,23 +280,23 @@ class WebhookEventService(
                                     })
 
                                     else -> logger.info(
-                                        config.name, "${event.platform}(${event.self_id}) 接收事件: ${event.type}"
+                                        satori.name, "${event.platform}(${event.self_id}) 接收事件: ${event.type}"
                                     )
                                 }
-                                logger.debug(config.name, "事件详细信息: $body")
-                                config.container.runEvent(event, config, service)
+                                logger.debug(satori.name, "事件详细信息: $body")
+                                satori.container.runEvent(event, satori, service)
                             }
                             call.response.status(HttpStatusCode.OK)
                         } catch (e: Exception) {
-                            logger.warn(config.name, "处理事件时出错(${body}): ${e.localizedMessage}")
+                            logger.warn(satori.name, "处理事件时出错(${body}): ${e.localizedMessage}")
                             e.printStackTrace()
                             call.response.status(HttpStatusCode.InternalServerError)
                         }
                     }
                 }
             }.start()
-            logger.info(config.name, "成功启动 HTTP 服务器")
-            @Suppress("HttpUrlsUsage") AdminAction(config.name, service).webhook.create {
+            logger.info(satori.name, "成功启动 HTTP 服务器")
+            AdminAction(satori.name, service).webhook.create {
                 url = "http://${properties.host}:${properties.port}${properties.path}"
                 token = properties.token
             }
@@ -301,7 +305,7 @@ class WebhookEventService(
     }
 
     override fun close() {
-        @Suppress("HttpUrlsUsage") AdminAction(config.name, service).webhook.delete {
+        AdminAction(satori.name, service).webhook.delete {
             url = "http://${properties.host}:${properties.port}${properties.path}"
         }
         client?.stop()
