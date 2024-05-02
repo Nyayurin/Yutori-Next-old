@@ -10,9 +10,9 @@ MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
 See the Mulan PSL v2 for more details.
  */
 
-@file:Suppress("MemberVisibilityCanBePrivate")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
 
-package github.nyayurn.yutori_next.message.elements
+package github.nyayurn.yutori_next.message
 
 import github.nyayurn.yutori_next.MessageUtil.encode
 
@@ -21,6 +21,14 @@ import github.nyayurn.yutori_next.MessageUtil.encode
  */
 fun interface MessageElement {
     override fun toString(): String
+}
+
+/**
+ * 纯文本
+ * @property text 文本
+ */
+class Text(var text: String) : MessageElement {
+    override fun toString() = text.encode()
 }
 
 /**
@@ -140,49 +148,4 @@ open class NodeMessageElement(val node_name: String, vararg pairs: Pair<String, 
         }
         return null
     }
-}
-
-/**
- * 纯文本
- * @property text 文本
- */
-class Text(var text: String) : MessageElement {
-    override fun toString() = text.encode()
-}
-
-/**
- * 提及用户
- * @property id 目标用户的 ID
- * @property name 目标用户的名称
- * @property role 目标角色
- * @property type 特殊操作，例如 all 表示 @全体成员，here 表示 @在线成员
- */
-class At(
-    id: String? = null,
-    name: String? = null,
-    role: String? = null,
-    type: String? = null
-) : NodeMessageElement("at", "id" to id, "name" to name, "role" to role, "type" to type) {
-    var id: String? by super.properties
-    var name: String? by super.properties
-    var role: String? by super.properties
-    var type: String? by super.properties
-}
-
-/**
- * 提及频道
- * @property id 目标频道的 ID
- * @property name 目标频道的名称
- */
-class Sharp(id: String, name: String? = null) : NodeMessageElement("sharp", "id" to id, "name" to name) {
-    var id: String by super.properties
-    var name: String? by super.properties
-}
-
-/**
- * 链接
- * @property href 链接的 URL
- */
-class Href(href: String) : NodeMessageElement("a", "href" to href) {
-    var href: String by super.properties
 }

@@ -39,7 +39,7 @@ class ListenersContainer private constructor() {
 
     fun runEvent(event: Event, satori: Satori, service: ActionService) {
         try {
-            val actions = Actions(event, satori.name, service)
+            val actions = Actions(event, service, satori)
             for (listener in this.any) listener(Context(actions, event, satori))
             when (event) {
                 is GuildEvent -> guild.runEvent(actions, event, satori)

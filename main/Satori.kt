@@ -14,12 +14,13 @@ See the Mulan PSL v2 for more details.
 
 package github.nyayurn.yutori_next
 
-import github.nyayurn.yutori_next.message.elements.ElementModule
-import github.nyayurn.yutori_next.message.elements.NodeMessageElement
+import github.nyayurn.yutori_next.message.NodeMessageElement
+import github.nyayurn.yutori_next.module.core.Core
 import org.jsoup.nodes.Element
 
 class Satori(val name: String, val container: ListenersContainer, val modules: MutableList<Module>) {
     val elements = mutableMapOf<String, (Element) -> NodeMessageElement>()
+    val actions = mutableMapOf<String, (platform: String, id: String, service: ActionService) -> Action>()
 
     fun start() = modules.forEach { module -> module.install(this) }
     fun stop() = modules.forEach { module -> module.uninstall(this) }
@@ -30,14 +31,10 @@ fun satori(name: String = "Satori", block: SatoriBuilder.() -> Unit) = SatoriBui
 @BuilderMarker
 class SatoriBuilder(var name: String) {
     var container: ListenersContainer = ListenersContainer.of()
-    var modules: MutableList<Module> = mutableListOf(ElementModule())
+    var modules: MutableList<Module> = mutableListOf(Module.Core)
 
-    fun <T : Module> install(func: () -> T, block: T.() -> Unit) {
-        modules += func().apply(block)
-    }
-
-    fun <T : Module> install(func: () -> T) {
-        modules += func()
+    fun <T : Module> install(module: T, block: T.() -> Unit = {}) {
+        modules += module.apply(block)
     }
 
     fun listening(lambda: ListenersContainer.() -> Unit) {
@@ -50,4 +47,9 @@ class SatoriBuilder(var name: String) {
 interface Module {
     fun install(satori: Satori)
     fun uninstall(satori: Satori)
+    companion object
+}
+
+interface Adapter : Module {
+    companion object
 }

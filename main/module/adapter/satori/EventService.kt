@@ -12,100 +12,25 @@ See the Mulan PSL v2 for more details.
 
 @file:Suppress("MemberVisibilityCanBePrivate", "unused", "HttpUrlsUsage")
 
-package github.nyayurn.yutori_next
+package github.nyayurn.yutori_next.module.adapter.satori
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import github.nyayurn.yutori_next.*
+import github.nyayurn.yutori_next.module.core.AdminAction
 import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.websocket.*
-import io.ktor.client.request.*
-import io.ktor.client.request.headers
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import io.ktor.websocket.*
-import kotlinx.coroutines.*
-
-interface Adapter : Module {
-    companion object
-}
-
-fun Adapter.Companion.satori() = SatoriAdapter()
-
-@BuilderMarker
-class SatoriAdapter : Adapter {
-    var host: String = "127.0.0.1"
-    var port: Int = 5500
-    var path: String = ""
-    var token: String? = null
-    var version: String = "v1"
-    var webhook: WebHook? = null
-    private var service: EventService? = null
-
-    fun useWebHook(block: WebHook.() -> Unit) {
-        webhook = WebHook().apply(block)
-    }
-
-    override fun install(satori: Satori) {
-        val properties = SatoriProperties(host, port, path, token, version)
-        service = webhook?.run { WebhookEventService(listen, port, path, properties, satori) }
-                  ?: WebSocketEventService(properties, satori)
-        service!!.connect()
-    }
-
-    override fun uninstall(satori: Satori) {
-        service?.close()
-        service = null
-    }
-
-    @BuilderMarker
-    class WebHook {
-        var listen: String = "0.0.0.0"
-        var port: Int = 8080
-        var path: String = "/"
-    }
-}
-
-class SatoriActionService(val properties: SatoriProperties, val name: String) : ActionService {
-    private val logger = GlobalLoggerFactory.getLogger(this::class.java)
-
-    @Suppress("UastIncorrectHttpHeaderInspection")
-    override fun send(
-        resource: String, method: String, platform: String?, self_id: String?, content: String?
-    ): String = runBlocking {
-        HttpClient(CIO).use { client ->
-            val response = client.post {
-                url {
-                    host = properties.host
-                    port = properties.port
-                    appendPathSegments(properties.path, properties.version, "$resource.$method")
-                }
-                contentType(ContentType.Application.Json)
-                headers {
-                    properties.token?.let { append(HttpHeaders.Authorization, "Bearer ${properties.token}") }
-                    platform?.let { append("X-Platform", platform) }
-                    self_id?.let { append("X-Self-ID", self_id) }
-                }
-                content?.let { setBody(content) }
-                logger.debug(
-                    name, """
-                    Satori Action: url: ${this.url},
-                        headers: ${this.headers.build()},
-                        body: ${this.body}
-                    """.trimIndent()
-                )
-            }
-            logger.debug(name, "Satori Action Response: $response")
-            response.body()
-        }
-    }
-}
-
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
  * Satori 事件服务的 WebSocket 实现
@@ -129,7 +54,10 @@ class WebSocketEventService(val properties: SatoriProperties, val satori: Satori
         GlobalScope.launch {
             try {
                 client.webSocket(
-                    HttpMethod.Get, properties.host, properties.port, "${properties.path}/${properties.version}/events"
+                    HttpMethod.Get,
+                    properties.host,
+                    properties.port,
+                    "${properties.path}/${properties.version}/events"
                 ) {
                     logger.info(satori.name, "成功建立 WebSocket 连接")
                     is_connected = true
@@ -233,7 +161,6 @@ class WebSocketEventService(val properties: SatoriProperties, val satori: Satori
         }
     }
 }
-
 
 /**
  * Satori 事件服务的 WebHook 实现
