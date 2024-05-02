@@ -33,7 +33,7 @@
         <dependency>
             <groupId>com.github.reine-ishyanami</groupId>
             <artifactId>TextToImage</artifactId>
-            <version>0.0.3</version>
+            <version>0.0.5</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>

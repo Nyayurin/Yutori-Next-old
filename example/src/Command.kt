@@ -67,7 +67,7 @@ object EchoCommand : Command {
         if (qq || guild) {
             actions.message.create {
                 channel_id = event.channel.id
-                content(msg.decode().substring(5))
+                content = msg.decode().substring(5)
             }
             return
         }

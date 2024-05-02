@@ -9,7 +9,7 @@ fun main() {
     GlobalLoggerFactory.factory = DefaultLoggerFactory(Level.DEBUG)
     val server = System.getenv("Satori-Server") ?: "Chronocat"
     val satori = Satori.of {
-        install(EventService::webSocket) {
+        install(Adapter::satori) {
             when (server) {
                 "Chronocat" -> {
                     token = "Chronocat"
@@ -40,7 +40,27 @@ fun main() {
             message.created += OpenGraphListener
             message.created += AtListener
             message.created += YzListener
-//            message.created += TestListener
+            message.created {
+                if (event.message.content == "test") {
+                    val response = actions.message.create {
+                        channel_id = "private:${event.self_id}"
+                        content {
+                            text { "测试转发消息" }
+                        }
+                    }
+                    actions.message.create {
+                        channel_id = event.channel.id
+                        content {
+                            message {
+                                forward = true
+                                message {
+                                    id = response[0].id
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
     satori.start()
