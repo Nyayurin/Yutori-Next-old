@@ -219,7 +219,7 @@ class WebSocketEventService(val properties: SatoriProperties, val config: Config
                 }
                 logger.debug(config.name, "事件详细信息: $body")
                 sequence = event.id
-                config.container.runEvent(event, config.name, config, service)
+                config.container.runEvent(event, config, service)
             }
 
             Signaling.PONG -> {
@@ -278,7 +278,7 @@ class WebhookEventService(
                                     )
                                 }
                                 logger.debug(config.name, "事件详细信息: $body")
-                                config.container.runEvent(event, config.name, config, service)
+                                config.container.runEvent(event, config, service)
                             }
                             call.response.status(HttpStatusCode.OK)
                         } catch (e: Exception) {

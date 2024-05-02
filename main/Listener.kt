@@ -36,22 +36,22 @@ class ListenersContainer private constructor() {
         fun of(apply: ListenersContainer.() -> Unit = {}) = ListenersContainer().apply(apply)
     }
 
-    fun runEvent(event: Event, name: String, config: Config, service: ActionService) {
+    fun runEvent(event: Event, config: Config, service: ActionService) {
         try {
-            val actions = Actions(event, name, service)
+            val actions = Actions(event, config.name, service)
             for (listener in this.any) listener(Context(actions, event, config))
             when (event) {
-                is GuildEvent -> guild.runEvent(actions, event, name, config)
-                is GuildMemberEvent -> guild.member.runEvent(actions, event, name, config)
-                is GuildRoleEvent -> guild.role.runEvent(actions, event, name, config)
-                is InteractionButtonEvent, is InteractionCommandEvent -> interaction.runEvent(actions, event, name, config)
-                is LoginEvent -> login.runEvent(actions, event, name, config)
-                is MessageEvent -> message.runEvent(actions, event, name, config)
-                is ReactionEvent -> reaction.runEvent(actions, event, name, config)
-                is UserEvent -> friend.runEvent(actions, event, name, config)
+                is GuildEvent -> guild.runEvent(actions, event, config)
+                is GuildMemberEvent -> guild.member.runEvent(actions, event, config)
+                is GuildRoleEvent -> guild.role.runEvent(actions, event, config)
+                is InteractionButtonEvent, is InteractionCommandEvent -> interaction.runEvent(actions, event, config)
+                is LoginEvent -> login.runEvent(actions, event, config)
+                is MessageEvent -> message.runEvent(actions, event, config)
+                is ReactionEvent -> reaction.runEvent(actions, event, config)
+                is UserEvent -> friend.runEvent(actions, event, config)
             }
         } catch (e: EventParsingException) {
-            logger.error(name, "$e, event: $event")
+            logger.error(config.name, "$e, event: $event")
         }
     }
 
@@ -80,12 +80,12 @@ class ListenersContainer private constructor() {
             request += Listener { it.listener() }
         }
 
-        fun runEvent(actions: Actions, event: GuildEvent, name: String, config: Config) = when (event.type) {
+        fun runEvent(actions: Actions, event: GuildEvent, config: Config) = when (event.type) {
             GuildEvents.Added -> added.forEach { it(Context(actions, event, config)) }
             GuildEvents.Updated -> updated.forEach { it(Context(actions, event, config)) }
             GuildEvents.Removed -> removed.forEach { it(Context(actions, event, config)) }
             GuildEvents.Request -> request.forEach { it(Context(actions, event, config)) }
-            else -> logger.warn(name, "Unsupported event: $event")
+            else -> logger.warn(config.name, "Unsupported event: $event")
         }
 
         class MemberContainer {
@@ -111,12 +111,12 @@ class ListenersContainer private constructor() {
                 request += Listener { it.listener() }
             }
 
-            fun runEvent(actions: Actions, event: GuildMemberEvent, name: String, config: Config) = when (event.type) {
+            fun runEvent(actions: Actions, event: GuildMemberEvent, config: Config) = when (event.type) {
                 GuildMemberEvents.Added -> added.forEach { it(Context(actions, event, config)) }
                 GuildMemberEvents.Updated -> updated.forEach { it(Context(actions, event, config)) }
                 GuildMemberEvents.Removed -> removed.forEach { it(Context(actions, event, config)) }
                 GuildMemberEvents.Request -> request.forEach { it(Context(actions, event, config)) }
-                else -> logger.warn(name, "Unsupported event: $event")
+                else -> logger.warn(config.name, "Unsupported event: $event")
             }
         }
 
@@ -138,11 +138,11 @@ class ListenersContainer private constructor() {
                 deleted += Listener { it.listener() }
             }
 
-            fun runEvent(actions: Actions, event: GuildRoleEvent, name: String, config: Config) = when (event.type) {
+            fun runEvent(actions: Actions, event: GuildRoleEvent, config: Config) = when (event.type) {
                 GuildRoleEvents.Created -> created.forEach { it(Context(actions, event, config)) }
                 GuildRoleEvents.Updated -> updated.forEach { it(Context(actions, event, config)) }
                 GuildRoleEvents.Deleted -> deleted.forEach { it(Context(actions, event, config)) }
-                else -> logger.warn(name, "Unsupported event: $event")
+                else -> logger.warn(config.name, "Unsupported event: $event")
             }
         }
     }
@@ -160,10 +160,10 @@ class ListenersContainer private constructor() {
             command += Listener { it.listener() }
         }
 
-        fun runEvent(actions: Actions, event: Event, name: String, config: Config) = when (event) {
+        fun runEvent(actions: Actions, event: Event, config: Config) = when (event) {
             is InteractionButtonEvent -> button.forEach { it(Context(actions, event, config)) }
             is InteractionCommandEvent -> command.forEach { it(Context(actions, event, config)) }
-            else -> logger.warn(name, "Unsupported event: $event")
+            else -> logger.warn(config.name, "Unsupported event: $event")
         }
     }
 
@@ -185,11 +185,11 @@ class ListenersContainer private constructor() {
             updated += Listener { it.listener() }
         }
 
-        fun runEvent(actions: Actions, event: LoginEvent, name: String, config: Config) = when (event.type) {
+        fun runEvent(actions: Actions, event: LoginEvent, config: Config) = when (event.type) {
             LoginEvents.Added -> added.forEach { it(Context(actions, event, config)) }
             LoginEvents.Removed -> removed.forEach { it(Context(actions, event, config)) }
             LoginEvents.Updated -> updated.forEach { it(Context(actions, event, config)) }
-            else -> logger.warn(name, "Unsupported event: $event")
+            else -> logger.warn(config.name, "Unsupported event: $event")
         }
     }
 
@@ -211,11 +211,11 @@ class ListenersContainer private constructor() {
             deleted += Listener { it.listener() }
         }
 
-        fun runEvent(actions: Actions, event: MessageEvent, name: String, config: Config) = when (event.type) {
+        fun runEvent(actions: Actions, event: MessageEvent, config: Config) = when (event.type) {
             MessageEvents.Created -> created.forEach { it(Context(actions, event, config)) }
             MessageEvents.Updated -> updated.forEach { it(Context(actions, event, config)) }
             MessageEvents.Deleted -> deleted.forEach { it(Context(actions, event, config)) }
-            else -> logger.warn(name, "Unsupported event: $event")
+            else -> logger.warn(config.name, "Unsupported event: $event")
         }
     }
 
@@ -232,10 +232,10 @@ class ListenersContainer private constructor() {
             removed += Listener { it.listener() }
         }
 
-        fun runEvent(actions: Actions, event: ReactionEvent, name: String, config: Config) = when (event.type) {
+        fun runEvent(actions: Actions, event: ReactionEvent, config: Config) = when (event.type) {
             ReactionEvents.Added -> added.forEach { it(Context(actions, event, config)) }
             ReactionEvents.Removed -> removed.forEach { it(Context(actions, event, config)) }
-            else -> logger.warn(name, "Unsupported event: $event")
+            else -> logger.warn(config.name, "Unsupported event: $event")
         }
     }
 
@@ -247,9 +247,9 @@ class ListenersContainer private constructor() {
             request += Listener { it.listener() }
         }
 
-        fun runEvent(actions: Actions, event: UserEvent, name: String, config: Config) = when (event.type) {
+        fun runEvent(actions: Actions, event: UserEvent, config: Config) = when (event.type) {
             UserEvents.Friend_Request -> request.forEach { it(Context(actions, event, config)) }
-            else -> logger.warn(name, "Unsupported event: $event")
+            else -> logger.warn(config.name, "Unsupported event: $event")
         }
     }
 }
