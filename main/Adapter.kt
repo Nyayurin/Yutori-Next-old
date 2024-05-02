@@ -37,6 +37,7 @@ interface Adapter : Module {
 
 fun Adapter.Companion.satori() = SatoriAdapter()
 
+@BuilderMarker
 class SatoriAdapter : Adapter {
     var host: String = "127.0.0.1"
     var port: Int = 5500
@@ -62,6 +63,7 @@ class SatoriAdapter : Adapter {
         service = null
     }
 
+    @BuilderMarker
     class WebHook {
         var listen: String = "0.0.0.0"
         var port: Int = 8080

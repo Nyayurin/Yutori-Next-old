@@ -14,6 +14,7 @@ See the Mulan PSL v2 for more details.
 
 package github.nyayurn.yutori_next.message
 
+import github.nyayurn.yutori_next.BuilderMarker
 import github.nyayurn.yutori_next.message.elements.*
 
 /**
@@ -22,9 +23,6 @@ import github.nyayurn.yutori_next.message.elements.*
  * @return 消息段(MessageSegment)
  */
 inline fun message(block: MessageDslBuilder.() -> Unit) = MessageDslBuilder().apply(block).buildMessage()
-
-@DslMarker
-annotation class MessageDSL
 
 interface ChildedBuilder {
     val elements: MutableList<MessageElement>
@@ -51,7 +49,7 @@ private fun PropertiedBuilder.buildElement(element: NodeMessageElement) = elemen
     children.addAll(this@buildElement.elements)
 }
 
-@MessageDSL
+@BuilderMarker
 open class MessageDslBuilder : ChildedBuilder {
     override val elements = mutableListOf<MessageElement>()
 
@@ -157,193 +155,193 @@ open class MessageDslBuilder : ChildedBuilder {
 
     override fun buildMessage() = elements.joinToString("") { it.toString() }
     override fun toString() = elements.joinToString("") { it.toString() }
-}
 
-@MessageDSL
-class NodeBuilder : MessageDslBuilder(), PropertiedBuilder {
-    override val properties = mutableMapOf<String, Any?>()
-    lateinit var node_name: String
-    override fun buildElement() = this.buildElement(NodeMessageElement(node_name))
-}
+    @BuilderMarker
+    class NodeBuilder : MessageDslBuilder(), PropertiedBuilder {
+        override val properties = mutableMapOf<String, Any?>()
+        lateinit var node_name: String
+        override fun buildElement() = this.buildElement(NodeMessageElement(node_name))
+    }
 
-@MessageDSL
-class AtBuilder : MessageDslBuilder(), PropertiedBuilder {
-    override val properties =
-        mutableMapOf<String, Any?>("id" to null, "name" to null, "role" to null, "type" to null)
-    var id: String? by properties
-    var name: String? by properties
-    var role: String? by properties
-    var type: String? by properties
-    override fun buildElement() = this.buildElement(At(id, name, role, type))
-}
+    @BuilderMarker
+    class AtBuilder : MessageDslBuilder(), PropertiedBuilder {
+        override val properties =
+            mutableMapOf<String, Any?>("id" to null, "name" to null, "role" to null, "type" to null)
+        var id: String? by properties
+        var name: String? by properties
+        var role: String? by properties
+        var type: String? by properties
+        override fun buildElement() = this.buildElement(At(id, name, role, type))
+    }
 
-@MessageDSL
-class SharpBuilder : MessageDslBuilder(), PropertiedBuilder {
-    override val properties = mutableMapOf<String, Any?>("id" to "", "name" to null)
-    var id: String by properties
-    var name: String? by properties
-    override fun buildElement() = this.buildElement(Sharp(id, name))
-}
+    @BuilderMarker
+    class SharpBuilder : MessageDslBuilder(), PropertiedBuilder {
+        override val properties = mutableMapOf<String, Any?>("id" to "", "name" to null)
+        var id: String by properties
+        var name: String? by properties
+        override fun buildElement() = this.buildElement(Sharp(id, name))
+    }
 
-@MessageDSL
-class HrefBuilder : MessageDslBuilder(), PropertiedBuilder {
-    override val properties = mutableMapOf<String, Any?>("href" to "")
-    var href: String by properties
-    override fun buildElement() = this.buildElement(Href(href))
-}
+    @BuilderMarker
+    class HrefBuilder : MessageDslBuilder(), PropertiedBuilder {
+        override val properties = mutableMapOf<String, Any?>("href" to "")
+        var href: String by properties
+        override fun buildElement() = this.buildElement(Href(href))
+    }
 
-@MessageDSL
-class ImageBuilder : MessageDslBuilder(), PropertiedBuilder {
-    override val properties = mutableMapOf<String, Any?>(
-        "src" to "", "title" to null, "cache" to null, "timeout" to null, "width" to null, "height" to null
-    )
-    var src: String by properties
-    var title: String? by properties
-    var cache: Boolean? by properties
-    var timeout: String? by properties
-    var width: Number? by properties
-    var height: Number? by properties
-    override fun buildElement() = this.buildElement(Image(src, title, cache, timeout, width, height))
-}
+    @BuilderMarker
+    class ImageBuilder : MessageDslBuilder(), PropertiedBuilder {
+        override val properties = mutableMapOf<String, Any?>(
+            "src" to "", "title" to null, "cache" to null, "timeout" to null, "width" to null, "height" to null
+        )
+        var src: String by properties
+        var title: String? by properties
+        var cache: Boolean? by properties
+        var timeout: String? by properties
+        var width: Number? by properties
+        var height: Number? by properties
+        override fun buildElement() = this.buildElement(Image(src, title, cache, timeout, width, height))
+    }
 
-@MessageDSL
-class AudioBuilder : MessageDslBuilder(), PropertiedBuilder {
-    override val properties = mutableMapOf<String, Any?>(
-        "src" to "", "title" to null, "cache" to null, "timeout" to null, "duration" to null, "poster" to null
-    )
-    var src: String by properties
-    var title: String? by properties
-    var cache: Boolean? by properties
-    var timeout: String? by properties
-    var duration: Number? by properties
-    var poster: String? by properties
-    override fun buildElement() = this.buildElement(Audio(src, title, cache, timeout, duration, poster))
-}
+    @BuilderMarker
+    class AudioBuilder : MessageDslBuilder(), PropertiedBuilder {
+        override val properties = mutableMapOf<String, Any?>(
+            "src" to "", "title" to null, "cache" to null, "timeout" to null, "duration" to null, "poster" to null
+        )
+        var src: String by properties
+        var title: String? by properties
+        var cache: Boolean? by properties
+        var timeout: String? by properties
+        var duration: Number? by properties
+        var poster: String? by properties
+        override fun buildElement() = this.buildElement(Audio(src, title, cache, timeout, duration, poster))
+    }
 
-@MessageDSL
-class VideoBuilder : MessageDslBuilder(), PropertiedBuilder {
-    override val properties = mutableMapOf<String, Any?>(
-        "src" to "", "title" to null, "cache" to null, "timeout" to null, "width" to null, "height" to null,
-        "duration" to null, "poster" to null
-    )
-    var src: String by properties
-    var title: String? by properties
-    var cache: Boolean? by properties
-    var timeout: String? by properties
-    var width: Number? by properties
-    var height: Number? by properties
-    var duration: Number? by properties
-    var poster: String? by properties
-    override fun buildElement() =
-        this.buildElement(Video(src, title, cache, timeout, width, height, duration, poster))
-}
+    @BuilderMarker
+    class VideoBuilder : MessageDslBuilder(), PropertiedBuilder {
+        override val properties = mutableMapOf<String, Any?>(
+            "src" to "", "title" to null, "cache" to null, "timeout" to null, "width" to null, "height" to null,
+            "duration" to null, "poster" to null
+        )
+        var src: String by properties
+        var title: String? by properties
+        var cache: Boolean? by properties
+        var timeout: String? by properties
+        var width: Number? by properties
+        var height: Number? by properties
+        var duration: Number? by properties
+        var poster: String? by properties
+        override fun buildElement() =
+            this.buildElement(Video(src, title, cache, timeout, width, height, duration, poster))
+    }
 
-@MessageDSL
-class FileBuilder : MessageDslBuilder(), PropertiedBuilder {
-    override val properties = mutableMapOf<String, Any?>(
-        "src" to "", "title" to null, "cache" to null, "timeout" to null, "poster" to null
-    )
-    var src: String by properties
-    var title: String? by properties
-    var cache: Boolean? by properties
-    var timeout: String? by properties
-    var poster: String? by properties
-    override fun buildElement() = this.buildElement(File(src, title, cache, timeout, poster))
-}
+    @BuilderMarker
+    class FileBuilder : MessageDslBuilder(), PropertiedBuilder {
+        override val properties = mutableMapOf<String, Any?>(
+            "src" to "", "title" to null, "cache" to null, "timeout" to null, "poster" to null
+        )
+        var src: String by properties
+        var title: String? by properties
+        var cache: Boolean? by properties
+        var timeout: String? by properties
+        var poster: String? by properties
+        override fun buildElement() = this.buildElement(File(src, title, cache, timeout, poster))
+    }
 
-@MessageDSL
-class BoldBuilder : MessageDslBuilder(), PropertiedBuilder {
-    override val properties = mutableMapOf<String, Any?>()
-    override fun buildElement() = this.buildElement(Bold())
-}
+    @BuilderMarker
+    class BoldBuilder : MessageDslBuilder(), PropertiedBuilder {
+        override val properties = mutableMapOf<String, Any?>()
+        override fun buildElement() = this.buildElement(Bold())
+    }
 
-@MessageDSL
-class IdiomaticBuilder : MessageDslBuilder(), PropertiedBuilder {
-    override val properties = mutableMapOf<String, Any?>()
-    override fun buildElement() = this.buildElement(Idiomatic())
-}
+    @BuilderMarker
+    class IdiomaticBuilder : MessageDslBuilder(), PropertiedBuilder {
+        override val properties = mutableMapOf<String, Any?>()
+        override fun buildElement() = this.buildElement(Idiomatic())
+    }
 
-@MessageDSL
-class UnderlineBuilder : MessageDslBuilder(), PropertiedBuilder {
-    override val properties = mutableMapOf<String, Any?>()
-    override fun buildElement() = this.buildElement(Underline())
-}
+    @BuilderMarker
+    class UnderlineBuilder : MessageDslBuilder(), PropertiedBuilder {
+        override val properties = mutableMapOf<String, Any?>()
+        override fun buildElement() = this.buildElement(Underline())
+    }
 
-@MessageDSL
-class DeleteBuilder : MessageDslBuilder(), PropertiedBuilder {
-    override val properties = mutableMapOf<String, Any?>()
-    override fun buildElement() = this.buildElement(Strikethrough())
-}
+    @BuilderMarker
+    class DeleteBuilder : MessageDslBuilder(), PropertiedBuilder {
+        override val properties = mutableMapOf<String, Any?>()
+        override fun buildElement() = this.buildElement(Strikethrough())
+    }
 
-@MessageDSL
-class SplBuilder : MessageDslBuilder(), PropertiedBuilder {
-    override val properties = mutableMapOf<String, Any?>()
-    override fun buildElement() = this.buildElement(Spl())
-}
+    @BuilderMarker
+    class SplBuilder : MessageDslBuilder(), PropertiedBuilder {
+        override val properties = mutableMapOf<String, Any?>()
+        override fun buildElement() = this.buildElement(Spl())
+    }
 
-@MessageDSL
-class CodeBuilder : MessageDslBuilder(), PropertiedBuilder {
-    override val properties = mutableMapOf<String, Any?>()
-    override fun buildElement() = this.buildElement(Code())
-}
+    @BuilderMarker
+    class CodeBuilder : MessageDslBuilder(), PropertiedBuilder {
+        override val properties = mutableMapOf<String, Any?>()
+        override fun buildElement() = this.buildElement(Code())
+    }
 
-@MessageDSL
-class SupBuilder : MessageDslBuilder(), PropertiedBuilder {
-    override val properties = mutableMapOf<String, Any?>()
-    override fun buildElement() = this.buildElement(Sup())
-}
+    @BuilderMarker
+    class SupBuilder : MessageDslBuilder(), PropertiedBuilder {
+        override val properties = mutableMapOf<String, Any?>()
+        override fun buildElement() = this.buildElement(Sup())
+    }
 
-@MessageDSL
-class SubBuilder : MessageDslBuilder(), PropertiedBuilder {
-    override val properties = mutableMapOf<String, Any?>()
-    override fun buildElement() = this.buildElement(Sub())
-}
+    @BuilderMarker
+    class SubBuilder : MessageDslBuilder(), PropertiedBuilder {
+        override val properties = mutableMapOf<String, Any?>()
+        override fun buildElement() = this.buildElement(Sub())
+    }
 
-@MessageDSL
-class BrBuilder : MessageDslBuilder(), PropertiedBuilder {
-    override val properties = mutableMapOf<String, Any?>()
-    override fun buildElement() = this.buildElement(Br())
-}
+    @BuilderMarker
+    class BrBuilder : MessageDslBuilder(), PropertiedBuilder {
+        override val properties = mutableMapOf<String, Any?>()
+        override fun buildElement() = this.buildElement(Br())
+    }
 
-@MessageDSL
-class ParagraphBuilder : MessageDslBuilder(), PropertiedBuilder {
-    override val properties = mutableMapOf<String, Any?>()
-    override fun buildElement() = this.buildElement(Paragraph())
-}
+    @BuilderMarker
+    class ParagraphBuilder : MessageDslBuilder(), PropertiedBuilder {
+        override val properties = mutableMapOf<String, Any?>()
+        override fun buildElement() = this.buildElement(Paragraph())
+    }
 
-@MessageDSL
-class MessageBuilder : MessageDslBuilder(), PropertiedBuilder {
-    override val properties = mutableMapOf<String, Any?>("id" to null, "forward" to null)
-    var id: String? by properties
-    var forward: Boolean? by properties
-    override fun buildElement() = this.buildElement(Message(id, forward))
-}
+    @BuilderMarker
+    class MessageBuilder : MessageDslBuilder(), PropertiedBuilder {
+        override val properties = mutableMapOf<String, Any?>("id" to null, "forward" to null)
+        var id: String? by properties
+        var forward: Boolean? by properties
+        override fun buildElement() = this.buildElement(Message(id, forward))
+    }
 
-@MessageDSL
-class QuoteBuilder : MessageDslBuilder(), PropertiedBuilder {
-    override val properties = mutableMapOf<String, Any?>("id" to null, "forward" to null)
-    var id: String? by properties
-    var forward: Boolean? by properties
-    override fun buildElement() = this.buildElement(Quote(id, forward))
-}
+    @BuilderMarker
+    class QuoteBuilder : MessageDslBuilder(), PropertiedBuilder {
+        override val properties = mutableMapOf<String, Any?>("id" to null, "forward" to null)
+        var id: String? by properties
+        var forward: Boolean? by properties
+        override fun buildElement() = this.buildElement(Quote(id, forward))
+    }
 
-@MessageDSL
-class AuthorBuilder : MessageDslBuilder(), PropertiedBuilder {
-    override val properties = mutableMapOf<String, Any?>("id" to null, "name" to null, "avatar" to null)
-    var id: String? by properties
-    var name: String? by properties
-    var avatar: String? by properties
-    override fun buildElement() = this.buildElement(Author(id, name, avatar))
-}
+    @BuilderMarker
+    class AuthorBuilder : MessageDslBuilder(), PropertiedBuilder {
+        override val properties = mutableMapOf<String, Any?>("id" to null, "name" to null, "avatar" to null)
+        var id: String? by properties
+        var name: String? by properties
+        var avatar: String? by properties
+        override fun buildElement() = this.buildElement(Author(id, name, avatar))
+    }
 
-@MessageDSL
-class ButtonBuilder : MessageDslBuilder(), PropertiedBuilder {
-    override val properties =
-        mutableMapOf<String, Any?>("id" to null, "type" to null, "href" to null, "text" to null, "theme" to null)
-    var id: String? by properties
-    var type: String? by properties
-    var href: String? by properties
-    var text: String? by properties
-    var theme: String? by properties
-    override fun buildElement() = this.buildElement(Button(id, type, href, text, theme))
+    @BuilderMarker
+    class ButtonBuilder : MessageDslBuilder(), PropertiedBuilder {
+        override val properties =
+            mutableMapOf<String, Any?>("id" to null, "type" to null, "href" to null, "text" to null, "theme" to null)
+        var id: String? by properties
+        var type: String? by properties
+        var href: String? by properties
+        var text: String? by properties
+        var theme: String? by properties
+        override fun buildElement() = this.buildElement(Button(id, type, href, text, theme))
+    }
 }

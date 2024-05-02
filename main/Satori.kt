@@ -30,29 +30,28 @@ class Satori(val config: Config) {
             module.uninstall(this)
         }
     }
+}
 
-    companion object {
-        fun of(name: String = "Satori", block: SatoriBuilder.() -> Unit) = SatoriBuilder(name).apply(block).build()
+fun satori(name: String = "Satori", block: SatoriBuilder.() -> Unit) = SatoriBuilder(name).apply(block).build()
+
+@BuilderMarker
+class SatoriBuilder(var name: String) {
+    var container: ListenersContainer = ListenersContainer.of()
+    var modules: MutableList<Module> = mutableListOf(ElementModule())
+
+    fun <T : Module> install(func: () -> T, block: T.() -> Unit) {
+        modules += func().apply(block)
     }
 
-    class SatoriBuilder(var name: String) {
-        var container: ListenersContainer = ListenersContainer.of()
-        var modules: MutableList<Module> = mutableListOf(ElementModule())
-
-        fun <T : Module> install(func: () -> T, block: T.() -> Unit) {
-            modules += func().apply(block)
-        }
-
-        fun <T : Module> install(func: () -> T) {
-            modules += func()
-        }
-
-        fun listening(lambda: ListenersContainer.() -> Unit) {
-            container = ListenersContainer.of(lambda)
-        }
-
-        fun build() = Satori(Config(name, container, modules))
+    fun <T : Module> install(func: () -> T) {
+        modules += func()
     }
+
+    fun listening(lambda: ListenersContainer.() -> Unit) {
+        container = ListenersContainer.of(lambda)
+    }
+
+    fun build() = Satori(Config(name, container, modules))
 }
 
 interface Module {

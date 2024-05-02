@@ -25,9 +25,6 @@ fun interface ActionService {
     fun send(resource: String, method: String, platform: String?, self_id: String?, content: String?): String
 }
 
-@DslMarker
-annotation class ActionDSL
-
 /**
  * 封装所有 Action, 应通过本类对 Satori Server 发送 Satori Action
  * @property channel 频道 API
@@ -123,30 +120,30 @@ class ChannelAction private constructor(private val action: GeneralAction) {
         }
     }
 
-    @ActionDSL
+    @BuilderMarker
     class GetBuilder {
         lateinit var channel_id: String
     }
 
-    @ActionDSL
+    @BuilderMarker
     class ListBuilder {
         lateinit var guild_id: String
         var next: String? = null
     }
 
-    @ActionDSL
+    @BuilderMarker
     class CreateBuilder {
         lateinit var guild_id: String
         lateinit var data: Channel
     }
 
-    @ActionDSL
+    @BuilderMarker
     class UpdateBuilder {
         lateinit var channel_id: String
         lateinit var data: Channel
     }
 
-    @ActionDSL
+    @BuilderMarker
     class DeleteBuilder {
         lateinit var channel_id: String
     }
@@ -194,17 +191,17 @@ class GuildAction private constructor(
         }
     }
 
-    @ActionDSL
+    @BuilderMarker
     class GetBuilder {
         lateinit var guild_id: String
     }
 
-    @ActionDSL
+    @BuilderMarker
     class ListBuilder {
         var next: String? = null
     }
 
-    @ActionDSL
+    @BuilderMarker
     class ApproveBuilder {
         lateinit var message_id: String
         var approve: Boolean by Delegates.notNull()
@@ -263,26 +260,26 @@ class GuildAction private constructor(
             }
         }
 
-        @ActionDSL
+        @BuilderMarker
         class GetBuilder {
             lateinit var guild_id: String
             lateinit var user_id: String
         }
 
-        @ActionDSL
+        @BuilderMarker
         class ListBuilder {
             lateinit var guild_id: String
             var next: String? = null
         }
 
-        @ActionDSL
+        @BuilderMarker
         class KickBuilder {
             lateinit var guild_id: String
             lateinit var user_id: String
             var permanent: Boolean? = null
         }
 
-        @ActionDSL
+        @BuilderMarker
         class ApproveBuilder {
             lateinit var message_id: String
             var approve: Boolean by Delegates.notNull()
@@ -318,14 +315,14 @@ class GuildAction private constructor(
                 }
             }
 
-            @ActionDSL
+            @BuilderMarker
             class SetBuilder {
                 lateinit var guild_id: String
                 lateinit var user_id: String
                 lateinit var role_id: String
             }
 
-            @ActionDSL
+            @BuilderMarker
             class UnsetBuilder {
                 lateinit var guild_id: String
                 lateinit var user_id: String
@@ -384,26 +381,26 @@ class GuildAction private constructor(
             }
         }
 
-        @ActionDSL
+        @BuilderMarker
         class ListBuilder {
             lateinit var guild_id: String
             var next: String? = null
         }
 
-        @ActionDSL
+        @BuilderMarker
         class CreateBuilder {
             lateinit var guild_id: String
             lateinit var role: GuildRole
         }
 
-        @ActionDSL
+        @BuilderMarker
         class UpdateBuilder {
             lateinit var guild_id: String
             lateinit var role_id: String
             lateinit var role: GuildRole
         }
 
-        @ActionDSL
+        @BuilderMarker
         class DeleteBuilder {
             lateinit var guild_id: String
             lateinit var role_id: String
@@ -483,7 +480,7 @@ class MessageAction private constructor(private val action: GeneralAction) {
         }
     }
 
-    @ActionDSL
+    @BuilderMarker
     class CreateBuilder {
         lateinit var channel_id: String
         lateinit var content: String
@@ -493,19 +490,19 @@ class MessageAction private constructor(private val action: GeneralAction) {
         }
     }
 
-    @ActionDSL
+    @BuilderMarker
     class GetBuilder {
         lateinit var channel_id: String
         lateinit var message_id: String
     }
 
-    @ActionDSL
+    @BuilderMarker
     class DeleteBuilder {
         lateinit var channel_id: String
         lateinit var message_id: String
     }
 
-    @ActionDSL
+    @BuilderMarker
     class UpdateBuilder {
         lateinit var channel_id: String
         lateinit var message_id: String
@@ -516,7 +513,7 @@ class MessageAction private constructor(private val action: GeneralAction) {
         }
     }
 
-    @ActionDSL
+    @BuilderMarker
     class ListBuilder {
         lateinit var channel_id: String
         var next: String? = null
@@ -578,14 +575,14 @@ class ReactionAction private constructor(private val action: GeneralAction) {
         }
     }
 
-    @ActionDSL
+    @BuilderMarker
     class CreateBuilder {
         lateinit var channel_id: String
         lateinit var message_id: String
         lateinit var emoji: String
     }
 
-    @ActionDSL
+    @BuilderMarker
     class DeleteBuilder {
         lateinit var channel_id: String
         lateinit var message_id: String
@@ -593,14 +590,14 @@ class ReactionAction private constructor(private val action: GeneralAction) {
         var user_id: String? = null
     }
 
-    @ActionDSL
+    @BuilderMarker
     class ClearBuilder {
         lateinit var channel_id: String
         lateinit var message_id: String
         var emoji: String? = null
     }
 
-    @ActionDSL
+    @BuilderMarker
     class ListBuilder {
         lateinit var channel_id: String
         lateinit var message_id: String
@@ -624,7 +621,7 @@ class UserAction private constructor(val channel: ChannelAction, private val act
         }
     }
 
-    @ActionDSL
+    @BuilderMarker
     class GetBuilder {
         lateinit var user_id: String
     }
@@ -645,7 +642,7 @@ class UserAction private constructor(val channel: ChannelAction, private val act
             }
         }
 
-        @ActionDSL
+        @BuilderMarker
         class CreateBuilder {
             lateinit var user_id: String
             var guild_id: String? = null
@@ -680,12 +677,12 @@ class FriendAction private constructor(private val action: GeneralAction) {
         }
     }
 
-    @ActionDSL
+    @BuilderMarker
     class ListBuilder {
         var next: String? = null
     }
 
-    @ActionDSL
+    @BuilderMarker
     class ApproveBuilder {
         lateinit var message_id: String
         var approve: Boolean by Delegates.notNull()
@@ -736,14 +733,14 @@ class AdminAction private constructor(val login: LoginAction, val webhook: Webho
         }
 
 
-        @ActionDSL
+        @BuilderMarker
         class CreateBuilder {
             lateinit var url: String
             var token: String? = null
         }
 
 
-        @ActionDSL
+        @BuilderMarker
         class DeleteBuilder {
             lateinit var url: String
         }

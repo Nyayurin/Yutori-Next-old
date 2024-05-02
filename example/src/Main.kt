@@ -8,7 +8,7 @@ import javax.net.ssl.X509TrustManager
 fun main() {
     GlobalLoggerFactory.factory = DefaultLoggerFactory(Level.DEBUG)
     val server = System.getenv("Satori-Server") ?: "Chronocat"
-    val satori = Satori.of {
+    val satori = satori {
         install(Adapter::satori) {
             when (server) {
                 "Chronocat" -> {

@@ -19,6 +19,9 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.*
 import org.jsoup.nodes.Element
 
+@DslMarker
+annotation class BuilderMarker
+
 /**
  * JsonObject 字符串 DSL 构建器
  */

@@ -1,7 +1,5 @@
 # 消息 (Message)
 
-为了使用的方便, Yutori 将 Message 实体类的 content 属性由 String 类型替换为 MessageSegment 类型
-
 ## 动作 (Action)
 
 ### 发送消息

@@ -18,6 +18,7 @@ fun interface Listener<T : Event> {
     operator fun invoke(context: Context<T>)
 }
 
+@BuilderMarker
 class ListenersContainer private constructor() {
     val any = mutableListOf<Listener<Event>>()
     val guild = GuildContainer()
@@ -55,6 +56,7 @@ class ListenersContainer private constructor() {
         }
     }
 
+    @BuilderMarker
     class GuildContainer {
         val added = mutableListOf<Listener<GuildEvent>>()
         val updated = mutableListOf<Listener<GuildEvent>>()
@@ -88,6 +90,7 @@ class ListenersContainer private constructor() {
             else -> logger.warn(config.name, "Unsupported event: $event")
         }
 
+        @BuilderMarker
         class MemberContainer {
             val added = mutableListOf<Listener<GuildMemberEvent>>()
             val updated = mutableListOf<Listener<GuildMemberEvent>>()
@@ -120,6 +123,7 @@ class ListenersContainer private constructor() {
             }
         }
 
+        @BuilderMarker
         class RoleContainer {
             val created = mutableListOf<Listener<GuildRoleEvent>>()
             val updated = mutableListOf<Listener<GuildRoleEvent>>()
@@ -147,6 +151,7 @@ class ListenersContainer private constructor() {
         }
     }
 
+    @BuilderMarker
     class InteractionContainer {
         val button = mutableListOf<Listener<InteractionButtonEvent>>()
         val command = mutableListOf<Listener<InteractionCommandEvent>>()
@@ -167,6 +172,7 @@ class ListenersContainer private constructor() {
         }
     }
 
+    @BuilderMarker
     class LoginContainer {
         val added = mutableListOf<Listener<LoginEvent>>()
         val removed = mutableListOf<Listener<LoginEvent>>()
@@ -193,6 +199,7 @@ class ListenersContainer private constructor() {
         }
     }
 
+    @BuilderMarker
     class MessageContainer {
         val created = mutableListOf<Listener<MessageEvent>>()
         val updated = mutableListOf<Listener<MessageEvent>>()
@@ -219,6 +226,7 @@ class ListenersContainer private constructor() {
         }
     }
 
+    @BuilderMarker
     class ReactionContainer {
         val added = mutableListOf<Listener<ReactionEvent>>()
         val removed = mutableListOf<Listener<ReactionEvent>>()
@@ -239,6 +247,7 @@ class ListenersContainer private constructor() {
         }
     }
 
+    @BuilderMarker
     class FriendContainer {
         val request = mutableListOf<Listener<UserEvent>>()
         private val logger = GlobalLoggerFactory.getLogger(this::class.java)
