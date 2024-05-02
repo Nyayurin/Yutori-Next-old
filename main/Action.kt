@@ -14,19 +14,16 @@ See the Mulan PSL v2 for more details.
 
 package github.nyayurn.yutori_next
 
-import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import github.nyayurn.yutori_next.message.MessageDslBuilder
 import github.nyayurn.yutori_next.message.message
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.request.*
-import io.ktor.http.*
-import kotlinx.coroutines.runBlocking
 import kotlin.properties.Delegates
+
+fun interface ActionService {
+    fun send(resource: String, method: String, platform: String?, self_id: String?, content: String?): String
+}
 
 @DslMarker
 annotation class ActionDSL
@@ -40,7 +37,7 @@ annotation class ActionDSL
  * @property reaction 表态 API
  * @property user 用户 API
  * @property friend 好友 API
- * @property properties 配置信息, 供使用者获取
+ * @property admin 管理 API
  * @property name 属于哪个 Event Service
  */
 class Actions private constructor(
@@ -52,28 +49,25 @@ class Actions private constructor(
     val user: UserAction,
     val friend: FriendAction,
     val admin: AdminAction,
-    val properties: SatoriProperties,
     val name: String
 ) {
-    constructor(platform: String, self_id: String, properties: SatoriProperties, name: String) : this(
-        ChannelAction(platform, self_id, properties, name),
-        GuildAction(platform, self_id, properties, name),
-        LoginAction(platform, self_id, properties, name),
-        MessageAction(platform, self_id, properties, name),
-        ReactionAction(platform, self_id, properties, name),
-        UserAction(platform, self_id, properties, name),
-        FriendAction(platform, self_id, properties, name),
-        AdminAction(properties, name), properties, name
+    constructor(platform: String, self_id: String, name: String, service: ActionService) : this(
+        ChannelAction(platform, self_id, name, service),
+        GuildAction(platform, self_id, name, service),
+        LoginAction(platform, self_id, name, service),
+        MessageAction(platform, self_id, name, service),
+        ReactionAction(platform, self_id, name, service),
+        UserAction(platform, self_id, name, service),
+        FriendAction(platform, self_id, name, service),
+        AdminAction(name, service), name
     )
 
-    constructor(event: Event, properties: SatoriProperties, name: String) : this(
-        event.platform, event.self_id, properties, name
-    )
+    constructor(event: Event, name: String, service: ActionService) : this(event.platform, event.self_id, name, service)
 }
 
 class ChannelAction private constructor(private val action: GeneralAction) {
-    constructor(platform: String, self_id: String, properties: SatoriProperties, name: String) : this(
-        GeneralAction(platform, self_id, properties, "channel", name)
+    constructor(platform: String, self_id: String, name: String, service: ActionService) : this(
+        GeneralAction(platform, self_id, "channel", name, service)
     )
 
     /**
@@ -163,9 +157,9 @@ class GuildAction private constructor(
     val role: RoleAction,
     private val action: GeneralAction
 ) {
-    constructor(platform: String, self_id: String, properties: SatoriProperties, name: String) : this(
-        MemberAction(platform, self_id, properties, name), RoleAction(platform, self_id, properties, name),
-        GeneralAction(platform, self_id, properties, "guild", name)
+    constructor(platform: String, self_id: String, name: String, service: ActionService) : this(
+        MemberAction(platform, self_id, name, service), RoleAction(platform, self_id, name, service),
+        GeneralAction(platform, self_id, "guild", name, service)
     )
 
     /**
@@ -218,9 +212,9 @@ class GuildAction private constructor(
     }
 
     class MemberAction private constructor(val role: RoleAction, private val action: GeneralAction) {
-        constructor(platform: String, self_id: String, properties: SatoriProperties, name: String) : this(
-            RoleAction(platform, self_id, properties, name),
-            GeneralAction(platform, self_id, properties, "guild.member", name)
+        constructor(platform: String, self_id: String, name: String, service: ActionService) : this(
+            RoleAction(platform, self_id, name, service),
+            GeneralAction(platform, self_id, "guild.member", name, service)
         )
 
         /**
@@ -296,8 +290,8 @@ class GuildAction private constructor(
         }
 
         class RoleAction private constructor(private val action: GeneralAction) {
-            constructor(platform: String, self_id: String, properties: SatoriProperties, name: String) : this(
-                GeneralAction(platform, self_id, properties, "guild.member.role", name)
+            constructor(platform: String, self_id: String, name: String, service: ActionService) : this(
+                GeneralAction(platform, self_id, "guild.member.role", name, service)
             )
 
             /**
@@ -341,8 +335,8 @@ class GuildAction private constructor(
     }
 
     class RoleAction private constructor(private val action: GeneralAction) {
-        constructor(platform: String, self_id: String, properties: SatoriProperties, name: String) : this(
-            GeneralAction(platform, self_id, properties, "guild.role", name)
+        constructor(platform: String, self_id: String, name: String, service: ActionService) : this(
+            GeneralAction(platform, self_id, "guild.role", name, service)
         )
 
         /**
@@ -418,8 +412,8 @@ class GuildAction private constructor(
 }
 
 class LoginAction private constructor(private val action: GeneralAction) {
-    constructor(platform: String, self_id: String, properties: SatoriProperties, name: String) : this(
-        GeneralAction(platform, self_id, properties, "login", name)
+    constructor(platform: String, self_id: String, name: String, service: ActionService) : this(
+        GeneralAction(platform, self_id, "login", name, service)
     )
 
     /**
@@ -429,8 +423,8 @@ class LoginAction private constructor(private val action: GeneralAction) {
 }
 
 class MessageAction private constructor(private val action: GeneralAction) {
-    constructor(platform: String, self_id: String, properties: SatoriProperties, name: String) : this(
-        GeneralAction(platform, self_id, properties, "message", name)
+    constructor(platform: String, self_id: String, name: String, service: ActionService) : this(
+        GeneralAction(platform, self_id, "message", name, service)
     )
 
     /**
@@ -440,7 +434,7 @@ class MessageAction private constructor(private val action: GeneralAction) {
         val builder = CreateBuilder().apply(block)
         return action.sendWithParse("create") {
             put("channel_id", builder.channel_id)
-            put("content", builder.content.toString().replace("\n", "\\n").replace("\"", "\\\""))
+            put("content", builder.content.replace("\n", "\\n").replace("\"", "\\\""))
         }
     }
 
@@ -474,7 +468,7 @@ class MessageAction private constructor(private val action: GeneralAction) {
         action.send("update") {
             put("channel_id", builder.channel_id)
             put("message_id", builder.message_id)
-            put("content", builder.content.toString().replace("\n", "\\n").replace("\"", "\\\""))
+            put("content", builder.content.replace("\n", "\\n").replace("\"", "\\\""))
         }
     }
 
@@ -530,8 +524,8 @@ class MessageAction private constructor(private val action: GeneralAction) {
 }
 
 class ReactionAction private constructor(private val action: GeneralAction) {
-    constructor(platform: String, self_id: String, properties: SatoriProperties, name: String) : this(
-        GeneralAction(platform, self_id, properties, "reaction", name)
+    constructor(platform: String, self_id: String, name: String, service: ActionService) : this(
+        GeneralAction(platform, self_id, "reaction", name, service)
     )
 
     /**
@@ -616,8 +610,8 @@ class ReactionAction private constructor(private val action: GeneralAction) {
 }
 
 class UserAction private constructor(val channel: ChannelAction, private val action: GeneralAction) {
-    constructor(platform: String, self_id: String, properties: SatoriProperties, name: String) : this(
-        ChannelAction(platform, self_id, properties, name), GeneralAction(platform, self_id, properties, "user", name)
+    constructor(platform: String, self_id: String, name: String, service: ActionService) : this(
+        ChannelAction(platform, self_id, name, service), GeneralAction(platform, self_id, "user", name, service)
     )
 
     /**
@@ -636,8 +630,8 @@ class UserAction private constructor(val channel: ChannelAction, private val act
     }
 
     class ChannelAction private constructor(private val action: GeneralAction) {
-        constructor(platform: String, self_id: String, properties: SatoriProperties, name: String) : this(
-            GeneralAction(platform, self_id, properties, "user.channel", name)
+        constructor(platform: String, self_id: String, name: String, service: ActionService) : this(
+            GeneralAction(platform, self_id, "user.channel", name, service)
         )
 
         /**
@@ -660,8 +654,8 @@ class UserAction private constructor(val channel: ChannelAction, private val act
 }
 
 class FriendAction private constructor(private val action: GeneralAction) {
-    constructor(platform: String, self_id: String, properties: SatoriProperties, name: String) : this(
-        GeneralAction(platform, self_id, properties, "friend", name)
+    constructor(platform: String, self_id: String, name: String, service: ActionService) : this(
+        GeneralAction(platform, self_id, "friend", name, service)
     )
 
     /**
@@ -701,13 +695,11 @@ class FriendAction private constructor(private val action: GeneralAction) {
 
 
 class AdminAction private constructor(val login: LoginAction, val webhook: WebhookAction) {
-    constructor(properties: SatoriProperties, name: String) : this(
-        LoginAction(properties, name), WebhookAction(properties, name)
-    )
+    constructor(name: String, service: ActionService) : this(LoginAction(name, service), WebhookAction(name, service))
 
     class LoginAction private constructor(private val action: GeneralAction) {
-        constructor(properties: SatoriProperties, name: String) : this(
-            GeneralAction(null, null, properties, "login", name)
+        constructor(name: String, service: ActionService) : this(
+            GeneralAction(null, null, "login", name, service)
         )
 
         /**
@@ -718,8 +710,8 @@ class AdminAction private constructor(val login: LoginAction, val webhook: Webho
 
 
     class WebhookAction private constructor(private val action: GeneralAction) {
-        constructor(properties: SatoriProperties, name: String) : this(
-            GeneralAction(null, null, properties, "webhook", name)
+        constructor(name: String, service: ActionService) : this(
+            GeneralAction(null, null, "webhook", name, service)
         )
 
         /**
@@ -762,7 +754,6 @@ class AdminAction private constructor(val login: LoginAction, val webhook: Webho
  * Satori Action 实现
  * @property platform 平台
  * @property self_id 自身的 ID
- * @property properties 配置
  * @property resource 资源路径
  * @property name 隶属哪个 Event Service
  * @property mapper JSON 反序列化
@@ -771,54 +762,23 @@ class AdminAction private constructor(val login: LoginAction, val webhook: Webho
 class GeneralAction(
     val platform: String?,
     val self_id: String?,
-    val properties: SatoriProperties,
     val resource: String,
-    val name: String
+    val name: String,
+    val service: ActionService
 ) {
-    val mapper: ObjectMapper = jacksonObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    val mapper: ObjectMapper = jacksonObjectMapper()
     val logger = GlobalLoggerFactory.getLogger(this::class.java)
 
-    fun send(method: String, body: String? = null): String = runBlocking {
-        HttpClient(CIO).use { client ->
-            val response = client.post {
-                url {
-                    host = properties.host
-                    port = properties.port
-                    appendPathSegments(properties.path, properties.version, "$resource.$method")
-                }
-                contentType(ContentType.Application.Json)
-                headers {
-                    properties.token?.let { append(HttpHeaders.Authorization, "Bearer ${properties.token}") }
-                    platform?.let {
-                        @Suppress("UastIncorrectHttpHeaderInspection") append("X-Platform", platform)
-                    }
-                    self_id?.let {
-                        @Suppress("UastIncorrectHttpHeaderInspection") append("X-Self-ID", self_id)
-                    }
-                }
-                body?.let { setBody(body) }
-                logger.debug(
-                    name, """
-                    Satori Action: url: ${this.url},
-                        headers: ${this.headers.build()},
-                        body: ${this.body}
-                    """.trimIndent()
-                )
-            }
-            logger.debug(name, "Satori Action Response: $response")
-            response.body()
-        }
-    }
-
+    fun send(method: String, content: String? = null) = service.send(resource, method, platform, self_id, content)
     inline fun send(method: String, block: JsonObjectDSLBuilder.() -> Unit) = send(method, jsonObj(block))
-
     inline fun <reified T> sendWithParse(method: String, block: JsonObjectDSLBuilder.() -> Unit = {}): T {
-        val response = send(method, jsonObj(block))
-        return try {
-            mapper.readValue<T>(response)
-        } catch (e: Exception) {
-            logger.warn(name, response)
-            throw ResponseParsingException(response)
+        return send(method, jsonObj(block)).let { response ->
+            try {
+                mapper.readValue<T>(response)
+            } catch (e: Exception) {
+                logger.warn(name, response)
+                throw ResponseParsingException(response)
+            }
         }
     }
 }

@@ -18,109 +18,116 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.websocket.*
+import io.ktor.client.request.*
+import io.ktor.client.request.headers
 import io.ktor.http.*
 import io.ktor.server.application.*
-import io.ktor.server.cio.*
 import io.ktor.server.engine.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import io.ktor.websocket.*
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
-/**
- * Satori 事件服务接口, 用于与 Satori Server 进行通信
- */
-interface SatoriEventService : AutoCloseable {
-    /**
-     * 与 Satori Server 建立连接
-     */
-    fun connect(): SatoriEventService
+interface Adapter : Module {
+    companion object
 }
 
-class EventService {
-    companion object {
-        fun webSocket() = WebSocketModule()
-        fun webHook() = WebHookModule()
+fun Adapter.Companion.satori() = SatoriAdapter()
+
+class SatoriAdapter : Adapter {
+    var host: String = "127.0.0.1"
+    var port: Int = 5500
+    var path: String = ""
+    var token: String? = null
+    var version: String = "v1"
+    var webhook: WebHook? = null
+    private var service: EventService? = null
+
+    fun useWebHook(block: WebHook.() -> Unit) {
+        webhook = WebHook().apply(block)
     }
 
-    class WebSocketModule : Module {
-        var host: String = "127.0.0.1"
-        var port: Int = 5500
-        var path: String = ""
-        var token: String? = null
-        var version: String = "v1"
-        private var service: WebSocketEventService? = null
-
-        override fun install(satori: Satori) {
-            service = WebSocketEventService(SatoriProperties(host, port, path, token, version), satori.config)
-            service!!.connect()
-        }
-
-        override fun uninstall(satori: Satori) {
-            service?.close()
-            service = null
-        }
+    override fun install(satori: Satori) {
+        val properties = SatoriProperties(host, port, path, token, version)
+        service = webhook?.run { WebhookEventService(listen, port, path, properties, satori.config) }
+                  ?: WebSocketEventService(properties, satori.config)
+        service!!.connect()
     }
 
-    class WebHookModule : Module {
-        var webhook_host: String = "0.0.0.0"
-        var webhook_port: Int = 8080
-        var webhook_path: String = "/"
-        var host: String = "127.0.0.1"
-        var port: Int = 5500
-        var path: String = ""
-        var token: String? = null
-        var version: String = "v1"
-        private var service: WebhookEventService? = null
+    override fun uninstall(satori: Satori) {
+        service?.close()
+        service = null
+    }
 
-        override fun install(satori: Satori) {
-            service = WebhookEventService(
-                WebHookProperties(
-                    webhook_host, webhook_port, webhook_path, SatoriProperties(
-                        host, port, path, token, version
-                    )
-                ), satori.config
-            )
-            service!!.connect()
-        }
+    class WebHook {
+        var listen: String = "0.0.0.0"
+        var port: Int = 8080
+        var path: String = "/"
+    }
+}
 
-        override fun uninstall(satori: Satori) {
-            service?.close()
-            service = null
+class SatoriActionService(val properties: SatoriProperties, val name: String) : ActionService {
+    private val logger = GlobalLoggerFactory.getLogger(this::class.java)
+
+    @Suppress("UastIncorrectHttpHeaderInspection")
+    override fun send(
+        resource: String, method: String, platform: String?, self_id: String?, content: String?
+    ): String = runBlocking {
+        HttpClient(CIO).use { client ->
+            val response = client.post {
+                url {
+                    host = properties.host
+                    port = properties.port
+                    appendPathSegments(properties.path, properties.version, "$resource.$method")
+                }
+                contentType(ContentType.Application.Json)
+                headers {
+                    properties.token?.let { append(HttpHeaders.Authorization, "Bearer ${properties.token}") }
+                    platform?.let { append("X-Platform", platform) }
+                    self_id?.let { append("X-Self-ID", self_id) }
+                }
+                content?.let { setBody(content) }
+                logger.debug(
+                    name, """
+                    Satori Action: url: ${this.url},
+                        headers: ${this.headers.build()},
+                        body: ${this.body}
+                    """.trimIndent()
+                )
+            }
+            logger.debug(name, "Satori Action Response: $response")
+            response.body()
         }
     }
 }
+
 
 /**
  * Satori 事件服务的 WebSocket 实现
- * @param container 监听器容器
  * @param properties Satori Server 配置
- * @param name 用于区分不同 Satori 事件服务的名称
+ * @param config Satori 配置
  */
-class WebSocketEventService(val properties: SatoriProperties, val config: Config) : SatoriEventService {
+class WebSocketEventService(val properties: SatoriProperties, val config: Config) : EventService {
     private var is_received_pong = false
     private var sequence: Number? = null
     private var is_connected = false
+    private val service = SatoriActionService(properties, config.name)
     private val client = HttpClient {
         install(WebSockets)
     }
     private val logger = GlobalLoggerFactory.getLogger(this::class.java)
 
     @OptIn(DelicateCoroutinesApi::class)
-    override fun connect(): SatoriEventService {
+    override fun connect(): EventService {
         is_connected = false
         is_received_pong = false
         GlobalScope.launch {
             try {
                 client.webSocket(
-                    HttpMethod.Get,
-                    properties.host,
-                    properties.port,
-                    "${properties.path}/${properties.version}/events"
+                    HttpMethod.Get, properties.host, properties.port, "${properties.path}/${properties.version}/events"
                 ) {
                     logger.info(config.name, "成功建立 WebSocket 连接")
                     is_connected = true
@@ -212,7 +219,7 @@ class WebSocketEventService(val properties: SatoriProperties, val config: Config
                 }
                 logger.debug(config.name, "事件详细信息: $body")
                 sequence = event.id
-                config.container.runEvent(event, properties, config.name, config)
+                config.container.runEvent(event, config.name, config, service)
             }
 
             Signaling.PONG -> {
@@ -225,24 +232,27 @@ class WebSocketEventService(val properties: SatoriProperties, val config: Config
     }
 }
 
+
 /**
  * Satori 事件服务的 WebHook 实现
- * @param container 监听器容器
  * @param properties Satori WebHook 配置
- * @param name 用于区分不同 Satori 事件服务的名称
+ * @param config Satori 配置
  */
-class WebhookEventService(val properties: WebHookProperties, val config: Config) : SatoriEventService {
+class WebhookEventService(
+    val listen: String, val port: Int, val path: String, val properties: SatoriProperties, val config: Config
+) : EventService {
     private var client: ApplicationEngine? = null
+    private val service = SatoriActionService(properties, config.name)
     private val logger = GlobalLoggerFactory.getLogger(this::class.java)
 
     @OptIn(DelicateCoroutinesApi::class)
-    override fun connect(): SatoriEventService {
+    override fun connect(): EventService {
         GlobalScope.launch {
-            client = embeddedServer(CIO, properties.port, properties.host) {
+            client = embeddedServer(io.ktor.server.cio.CIO, port, listen) {
                 routing {
-                    post(properties.path) {
+                    post(path) {
                         val authorization = call.request.headers["Authorization"]
-                        if (authorization != properties.server.token) {
+                        if (authorization != properties.token) {
                             call.response.status(HttpStatusCode.Unauthorized)
                             return@post
                         }
@@ -268,7 +278,7 @@ class WebhookEventService(val properties: WebHookProperties, val config: Config)
                                     )
                                 }
                                 logger.debug(config.name, "事件详细信息: $body")
-                                config.container.runEvent(event, properties.server, config.name, config)
+                                config.container.runEvent(event, config.name, config, service)
                             }
                             call.response.status(HttpStatusCode.OK)
                         } catch (e: Exception) {
@@ -280,16 +290,16 @@ class WebhookEventService(val properties: WebHookProperties, val config: Config)
                 }
             }.start()
             logger.info(config.name, "成功启动 HTTP 服务器")
-            @Suppress("HttpUrlsUsage") AdminAction(properties.server, config.name).webhook.create {
+            @Suppress("HttpUrlsUsage") AdminAction(config.name, service).webhook.create {
                 url = "http://${properties.host}:${properties.port}${properties.path}"
-                token = properties.server.token
+                token = properties.token
             }
         }
         return this
     }
 
     override fun close() {
-        @Suppress("HttpUrlsUsage") AdminAction(properties.server, config.name).webhook.delete {
+        @Suppress("HttpUrlsUsage") AdminAction(config.name, service).webhook.delete {
             url = "http://${properties.host}:${properties.port}${properties.path}"
         }
         client?.stop()

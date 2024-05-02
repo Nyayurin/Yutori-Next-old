@@ -14,6 +14,17 @@ See the Mulan PSL v2 for more details.
 
 package github.nyayurn.yutori_next
 
+
+/**
+ * Satori 事件服务接口, 用于与 Satori Server 进行通信
+ */
+interface EventService : AutoCloseable {
+    /**
+     * 与 Satori Server 建立连接
+     */
+    fun connect(): EventService
+}
+
 /**
  * 事件
  * @property id 事件 ID
