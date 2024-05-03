@@ -15,13 +15,10 @@ See the Mulan PSL v2 for more details.
 package github.nyayurn.yutori_next.message
 
 import github.nyayurn.yutori_next.BuilderMarker
+import github.nyayurn.yutori_next.Satori
 
-/**
- * 消息 DSL 构造器
- * @param block DSL 块
- * @return 消息段(MessageSegment)
- */
-inline fun message(block: MessageDslBuilder.() -> Unit) = MessageDslBuilder().apply(block).buildMessage()
+inline fun message(satori: Satori, block: MessageDslBuilder.() -> Unit) =
+    MessageDslBuilder(satori).apply(block).buildMessage()
 
 interface ChildedBuilder {
     val elements: MutableList<MessageElement>
@@ -49,22 +46,32 @@ interface PropertiedBuilder : ChildedBuilder {
     }
 }
 
+abstract class ExtendedDslBuilder(builder: MessageDslBuilder) {
+    val satori: Satori = builder.satori
+    val elements: MutableList<MessageElement> = builder.elements
+}
+
 @BuilderMarker
-open class MessageDslBuilder : ChildedBuilder {
+open class MessageDslBuilder(val satori: Satori) : ChildedBuilder {
     override val elements = mutableListOf<MessageElement>()
+    val builders = mutableMapOf<String, ExtendedDslBuilder>().apply {
+        for ((key, value) in satori.message_builders) {
+            this[key] = value(this@MessageDslBuilder)
+        }
+    }
 
     fun element(element: MessageElement) = elements.add(element)
 
     inline fun text(block: () -> String) = Text(block()).apply { elements += this }
 
     inline fun node(block: NodeBuilder.() -> Unit) =
-        NodeBuilder().apply(block).buildElement().apply { elements += this }
+        NodeBuilder(satori).apply(block).buildElement().apply { elements += this }
 
     override fun buildMessage() = elements.joinToString("") { it.toString() }
     override fun toString() = elements.joinToString("") { it.toString() }
 
     @BuilderMarker
-    class NodeBuilder : MessageDslBuilder(), PropertiedBuilder {
+    class NodeBuilder(satori: Satori) : MessageDslBuilder(satori), PropertiedBuilder {
         override val properties = mutableMapOf<String, Any?>()
         lateinit var node_name: String
         override fun buildElement(): NodeMessageElement = buildElement(NodeMessageElement(node_name))

@@ -398,16 +398,16 @@ class LoginAction private constructor(private val action: GeneralAction) : Actio
     fun get(): Login = action.sendWithParse("get")
 }
 
-class MessageAction private constructor(private val action: GeneralAction) : Action {
-    constructor(platform: String, self_id: String, name: String, service: ActionService) : this(
-        GeneralAction(platform, self_id, "message", name, service)
+class MessageAction private constructor(private val action: GeneralAction, private val satori: Satori) : Action {
+    constructor(satori: Satori, platform: String, self_id: String, service: ActionService) : this(
+        GeneralAction(platform, self_id, "message", satori.name, service), satori
     )
 
     /**
      * 发送消息
      */
     fun create(block: CreateBuilder.() -> Unit): List<Message> {
-        val builder = CreateBuilder().apply(block)
+        val builder = CreateBuilder(satori).apply(block)
         return action.sendWithParse("create") {
             put("channel_id", builder.channel_id)
             put("content", builder.content.replace("\n", "\\n").replace("\"", "\\\""))
@@ -440,7 +440,7 @@ class MessageAction private constructor(private val action: GeneralAction) : Act
      * 编辑消息
      */
     fun update(block: UpdateBuilder.() -> Unit) {
-        val builder = UpdateBuilder().apply(block)
+        val builder = UpdateBuilder(satori).apply(block)
         action.send("update") {
             put("channel_id", builder.channel_id)
             put("message_id", builder.message_id)
@@ -460,12 +460,12 @@ class MessageAction private constructor(private val action: GeneralAction) : Act
     }
 
     @BuilderMarker
-    class CreateBuilder {
+    class CreateBuilder(val satori: Satori) {
         lateinit var channel_id: String
         lateinit var content: String
 
         fun content(block: MessageDslBuilder.() -> Unit) {
-            content = message(block)
+            content = message(satori, block)
         }
     }
 
@@ -482,13 +482,13 @@ class MessageAction private constructor(private val action: GeneralAction) : Act
     }
 
     @BuilderMarker
-    class UpdateBuilder {
+    class UpdateBuilder(val satori: Satori) {
         lateinit var channel_id: String
         lateinit var message_id: String
         lateinit var content: String
 
         fun content(block: MessageDslBuilder.() -> Unit) {
-            content = message(block)
+            content = message(satori, block)
         }
     }
 

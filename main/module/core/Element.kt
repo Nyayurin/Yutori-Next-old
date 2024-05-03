@@ -15,84 +15,35 @@ See the Mulan PSL v2 for more details.
 package github.nyayurn.yutori_next.module.core
 
 import github.nyayurn.yutori_next.BuilderMarker
+import github.nyayurn.yutori_next.Satori
+import github.nyayurn.yutori_next.message.ExtendedDslBuilder
 import github.nyayurn.yutori_next.message.MessageDslBuilder
 import github.nyayurn.yutori_next.message.NodeMessageElement
 import github.nyayurn.yutori_next.message.PropertiedBuilder
+import github.nyayurn.yutori_next.module.core.Core.At
+import github.nyayurn.yutori_next.module.core.Core.Audio
+import github.nyayurn.yutori_next.module.core.Core.Author
+import github.nyayurn.yutori_next.module.core.Core.Bold
+import github.nyayurn.yutori_next.module.core.Core.Br
+import github.nyayurn.yutori_next.module.core.Core.Button
+import github.nyayurn.yutori_next.module.core.Core.Code
+import github.nyayurn.yutori_next.module.core.Core.File
+import github.nyayurn.yutori_next.module.core.Core.Href
+import github.nyayurn.yutori_next.module.core.Core.Idiomatic
+import github.nyayurn.yutori_next.module.core.Core.Image
+import github.nyayurn.yutori_next.module.core.Core.Message
+import github.nyayurn.yutori_next.module.core.Core.Paragraph
+import github.nyayurn.yutori_next.module.core.Core.Quote
+import github.nyayurn.yutori_next.module.core.Core.Sharp
+import github.nyayurn.yutori_next.module.core.Core.Spl
+import github.nyayurn.yutori_next.module.core.Core.Strikethrough
+import github.nyayurn.yutori_next.module.core.Core.Sub
+import github.nyayurn.yutori_next.module.core.Core.Sup
+import github.nyayurn.yutori_next.module.core.Core.Underline
+import github.nyayurn.yutori_next.module.core.Core.Video
 
-inline fun MessageDslBuilder.at(block: Core.AtBuilder.() -> Unit) =
-    Core.AtBuilder().apply(block).buildElement().apply { elements += this }
-
-inline fun MessageDslBuilder.sharp(block: Core.SharpBuilder.() -> Unit) =
-    Core.SharpBuilder().apply(block).buildElement().apply { elements += this }
-
-inline fun MessageDslBuilder.a(block: Core.HrefBuilder.() -> Unit) =
-    Core.HrefBuilder().apply(block).buildElement().apply { elements += this }
-
-inline fun MessageDslBuilder.img(block: Core.ImageBuilder.() -> Unit) =
-    Core.ImageBuilder().apply(block).buildElement().apply { elements += this }
-
-inline fun MessageDslBuilder.audio(block: Core.AudioBuilder.() -> Unit) =
-    Core.AudioBuilder().apply(block).buildElement().apply { elements += this }
-
-inline fun MessageDslBuilder.video(block: Core.VideoBuilder.() -> Unit) =
-    Core.VideoBuilder().apply(block).buildElement().apply { elements += this }
-
-inline fun MessageDslBuilder.file(block: Core.FileBuilder.() -> Unit) =
-    Core.FileBuilder().apply(block).buildElement().apply { elements += this }
-
-inline fun MessageDslBuilder.b(block: Core.BoldBuilder.() -> Unit) =
-    Core.BoldBuilder().apply(block).buildElement().apply { elements += this }
-
-inline fun MessageDslBuilder.strong(block: Core.BoldBuilder.() -> Unit) =
-    Core.BoldBuilder().apply(block).buildElement().apply { elements += this }
-
-inline fun MessageDslBuilder.i(block: Core.IdiomaticBuilder.() -> Unit) =
-    Core.IdiomaticBuilder().apply(block).buildElement().apply { elements += this }
-
-inline fun MessageDslBuilder.em(block: Core.IdiomaticBuilder.() -> Unit) =
-    Core.IdiomaticBuilder().apply(block).buildElement().apply { elements += this }
-
-inline fun MessageDslBuilder.u(block: Core.UnderlineBuilder.() -> Unit) =
-    Core.UnderlineBuilder().apply(block).buildElement().apply { elements += this }
-
-inline fun MessageDslBuilder.ins(block: Core.UnderlineBuilder.() -> Unit) =
-    Core.UnderlineBuilder().apply(block).buildElement().apply { elements += this }
-
-inline fun MessageDslBuilder.s(block: Core.DeleteBuilder.() -> Unit) =
-    Core.DeleteBuilder().apply(block).buildElement().apply { elements += this }
-
-inline fun MessageDslBuilder.del(block: Core.DeleteBuilder.() -> Unit) =
-    Core.DeleteBuilder().apply(block).buildElement().apply { elements += this }
-
-inline fun MessageDslBuilder.spl(block: Core.SplBuilder.() -> Unit) =
-    Core.SplBuilder().apply(block).buildElement().apply { elements += this }
-
-inline fun MessageDslBuilder.code(block: Core.CodeBuilder.() -> Unit) =
-    Core.CodeBuilder().apply(block).buildElement().apply { elements += this }
-
-inline fun MessageDslBuilder.sup(block: Core.SupBuilder.() -> Unit) =
-    Core.SupBuilder().apply(block).buildElement().apply { elements += this }
-
-inline fun MessageDslBuilder.sub(block: Core.SubBuilder.() -> Unit) =
-    Core.SubBuilder().apply(block).buildElement().apply { elements += this }
-
-inline fun MessageDslBuilder.br(block: Core.BrBuilder.() -> Unit) =
-    Core.BrBuilder().apply(block).buildElement().apply { elements += this }
-
-inline fun MessageDslBuilder.p(block: Core.ParagraphBuilder.() -> Unit) =
-    Core.ParagraphBuilder().apply(block).buildElement().apply { elements += this }
-
-inline fun MessageDslBuilder.message(block: Core.MessageBuilder.() -> Unit) =
-    Core.MessageBuilder().apply(block).buildElement().apply { elements += this }
-
-inline fun MessageDslBuilder.quote(block: Core.QuoteBuilder.() -> Unit) =
-    Core.QuoteBuilder().apply(block).buildElement().apply { elements += this }
-
-inline fun MessageDslBuilder.author(block: Core.AuthorBuilder.() -> Unit) =
-    Core.AuthorBuilder().apply(block).buildElement().apply { elements += this }
-
-inline fun MessageDslBuilder.button(block: Core.ButtonBuilder.() -> Unit) =
-    Core.ButtonBuilder().apply(block).buildElement().apply { elements += this }
+val MessageDslBuilder.core: CoreDslBuilder
+    get() = this.builders["core"] as CoreDslBuilder
 
 object Core {
     /**
@@ -358,9 +309,87 @@ object Core {
         var text: String? by super.properties
         var theme: String? by super.properties
     }
+}
+
+@BuilderMarker
+open class CoreDslBuilder(builder: MessageDslBuilder) : ExtendedDslBuilder(builder) {
+    inline fun at(block: AtBuilder.() -> Unit) =
+        AtBuilder(satori).apply(block).buildElement().apply { elements += this }
+
+    inline fun sharp(block: SharpBuilder.() -> Unit) =
+        SharpBuilder(satori).apply(block).buildElement().apply { elements += this }
+
+    inline fun a(block: HrefBuilder.() -> Unit) =
+        HrefBuilder(satori).apply(block).buildElement().apply { elements += this }
+
+    inline fun img(block: ImageBuilder.() -> Unit) =
+        ImageBuilder(satori).apply(block).buildElement().apply { elements += this }
+
+    inline fun audio(block: AudioBuilder.() -> Unit) =
+        AudioBuilder(satori).apply(block).buildElement().apply { elements += this }
+
+    inline fun video(block: VideoBuilder.() -> Unit) =
+        VideoBuilder(satori).apply(block).buildElement().apply { elements += this }
+
+    inline fun file(block: FileBuilder.() -> Unit) =
+        FileBuilder(satori).apply(block).buildElement().apply { elements += this }
+
+    inline fun b(block: BoldBuilder.() -> Unit) =
+        BoldBuilder(satori).apply(block).buildElement().apply { elements += this }
+
+    inline fun strong(block: BoldBuilder.() -> Unit) =
+        BoldBuilder(satori).apply(block).buildElement().apply { elements += this }
+
+    inline fun i(block: IdiomaticBuilder.() -> Unit) =
+        IdiomaticBuilder(satori).apply(block).buildElement().apply { elements += this }
+
+    inline fun em(block: IdiomaticBuilder.() -> Unit) =
+        IdiomaticBuilder(satori).apply(block).buildElement().apply { elements += this }
+
+    inline fun u(block: UnderlineBuilder.() -> Unit) =
+        UnderlineBuilder(satori).apply(block).buildElement().apply { elements += this }
+
+    inline fun ins(block: UnderlineBuilder.() -> Unit) =
+        UnderlineBuilder(satori).apply(block).buildElement().apply { elements += this }
+
+    inline fun s(block: DeleteBuilder.() -> Unit) =
+        DeleteBuilder(satori).apply(block).buildElement().apply { elements += this }
+
+    inline fun del(block: DeleteBuilder.() -> Unit) =
+        DeleteBuilder(satori).apply(block).buildElement().apply { elements += this }
+
+    inline fun spl(block: SplBuilder.() -> Unit) =
+        SplBuilder(satori).apply(block).buildElement().apply { elements += this }
+
+    inline fun code(block: CodeBuilder.() -> Unit) =
+        CodeBuilder(satori).apply(block).buildElement().apply { elements += this }
+
+    inline fun sup(block: SupBuilder.() -> Unit) =
+        SupBuilder(satori).apply(block).buildElement().apply { elements += this }
+
+    inline fun sub(block: SubBuilder.() -> Unit) =
+        SubBuilder(satori).apply(block).buildElement().apply { elements += this }
+
+    inline fun br(block: BrBuilder.() -> Unit) =
+        BrBuilder(satori).apply(block).buildElement().apply { elements += this }
+
+    inline fun p(block: ParagraphBuilder.() -> Unit) =
+        ParagraphBuilder(satori).apply(block).buildElement().apply { elements += this }
+
+    inline fun message(block: MessageBuilder.() -> Unit) =
+        MessageBuilder(satori).apply(block).buildElement().apply { elements += this }
+
+    inline fun quote(block: QuoteBuilder.() -> Unit) =
+        QuoteBuilder(satori).apply(block).buildElement().apply { elements += this }
+
+    inline fun author(block: AuthorBuilder.() -> Unit) =
+        AuthorBuilder(satori).apply(block).buildElement().apply { elements += this }
+
+    inline fun button(block: ButtonBuilder.() -> Unit) =
+        ButtonBuilder(satori).apply(block).buildElement().apply { elements += this }
 
     @BuilderMarker
-    class AtBuilder : MessageDslBuilder(), PropertiedBuilder {
+    class AtBuilder(satori: Satori) : MessageDslBuilder(satori), PropertiedBuilder {
         override val properties =
             mutableMapOf<String, Any?>("id" to null, "name" to null, "role" to null, "type" to null)
         var id: String? by properties
@@ -371,7 +400,7 @@ object Core {
     }
 
     @BuilderMarker
-    class SharpBuilder : MessageDslBuilder(), PropertiedBuilder {
+    class SharpBuilder(satori: Satori) : MessageDslBuilder(satori), PropertiedBuilder {
         override val properties = mutableMapOf<String, Any?>("id" to "", "name" to null)
         var id: String by properties
         var name: String? by properties
@@ -379,14 +408,14 @@ object Core {
     }
 
     @BuilderMarker
-    class HrefBuilder : MessageDslBuilder(), PropertiedBuilder {
+    class HrefBuilder(satori: Satori) : MessageDslBuilder(satori), PropertiedBuilder {
         override val properties = mutableMapOf<String, Any?>("href" to "")
         var href: String by properties
         override fun buildElement() = buildElement(Href(href))
     }
 
     @BuilderMarker
-    class ImageBuilder : MessageDslBuilder(), PropertiedBuilder {
+    class ImageBuilder(satori: Satori) : MessageDslBuilder(satori), PropertiedBuilder {
         override val properties = mutableMapOf<String, Any?>(
             "src" to "", "title" to null, "cache" to null, "timeout" to null, "width" to null, "height" to null
         )
@@ -400,7 +429,7 @@ object Core {
     }
 
     @BuilderMarker
-    class AudioBuilder : MessageDslBuilder(), PropertiedBuilder {
+    class AudioBuilder(satori: Satori) : MessageDslBuilder(satori), PropertiedBuilder {
         override val properties = mutableMapOf<String, Any?>(
             "src" to "", "title" to null, "cache" to null, "timeout" to null, "duration" to null, "poster" to null
         )
@@ -414,7 +443,7 @@ object Core {
     }
 
     @BuilderMarker
-    class VideoBuilder : MessageDslBuilder(), PropertiedBuilder {
+    class VideoBuilder(satori: Satori) : MessageDslBuilder(satori), PropertiedBuilder {
         override val properties = mutableMapOf<String, Any?>(
             "src" to "", "title" to null, "cache" to null, "timeout" to null, "width" to null, "height" to null,
             "duration" to null, "poster" to null
@@ -432,7 +461,7 @@ object Core {
     }
 
     @BuilderMarker
-    class FileBuilder : MessageDslBuilder(), PropertiedBuilder {
+    class FileBuilder(satori: Satori) : MessageDslBuilder(satori), PropertiedBuilder {
         override val properties = mutableMapOf<String, Any?>(
             "src" to "", "title" to null, "cache" to null, "timeout" to null, "poster" to null
         )
@@ -445,67 +474,67 @@ object Core {
     }
 
     @BuilderMarker
-    class BoldBuilder : MessageDslBuilder(), PropertiedBuilder {
+    class BoldBuilder(satori: Satori) : MessageDslBuilder(satori), PropertiedBuilder {
         override val properties = mutableMapOf<String, Any?>()
         override fun buildElement() = buildElement(Bold())
     }
 
     @BuilderMarker
-    class IdiomaticBuilder : MessageDslBuilder(), PropertiedBuilder {
+    class IdiomaticBuilder(satori: Satori) : MessageDslBuilder(satori), PropertiedBuilder {
         override val properties = mutableMapOf<String, Any?>()
         override fun buildElement() = buildElement(Idiomatic())
     }
 
     @BuilderMarker
-    class UnderlineBuilder : MessageDslBuilder(), PropertiedBuilder {
+    class UnderlineBuilder(satori: Satori) : MessageDslBuilder(satori), PropertiedBuilder {
         override val properties = mutableMapOf<String, Any?>()
         override fun buildElement() = buildElement(Underline())
     }
 
     @BuilderMarker
-    class DeleteBuilder : MessageDslBuilder(), PropertiedBuilder {
+    class DeleteBuilder(satori: Satori) : MessageDslBuilder(satori), PropertiedBuilder {
         override val properties = mutableMapOf<String, Any?>()
         override fun buildElement() = buildElement(Strikethrough())
     }
 
     @BuilderMarker
-    class SplBuilder : MessageDslBuilder(), PropertiedBuilder {
+    class SplBuilder(satori: Satori) : MessageDslBuilder(satori), PropertiedBuilder {
         override val properties = mutableMapOf<String, Any?>()
         override fun buildElement() = buildElement(Spl())
     }
 
     @BuilderMarker
-    class CodeBuilder : MessageDslBuilder(), PropertiedBuilder {
+    class CodeBuilder(satori: Satori) : MessageDslBuilder(satori), PropertiedBuilder {
         override val properties = mutableMapOf<String, Any?>()
         override fun buildElement() = buildElement(Code())
     }
 
     @BuilderMarker
-    class SupBuilder : MessageDslBuilder(), PropertiedBuilder {
+    class SupBuilder(satori: Satori) : MessageDslBuilder(satori), PropertiedBuilder {
         override val properties = mutableMapOf<String, Any?>()
         override fun buildElement() = buildElement(Sup())
     }
 
     @BuilderMarker
-    class SubBuilder : MessageDslBuilder(), PropertiedBuilder {
+    class SubBuilder(satori: Satori) : MessageDslBuilder(satori), PropertiedBuilder {
         override val properties = mutableMapOf<String, Any?>()
         override fun buildElement() = buildElement(Sub())
     }
 
     @BuilderMarker
-    class BrBuilder : MessageDslBuilder(), PropertiedBuilder {
+    class BrBuilder(satori: Satori) : MessageDslBuilder(satori), PropertiedBuilder {
         override val properties = mutableMapOf<String, Any?>()
         override fun buildElement() = buildElement(Br())
     }
 
     @BuilderMarker
-    class ParagraphBuilder : MessageDslBuilder(), PropertiedBuilder {
+    class ParagraphBuilder(satori: Satori) : MessageDslBuilder(satori), PropertiedBuilder {
         override val properties = mutableMapOf<String, Any?>()
         override fun buildElement() = buildElement(Paragraph())
     }
 
     @BuilderMarker
-    class MessageBuilder : MessageDslBuilder(), PropertiedBuilder {
+    class MessageBuilder(satori: Satori) : MessageDslBuilder(satori), PropertiedBuilder {
         override val properties = mutableMapOf<String, Any?>("id" to null, "forward" to null)
         var id: String? by properties
         var forward: Boolean? by properties
@@ -513,7 +542,7 @@ object Core {
     }
 
     @BuilderMarker
-    class QuoteBuilder : MessageDslBuilder(), PropertiedBuilder {
+    class QuoteBuilder(satori: Satori) : MessageDslBuilder(satori), PropertiedBuilder {
         override val properties = mutableMapOf<String, Any?>("id" to null, "forward" to null)
         var id: String? by properties
         var forward: Boolean? by properties
@@ -521,7 +550,7 @@ object Core {
     }
 
     @BuilderMarker
-    class AuthorBuilder : MessageDslBuilder(), PropertiedBuilder {
+    class AuthorBuilder(satori: Satori) : MessageDslBuilder(satori), PropertiedBuilder {
         override val properties = mutableMapOf<String, Any?>("id" to null, "name" to null, "avatar" to null)
         var id: String? by properties
         var name: String? by properties
@@ -530,7 +559,7 @@ object Core {
     }
 
     @BuilderMarker
-    class ButtonBuilder : MessageDslBuilder(), PropertiedBuilder {
+    class ButtonBuilder(satori: Satori) : MessageDslBuilder(satori), PropertiedBuilder {
         override val properties =
             mutableMapOf<String, Any?>("id" to null, "type" to null, "href" to null, "text" to null, "theme" to null)
         var id: String? by properties
