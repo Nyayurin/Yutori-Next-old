@@ -20,7 +20,7 @@ import kotlin.properties.Delegates
 val Actions.chronocat: ChronocatAction
     get() = actions["chronocat"] as ChronocatAction
 
-class ChronocatAction private constructor(val unsafe: UnsafeAction) : Action {
+class ChronocatAction private constructor(val unsafe: UnsafeAction) : ExtendedActions() {
     constructor(platform: String, self_id: String, name: String, service: ActionService) : this(
         UnsafeAction(platform, self_id, name, service)
     )
@@ -29,14 +29,14 @@ class ChronocatAction private constructor(val unsafe: UnsafeAction) : Action {
         val channel: ChannelAction,
         val guild: GuildAction,
         val friend: FriendAction
-    ) : Action {
+    ) {
         constructor(platform: String, self_id: String, name: String, service: ActionService) : this(
             ChannelAction(platform, self_id, name, service),
             GuildAction(platform, self_id, name, service),
             FriendAction(platform, self_id, name, service)
         )
 
-        class ChannelAction private constructor(private val action: GeneralAction) : Action {
+        class ChannelAction private constructor(private val action: GeneralAction) {
             constructor(platform: String, self_id: String, name: String, service: ActionService) : this(
                 GeneralAction(platform, self_id, "unsafe.channel", name, service)
             )
@@ -56,7 +56,7 @@ class ChronocatAction private constructor(val unsafe: UnsafeAction) : Action {
             }
         }
 
-        class GuildAction private constructor(private val action: GeneralAction) : Action {
+        class GuildAction private constructor(private val action: GeneralAction) {
             constructor(platform: String, self_id: String, name: String, service: ActionService) : this(
                 GeneralAction(platform, self_id, "unsafe.guild", name, service)
             )
@@ -74,7 +74,7 @@ class ChronocatAction private constructor(val unsafe: UnsafeAction) : Action {
             }
         }
 
-        class FriendAction private constructor(private val action: GeneralAction) : Action {
+        class FriendAction private constructor(private val action: GeneralAction) {
             constructor(platform: String, self_id: String, name: String, service: ActionService) : this(
                 GeneralAction(platform, self_id, "unsafe.friend", name, service)
             )

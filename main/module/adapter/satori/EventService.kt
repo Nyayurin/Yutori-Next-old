@@ -18,7 +18,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import github.nyayurn.yutori_next.*
-import github.nyayurn.yutori_next.module.core.AdminAction
+import github.nyayurn.yutori_next.module.core.CoreAction
 import io.ktor.client.*
 import io.ktor.client.plugins.websocket.*
 import io.ktor.http.*
@@ -223,7 +223,7 @@ class WebhookEventService(
                 }
             }.start()
             logger.info(satori.name, "成功启动 HTTP 服务器")
-            AdminAction(satori.name, service).webhook.create {
+            CoreAction.AdminAction(satori.name, service).webhook.create {
                 url = "http://${properties.host}:${properties.port}${properties.path}"
                 token = properties.token
             }
@@ -232,7 +232,7 @@ class WebhookEventService(
     }
 
     override fun close() {
-        AdminAction(satori.name, service).webhook.delete {
+        CoreAction.AdminAction(satori.name, service).webhook.delete {
             url = "http://${properties.host}:${properties.port}${properties.path}"
         }
         client?.stop()

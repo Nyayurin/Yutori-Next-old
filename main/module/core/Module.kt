@@ -21,39 +21,15 @@ val Module.Companion.Core: CoreModule
 
 object CoreModule : Module {
     override fun install(satori: Satori) {
-        ActionModule.install(satori)
+        satori.actions["core"] = { platform, id, service -> CoreAction(satori, platform, id, service) }
+        satori.message_builders["core"] = { CoreDslBuilder(it) }
         ElementModule.install(satori)
-        MessageBuilder.install(satori)
     }
 
     override fun uninstall(satori: Satori) {
-        ActionModule.uninstall(satori)
+        satori.actions.remove("core")
+        satori.message_builders.remove("core")
         ElementModule.uninstall(satori)
-        MessageBuilder.uninstall(satori)
-    }
-
-    private object ActionModule : Module {
-        override fun install(satori: Satori) {
-            satori.actions["channel"] = { platform, id, service -> ChannelAction(platform, id, satori.name, service) }
-            satori.actions["guild"] = { platform, id, service -> GuildAction(platform, id, satori.name, service) }
-            satori.actions["login"] = { platform, id, service -> LoginAction(platform, id, satori.name, service) }
-            satori.actions["message"] = { platform, id, service -> MessageAction(satori, platform, id, service) }
-            satori.actions["reaction"] = { platform, id, service -> ReactionAction(platform, id, satori.name, service) }
-            satori.actions["user"] = { platform, id, service -> UserAction(platform, id, satori.name, service) }
-            satori.actions["friend"] = { platform, id, service -> FriendAction(platform, id, satori.name, service) }
-            satori.actions["admin"] = { _, _, service -> AdminAction(satori.name, service) }
-        }
-
-        override fun uninstall(satori: Satori) {
-            satori.actions.remove("channel")
-            satori.actions.remove("guild")
-            satori.actions.remove("login")
-            satori.actions.remove("message")
-            satori.actions.remove("reaction")
-            satori.actions.remove("user")
-            satori.actions.remove("friend")
-            satori.actions.remove("admin")
-        }
     }
 
     private object ElementModule : Module {
@@ -111,16 +87,6 @@ object CoreModule : Module {
             satori.elements.remove("quote")
             satori.elements.remove("author")
             satori.elements.remove("button")
-        }
-    }
-
-    private object MessageBuilder : Module {
-        override fun install(satori: Satori) {
-            satori.message_builders["core"] = { CoreDslBuilder(it) }
-        }
-
-        override fun uninstall(satori: Satori) {
-            satori.message_builders.remove("core")
         }
     }
 }

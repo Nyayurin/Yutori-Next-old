@@ -22,7 +22,7 @@ import org.jsoup.nodes.Element
 
 class Satori(val name: String, val container: ListenersContainer, val modules: MutableList<Module>) {
     val elements = mutableMapOf<String, (Element) -> NodeMessageElement>()
-    val actions = mutableMapOf<String, (platform: String, id: String, service: ActionService) -> Action>()
+    val actions = mutableMapOf<String, (platform: String, id: String, service: ActionService) -> ExtendedActions>()
     val message_builders = mutableMapOf<String, (MessageDslBuilder) -> ExtendedDslBuilder>()
 
     fun start() = modules.forEach { module -> module.install(this) }

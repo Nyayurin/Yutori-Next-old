@@ -22,13 +22,13 @@ fun interface ActionService {
     fun send(resource: String, method: String, platform: String?, self_id: String?, content: String?): String
 }
 
-interface Action
+abstract class ExtendedActions
 
 /**
  * 封装所有 Action, 应通过本类对 Satori Server 发送 Satori Action
  */
 class Actions private constructor(platform: String, self_id: String, service: ActionService, satori: Satori) {
-    val actions = mutableMapOf<String, Action>()
+    val actions = mutableMapOf<String, ExtendedActions>()
 
     init {
         for ((key, value) in satori.actions) actions[key] = value(platform, self_id, service)
