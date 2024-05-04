@@ -18,7 +18,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import github.nyayurn.yutori_next.*
-import github.nyayurn.yutori_next.module.core.CoreAction
+import github.nyayurn.yutori_next.module.core.CoreActionsContainer
+import github.nyayurn.yutori_next.module.core.MessageEvent
+import github.nyayurn.yutori_next.module.core.MessageEvents
 import io.ktor.client.*
 import io.ktor.client.plugins.websocket.*
 import io.ktor.http.*
@@ -135,14 +137,14 @@ class WebSocketEventService(val properties: SatoriProperties, val satori: Satori
 
             Signaling.EVENT -> launch {
                 val event = signaling.body as Event
-                when (event) {
-                    is MessageEvent -> logger.info(satori.name, buildString {
+                when (event.type) {
+                    MessageEvents.Created -> logger.info(satori.name, buildString {
                         append("${event.platform}(${event.self_id}) 接收事件(${event.type}): ")
-                        append("\u001B[38;5;4m").append("${event.channel.name}(${event.channel.id})")
+                        append("\u001B[38;5;4m").append("${event.channel!!.name}(${event.channel!!.id})")
                         append("\u001B[38;5;8m").append("-")
                         append("\u001B[38;5;6m")
-                        append("${event.member?.nick ?: event.user.nick ?: event.user.name}(${event.user.id})")
-                        append("\u001B[0m").append(": ").append(event.message.content)
+                        append("${event.member?.nick ?: event.user!!.nick ?: event.user!!.name}(${event.user!!.id})")
+                        append("\u001B[0m").append(": ").append(event.message!!.content)
                     })
 
                     else -> logger.info(satori.name, "${event.platform}(${event.self_id}) 接收事件: ${event.type}")
@@ -223,7 +225,7 @@ class WebhookEventService(
                 }
             }.start()
             logger.info(satori.name, "成功启动 HTTP 服务器")
-            CoreAction.AdminAction(satori.name, service).webhook.create {
+            CoreActionsContainer.AdminAction(satori.name, service).webhook.create {
                 url = "http://${properties.host}:${properties.port}${properties.path}"
                 token = properties.token
             }
@@ -232,7 +234,7 @@ class WebhookEventService(
     }
 
     override fun close() {
-        CoreAction.AdminAction(satori.name, service).webhook.delete {
+        CoreActionsContainer.AdminAction(satori.name, service).webhook.delete {
             url = "http://${properties.host}:${properties.port}${properties.path}"
         }
         client?.stop()

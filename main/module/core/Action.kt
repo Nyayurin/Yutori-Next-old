@@ -15,14 +15,14 @@ See the Mulan PSL v2 for more details.
 package github.nyayurn.yutori_next.module.core
 
 import github.nyayurn.yutori_next.*
-import github.nyayurn.yutori_next.message.MessageDslBuilder
+import github.nyayurn.yutori_next.message.MessageBuilder
 import github.nyayurn.yutori_next.message.message
 import kotlin.properties.Delegates
 
-val Actions.core: CoreAction
-    get() = actions["core"] as CoreAction
+val ActionsContainer.core: CoreActionsContainer
+    get() = containers["core"] as CoreActionsContainer
 
-class CoreAction private constructor(
+class CoreActionsContainer private constructor(
     val channel: ChannelAction,
     val guild: GuildAction,
     val login: LoginAction,
@@ -31,7 +31,7 @@ class CoreAction private constructor(
     val user: UserAction,
     val friend: FriendAction,
     val admin: AdminAction
-) : ExtendedActions() {
+) : ExtendedActionsContainer() {
     constructor(satori: Satori, platform: String, self_id: String, service: ActionService) : this(
         ChannelAction(platform, self_id, satori.name, service),
         GuildAction(platform, self_id, satori.name, service),
@@ -464,7 +464,7 @@ class CoreAction private constructor(
             lateinit var channel_id: String
             lateinit var content: String
 
-            fun content(block: MessageDslBuilder.() -> Unit) {
+            fun content(block: MessageBuilder.() -> Unit) {
                 content = message(satori, block)
             }
         }
@@ -487,7 +487,7 @@ class CoreAction private constructor(
             lateinit var message_id: String
             lateinit var content: String
 
-            fun content(block: MessageDslBuilder.() -> Unit) {
+            fun content(block: MessageBuilder.() -> Unit) {
                 content = message(satori, block)
             }
         }

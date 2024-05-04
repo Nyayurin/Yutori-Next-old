@@ -267,6 +267,78 @@ class Identify(token: String? = null, sequence: Number? = null) : Entity(
     val sequence: Number? by super.properties
 }
 
+
+/**
+ * 事件
+ * @property id 事件 ID
+ * @property type 事件类型
+ * @property platform 接收者的平台名称
+ * @property self_id 接收者的平台账号
+ * @property timestamp 事件的时间戳
+ * @property argv 交互指令
+ * @property button 交互按钮
+ * @property channel 事件所属的频道
+ * @property guild 事件所属的群组
+ * @property login 事件的登录信息
+ * @property member 事件的目标成员
+ * @property message 事件的消息
+ * @property operator 事件的操作者
+ * @property role 事件的目标角色
+ * @property user 事件的目标用户
+ */
+open class Event(
+    id: Number,
+    type: String,
+    platform: String,
+    self_id: String,
+    timestamp: Number,
+    argv: Interaction.Argv? = null,
+    button: Interaction.Button? = null,
+    channel: Channel? = null,
+    guild: Guild? = null,
+    login: Login? = null,
+    member: GuildMember? = null,
+    message: Message? = null,
+    operator: User? = null,
+    role: GuildRole? = null,
+    user: User? = null,
+    vararg pair: Pair<String, Any?>
+) : Signaling.Body {
+    val properties = mutableMapOf(
+        "id" to id,
+        "type" to type,
+        "platform" to platform,
+        "self_id" to self_id,
+        "timestamp" to timestamp,
+        "argv" to argv,
+        "button" to button,
+        "channel" to channel,
+        "guild" to guild,
+        "login" to login,
+        "member" to member,
+        "message" to message,
+        "operator" to operator,
+        "role" to role,
+        "user" to user,
+        *pair
+    )
+    val id: Number by properties
+    val type: String by properties
+    val platform: String by properties
+    val self_id: String by properties
+    val timestamp: Number by properties
+    open val argv: Interaction.Argv? by properties
+    open val button: Interaction.Button? by properties
+    open val channel: Channel? by properties
+    open val guild: Guild? by properties
+    open val login: Login? by properties
+    open val member: GuildMember? by properties
+    open val message: Message? by properties
+    open val operator: User? by properties
+    open val role: GuildRole? by properties
+    open val user: User? by properties
+}
+
 /**
  * 分页数据
  * @param T 数据类型
@@ -294,4 +366,4 @@ data class SatoriProperties(
     val version: String = "v1"
 )
 
-data class Context<T : Event>(val actions: Actions, val event: T, val satori: Satori)
+data class Context<T : Event>(val actions: ActionsContainer, val event: T, val satori: Satori)

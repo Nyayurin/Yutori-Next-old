@@ -58,7 +58,7 @@ class CoreListenersContainer : ExtendedListenersContainer() {
                 role(raw)
                 return
             }
-            val context = Context(raw.actions, GuildEvent.parse(raw.event), raw.satori)
+            val context = Context(raw.actions, GuildEvent(raw.event), raw.satori)
             when (context.event.type) {
                 GuildEvents.Added -> added.forEach { it(context) }
                 GuildEvents.Updated -> updated.forEach { it(context) }
@@ -82,7 +82,7 @@ class CoreListenersContainer : ExtendedListenersContainer() {
 
             operator fun invoke(raw: Context<Event>) {
                 if (raw.event.type !in GuildMemberEvents.Types) return
-                val context = Context(raw.actions, GuildMemberEvent.parse(raw.event), raw.satori)
+                val context = Context(raw.actions, GuildMemberEvent(raw.event), raw.satori)
                 when (context.event.type) {
                     GuildMemberEvents.Added -> added.forEach { it(context) }
                     GuildMemberEvents.Updated -> updated.forEach { it(context) }
@@ -105,7 +105,7 @@ class CoreListenersContainer : ExtendedListenersContainer() {
 
             operator fun invoke(raw: Context<Event>) {
                 if (raw.event.type !in GuildRoleEvents.Types) return
-                val context = Context(raw.actions, GuildRoleEvent.parse(raw.event), raw.satori)
+                val context = Context(raw.actions, GuildRoleEvent(raw.event), raw.satori)
                 when (context.event.type) {
                     GuildRoleEvents.Created -> created.forEach { it(context) }
                     GuildRoleEvents.Updated -> updated.forEach { it(context) }
@@ -127,11 +127,11 @@ class CoreListenersContainer : ExtendedListenersContainer() {
         operator fun invoke(raw: Context<Event>) {
             when (raw.event.type) {
                 InteractionEvents.Button -> button.forEach {
-                    it(Context(raw.actions, InteractionButtonEvent.parse(raw.event), raw.satori))
+                    it(Context(raw.actions, InteractionButtonEvent(raw.event), raw.satori))
                 }
 
                 InteractionEvents.Command -> command.forEach {
-                    it(Context(raw.actions, InteractionCommandEvent.parse(raw.event), raw.satori))
+                    it(Context(raw.actions, InteractionCommandEvent(raw.event), raw.satori))
                 }
             }
         }
@@ -150,7 +150,7 @@ class CoreListenersContainer : ExtendedListenersContainer() {
 
         operator fun invoke(raw: Context<Event>) {
             if (raw.event.type !in LoginEvents.Types) return
-            val context = Context(raw.actions, LoginEvent.parse(raw.event), raw.satori)
+            val context = Context(raw.actions, LoginEvent(raw.event), raw.satori)
             when (context.event.type) {
                 LoginEvents.Added -> added.forEach { it(context) }
                 LoginEvents.Removed -> removed.forEach { it(context) }
@@ -172,7 +172,7 @@ class CoreListenersContainer : ExtendedListenersContainer() {
 
         operator fun invoke(raw: Context<Event>) {
             if (raw.event.type !in MessageEvents.Types) return
-            val context = Context(raw.actions, MessageEvent.parse(raw.event), raw.satori)
+            val context = Context(raw.actions, MessageEvent(raw.event), raw.satori)
             when (context.event.type) {
                 MessageEvents.Created -> created.forEach { it(context) }
                 MessageEvents.Updated -> updated.forEach { it(context) }
@@ -192,7 +192,7 @@ class CoreListenersContainer : ExtendedListenersContainer() {
 
         operator fun invoke(raw: Context<Event>) {
             if (raw.event.type !in ReactionEvents.Types) return
-            val context = Context(raw.actions, ReactionEvent.parse(raw.event), raw.satori)
+            val context = Context(raw.actions, ReactionEvent(raw.event), raw.satori)
             when (context.event.type) {
                 ReactionEvents.Added -> added.forEach { it(context) }
                 ReactionEvents.Removed -> removed.forEach { it(context) }
@@ -210,7 +210,7 @@ class CoreListenersContainer : ExtendedListenersContainer() {
         operator fun invoke(raw: Context<Event>) {
             when (raw.event.type) {
                 UserEvents.Friend_Request -> request.forEach {
-                    it(Context(raw.actions, UserEvent.parse(raw.event), raw.satori))
+                    it(Context(raw.actions, UserEvent(raw.event), raw.satori))
                 }
             }
         }

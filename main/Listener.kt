@@ -21,18 +21,16 @@ abstract class ExtendedListenersContainer {
 }
 
 @BuilderMarker
-class ListenersContainer(satori: Satori) {
+class ListenersContainer {
     val any = mutableListOf<Listener<Event>>()
-    val containers = mutableMapOf<String, ExtendedListenersContainer>().apply {
-        for ((key, value) in satori.listeners_containers) this[key] = value()
-    }
+    val containers = mutableMapOf<String, ExtendedListenersContainer>()
     private val logger = GlobalLoggerFactory.getLogger(this::class.java)
 
     fun any(listener: Context<Event>.() -> Unit) = any.add { it.listener() }
 
     operator fun invoke(event: Event, satori: Satori, service: ActionService) {
         try {
-            val context = Context(Actions(event, service, satori), event, satori)
+            val context = Context(ActionsContainer(event, service, satori), event, satori)
             for (listener in this.any) listener(context)
             for (container in containers.values) container(context)
         } catch (e: EventParsingException) {

@@ -15,6 +15,7 @@ See the Mulan PSL v2 for more details.
 package github.nyayurn.yutori_next.module.adapter.satori
 
 import github.nyayurn.yutori_next.*
+import github.nyayurn.yutori_next.module.core.Core
 
 val Adapter.Companion.Satori: SatoriAdapter
     get() = SatoriAdapter()
@@ -34,13 +35,25 @@ class SatoriAdapter : Adapter {
     }
 
     override fun install(satori: Satori) {
+        if (Module.Core !in satori.modules) {
+            Module.Core.install(satori)
+        }
+    }
+
+    override fun uninstall(satori: Satori) {
+        if (Module.Core !in satori.modules) {
+            Module.Core.uninstall(satori)
+        }
+    }
+
+    override fun start(satori: Satori) {
         val properties = SatoriProperties(host, port, path, token, version)
         service = webhook?.run { WebhookEventService(listen, port, path, properties, satori) }
                   ?: WebSocketEventService(properties, satori)
         service!!.connect()
     }
 
-    override fun uninstall(satori: Satori) {
+    override fun stop(satori: Satori) {
         service?.close()
         service = null
     }

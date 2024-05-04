@@ -17,10 +17,10 @@ package github.nyayurn.yutori_next.module.chronocat
 import github.nyayurn.yutori_next.*
 import kotlin.properties.Delegates
 
-val Actions.chronocat: ChronocatAction
-    get() = actions["chronocat"] as ChronocatAction
+val ActionsContainer.chronocat: ChronocatActionsContainer
+    get() = containers["chronocat"] as ChronocatActionsContainer
 
-class ChronocatAction private constructor(val unsafe: UnsafeAction) : ExtendedActions() {
+class ChronocatActionsContainer private constructor(val unsafe: UnsafeAction) : ExtendedActionsContainer() {
     constructor(platform: String, self_id: String, name: String, service: ActionService) : this(
         UnsafeAction(platform, self_id, name, service)
     )

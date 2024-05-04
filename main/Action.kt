@@ -18,18 +18,14 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 
-fun interface ActionService {
-    fun send(resource: String, method: String, platform: String?, self_id: String?, content: String?): String
-}
-
-abstract class ExtendedActions
+abstract class ExtendedActionsContainer
 
 /**
  * 封装所有 Action, 应通过本类对 Satori Server 发送 Satori Action
  */
-class Actions private constructor(platform: String, self_id: String, service: ActionService, satori: Satori) {
-    val actions = mutableMapOf<String, ExtendedActions>().apply {
-        for ((key, value) in satori.actions) this[key] = value(platform, self_id, service)
+class ActionsContainer private constructor(platform: String, self_id: String, service: ActionService, satori: Satori) {
+    val containers = mutableMapOf<String, ExtendedActionsContainer>().apply {
+        for ((key, value) in satori.actions_containers) this[key] = value(platform, self_id, service)
     }
 
     constructor(event: Event, service: ActionService, satori: Satori) : this(

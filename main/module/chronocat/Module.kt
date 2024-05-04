@@ -21,13 +21,15 @@ val Module.Companion.Chronocat: ChronocatModule
 
 object ChronocatModule : Module {
     override fun install(satori: Satori) {
-        satori.actions["chronocat"] = { platform, id, service -> ChronocatAction(platform, id, satori.name, service) }
-        satori.message_builders["chronocat"] = { ChronocatDslBuilder(it) }
+        satori.actions_containers["chronocat"] = { platform, self_id, service ->
+            ChronocatActionsContainer(platform, self_id, satori.name, service)
+        }
+        satori.message_builders["chronocat"] = { ChronocatMessageBuilder(it) }
         Element.install(satori)
     }
 
     override fun uninstall(satori: Satori) {
-        satori.actions.remove("chronocat")
+        satori.actions_containers.remove("chronocat")
         satori.message_builders.remove("chronocat")
         Element.uninstall(satori)
     }

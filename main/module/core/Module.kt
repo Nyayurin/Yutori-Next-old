@@ -21,16 +21,18 @@ val Module.Companion.Core: CoreModule
 
 object CoreModule : Module {
     override fun install(satori: Satori) {
-        satori.actions["core"] = { platform, id, service -> CoreAction(satori, platform, id, service) }
-        satori.message_builders["core"] = { CoreDslBuilder(it) }
-        satori.listeners_containers["core"] = { CoreListenersContainer() }
+        satori.actions_containers["core"] = { platform, self_id, service ->
+            CoreActionsContainer(satori, platform, self_id, service)
+        }
+        satori.message_builders["core"] = { CoreMessageBuilder(it) }
+        satori.container.containers["core"] = CoreListenersContainer()
         ElementModule.install(satori)
     }
 
     override fun uninstall(satori: Satori) {
-        satori.actions.remove("core")
+        satori.actions_containers.remove("core")
         satori.message_builders.remove("core")
-        satori.listeners_containers.remove("core")
+        satori.container.containers.remove("core")
         ElementModule.uninstall(satori)
     }
 
