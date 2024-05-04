@@ -212,32 +212,14 @@ class Signaling(op: Int, body: Body? = null) : Entity("op" to op, "body" to body
             val mapper = jacksonObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             val node = mapper.readTree(json)
             return when (val op = node["op"].asInt()) {
-                EVENT -> Signaling(op, parseEvent(mapper.readValue<Event>((node["body"] as ObjectNode).apply {
+                EVENT -> Signaling(op, mapper.readValue<Event>((node["body"] as ObjectNode).apply {
                     set<ObjectNode>("raw", TextNode(this.toString()))
-                }.toString())))
+                }.toString()))
 
                 READY -> Signaling(op, Ready(mapper.readValue(node["body"]["logins"].toString())))
                 PONG -> Signaling(op)
                 else -> throw NoSuchElementException()
             }
-        }
-
-        private fun parseEvent(event: Event) = try {
-            val type = event.type
-            when (type) {
-                in GuildMemberEvents.Types -> GuildMemberEvent.parse(event)
-                in GuildRoleEvents.Types -> GuildRoleEvent.parse(event)
-                in GuildEvents.Types -> GuildEvent.parse(event)
-                InteractionEvents.Button -> InteractionButtonEvent.parse(event)
-                InteractionEvents.Command -> InteractionCommandEvent.parse(event)
-                in LoginEvents.Types -> LoginEvent.parse(event)
-                in MessageEvents.Types -> MessageEvent.parse(event)
-                in ReactionEvents.Types -> ReactionEvent.parse(event)
-                in UserEvents.Types -> UserEvent.parse(event)
-                else -> event
-            }
-        } catch (e: Throwable) {
-            throw EventParsingException(e)
         }
 
         /**

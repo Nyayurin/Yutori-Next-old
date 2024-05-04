@@ -55,9 +55,7 @@ abstract class ExtendedDslBuilder(builder: MessageDslBuilder) {
 open class MessageDslBuilder(val satori: Satori) : ChildedBuilder {
     override val elements = mutableListOf<MessageElement>()
     val builders = mutableMapOf<String, ExtendedDslBuilder>().apply {
-        for ((key, value) in satori.message_builders) {
-            this[key] = value(this@MessageDslBuilder)
-        }
+        for ((key, value) in satori.message_builders) this[key] = value(this@MessageDslBuilder)
     }
 
     fun element(element: MessageElement) = elements.add(element)

@@ -28,10 +28,8 @@ abstract class ExtendedActions
  * 封装所有 Action, 应通过本类对 Satori Server 发送 Satori Action
  */
 class Actions private constructor(platform: String, self_id: String, service: ActionService, satori: Satori) {
-    val actions = mutableMapOf<String, ExtendedActions>()
-
-    init {
-        for ((key, value) in satori.actions) actions[key] = value(platform, self_id, service)
+    val actions = mutableMapOf<String, ExtendedActions>().apply {
+        for ((key, value) in satori.actions) this[key] = value(platform, self_id, service)
     }
 
     constructor(event: Event, service: ActionService, satori: Satori) : this(
