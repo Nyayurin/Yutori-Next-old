@@ -24,7 +24,7 @@ fun satori(name: String = "Satori", block: Satori.() -> Unit) = Satori(name).app
 @BuilderMarker
 class Satori(val name: String) {
     val container = ListenersContainer()
-    val modules = mutableSetOf<Module>()
+    val modules = mutableMapOf<Class<out Module>, Module>()
     val elements = mutableMapOf<String, (Element) -> NodeMessageElement>()
     val actions_containers = mutableMapOf<String, (String, String, ActionService) -> ExtendedActionsContainer>()
     val message_builders = mutableMapOf<String, (MessageBuilder) -> ExtendedMessageBuilder>()
@@ -32,13 +32,15 @@ class Satori(val name: String) {
     fun <T : Module> install(module: T, block: T.() -> Unit = {}) {
         module.block()
         module.install(this)
-        modules.add(module)
+        modules[module::class.java] = module
     }
 
-    inline fun <reified T : Module> uninstall() =
-        modules.filterIsInstance<T>().forEach { module -> module.uninstall(this) }
+    inline fun <reified T : Module> uninstall() {
+        modules[T::class.java]?.uninstall(this)
+        modules.remove(T::class.java)
+    }
 
     fun listening(block: ListenersContainer.() -> Unit) = container.run(block)
-    fun start() = modules.filterIsInstance<Adapter>().forEach { module -> module.start(this) }
-    fun stop() = modules.filterIsInstance<Adapter>().forEach { module -> module.stop(this) }
+    fun start() = modules.values.filterIsInstance<Adapter>().forEach { module -> module.start(this) }
+    fun stop() = modules.values.filterIsInstance<Adapter>().forEach { module -> module.stop(this) }
 }

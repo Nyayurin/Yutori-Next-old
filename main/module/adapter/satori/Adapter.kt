@@ -35,13 +35,13 @@ class SatoriAdapter : Adapter {
     }
 
     override fun install(satori: Satori) {
-        if (Module.Core !in satori.modules) {
+        if (Module.Core !in satori.modules.values) {
             Module.Core.install(satori)
         }
     }
 
     override fun uninstall(satori: Satori) {
-        if (Module.Core !in satori.modules) {
+        if (Module.Core !in satori.modules.values) {
             Module.Core.uninstall(satori)
         }
     }
