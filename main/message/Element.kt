@@ -19,15 +19,15 @@ import github.nyayurn.yutori_next.MessageUtil.encode
 /**
  * 消息元素
  */
-fun interface MessageElement {
-    override fun toString(): String
+abstract class MessageElement {
+    abstract override fun toString(): String
 }
 
 /**
  * 纯文本
  * @property text 文本
  */
-class Text(var text: String) : MessageElement {
+class Text(var text: String) : MessageElement() {
     override fun toString() = text.encode()
 }
 
@@ -37,84 +37,9 @@ class Text(var text: String) : MessageElement {
  * @property properties 属性
  * @property children 子元素
  */
-open class NodeMessageElement(val node_name: String, vararg pairs: Pair<String, Any?>) : MessageElement {
+open class NodeMessageElement(val node_name: String, vararg pairs: Pair<String, Any?>) : MessageElement() {
     val properties: MutableMap<String, Any?> = mutableMapOf(*pairs)
     val children: MutableList<MessageElement> = mutableListOf()
-
-    /**
-     * 获取属性
-     * @param key 属性名
-     * @return 属性值
-     */
-    operator fun get(key: String) = properties[key]
-
-    /**
-     * 获取子元素
-     * @param index 子元素索引
-     * @return 消息元素
-     */
-    operator fun get(index: Int) = children[index]
-
-    /**
-     * 设置属性
-     * @param key 属性名
-     * @param value 属性值
-     */
-    operator fun set(key: String, value: Any) {
-        properties[key] = value
-    }
-
-    /**
-     * 设置子元素
-     * @param index 索引
-     * @param value 消息元素
-     */
-    operator fun set(index: Int, value: MessageElement) {
-        children[index] = value
-    }
-
-    /**
-     * 设置子元素
-     * @param index 索引
-     * @param text 文本
-     */
-    operator fun set(index: Int, text: String) {
-        children[index] = Text(text)
-    }
-
-    /**
-     * 添加子元素
-     * @param element 消息元素
-     */
-    operator fun plusAssign(element: MessageElement) {
-        children.add(element)
-    }
-
-    /**
-     * 添加子元素
-     * @param text 消息元素
-     */
-    operator fun plusAssign(text: String) {
-        children.add(Text(text))
-    }
-
-    /**
-     * 添加子元素
-     * @param element 消息元素
-     */
-    fun add(element: MessageElement): NodeMessageElement {
-        children.add(element)
-        return this
-    }
-
-    /**
-     * 添加子元素
-     * @param text 消息元素
-     */
-    fun add(text: String): NodeMessageElement {
-        children.add(Text(text))
-        return this
-    }
 
     override fun toString() = buildString {
         append("<$node_name")
