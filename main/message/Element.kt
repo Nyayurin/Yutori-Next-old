@@ -65,6 +65,7 @@ open class NodeMessageElement(val node_name: String, vararg pairs: Pair<String, 
     }
 
     fun select(element: String): MessageElement? {
+        if (node_name == element) return this
         for (child in children) {
             if (element == "text" && child is Text) return child
             child as NodeMessageElement
