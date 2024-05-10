@@ -1,16 +1,10 @@
 # 进阶
 
-## 注册监听器
+## 为何要有多余的 core 前缀
 
-- 通过 ListenersContainer 类的方法注册对应事件的监听器
-```kotlin
-val container = ListenersContainer.of {
-    message.created += TestListener
-    message.created {
-        // ...
-    }
-}
-```
+- 目前仍在 0.2 开发阶段, 分离出 Core 模块仅是为了框架开发方便, 待后续模块相关机制的文档及 Chronocat 适配器完善后自会将 Core 模块移回本体
+
+## 注册监听器
 
 - 可以通过 `container.any` 方法注册监听任意事件的监听器
 
@@ -18,12 +12,12 @@ val container = ListenersContainer.of {
 
 ```kotlin
 satori {
-    install(Adapter::satori) {
+    install(Adapter.Satori) {
         host = "websocket-host"
         port = 8080
         token = "websocket"
     }
-    install(Adapter::satori) {
+    install(Adapter.Satori) {
         host = "webhook-host"
         port = 8080
         token = "webhook"
@@ -47,7 +41,7 @@ satori {
 
 ```kotlin
 val actions = Actions("platform", "selfId", "Satori", SatoriActionService(properties, "Satori"))
-actions.message.create {
+actions.core.message.create {
     channel_id = "channel_id"
     content = "Hello, world!"
 }
@@ -56,7 +50,7 @@ actions.message.create {
 ## 消息链
 
 ```kotlin
-val chain = MessageUtil.parse(context.config, context.event.message.content)
+val chain = MessageUtil.parse(context.satori, context.event.message.content)
 chain.forEach(::println)
 ```
 
@@ -67,7 +61,7 @@ chain.forEach(::println)
 
 ```kotlin
 satori {
-    install(Adapter::satori) {
+    install(Adapter.Satori) {
         // ...
         useWebHook {
             listen = "0.0.0.0" // 监听 IPV6: "::"
@@ -104,10 +98,10 @@ message {
 
 ```kotlin
 message {
-    img { this["prop"] = "prop" } 
+    core.img { this["prop"] = "prop" } 
 }
 ```
 
 ## 事件扩展属性
 
-- 请自行反序列化 Event.raw(原始的 event JSON 字符串) 属性获取
+- Event 类 properties 属性中包含

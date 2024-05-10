@@ -51,16 +51,16 @@ implementation 'com.github.Nyayurn:Yutori:${version}'
 ```kotlin
 fun main() {
     val satori = satori {
-        install(Adapter::satori) {
+        install(Adapter.Satori) {
             token = "token"
         }
         listening {
-            message.created {
+            core.message.created {
                 if (event.message.content == "在吗") {
-                    actions.message.create {
+                    actions.core.message.create {
                         channel_id = event.channel.id
                         content {
-                            at { id = event.user.id }
+                            core.at { id = event.user.id }
                             text { " 我在!" }
                         }
                     }
