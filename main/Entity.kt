@@ -19,6 +19,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.databind.node.TextNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import github.nyayurn.yutori_next.message.MessageBuilder
+import github.nyayurn.yutori_next.module.core.core
 
 abstract class Entity(vararg pairs: Pair<String, Any?>) {
     protected val properties = mapOf(*pairs)
@@ -267,7 +269,6 @@ class Identify(token: String? = null, sequence: Number? = null) : Entity(
     val sequence: Number? by super.properties
 }
 
-
 /**
  * 事件
  * @property id 事件 ID
@@ -366,4 +367,14 @@ data class SatoriProperties(
     val version: String = "v1"
 )
 
-data class Context<T : Event>(val actions: ActionsContainer, val event: T, val satori: Satori)
+data class Context<T : Event>(val actions: ActionsContainer, val event: T, val satori: Satori) {
+    fun reply(quote: Boolean = true, content: MessageBuilder.() -> Unit) {
+        actions.core.message.create {
+            channel_id = event.channel!!.id
+            content {
+                if (quote) core.quote { id = event.message!!.id }
+                content()
+            }
+        }
+    }
+}

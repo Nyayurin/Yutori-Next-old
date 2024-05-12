@@ -26,17 +26,17 @@ object CoreModule : Module {
         }
         satori.message_builders["core"] = { CoreMessageBuilder(it) }
         satori.container.containers["core"] = CoreListenersContainer()
-        ElementModule.install(satori)
+        Element.install(satori)
     }
 
     override fun uninstall(satori: Satori) {
         satori.actions_containers.remove("core")
         satori.message_builders.remove("core")
         satori.container.containers.remove("core")
-        ElementModule.uninstall(satori)
+        Element.uninstall(satori)
     }
 
-    private object ElementModule : Module {
+    private object Element : Module {
         override fun install(satori: Satori) {
             satori.elements["at"] = { Core.At() }
             satori.elements["sharp"] = { Core.Sharp(it.attr("id")) }
