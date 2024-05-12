@@ -39,6 +39,15 @@
 | cache   | Boolean? | 发  | 是否使用已缓存的文件     |
 | timeout | String?  | 发  | 下载文件的最长时间 (毫秒) |
 
+- 如果 src 为 url, 请确保`对应平台的 Adapter` 能通过该 url 访问到资源
+
+### 使用 Base64
+
+```kotlin
+val base64 = ""
+val element = Image("data:image/jpeg;base64,$base64")
+```
+
 ### 图片 (Image) {#img}
 
 | 属性     | 类型      | 范围 | 描述         |
@@ -102,6 +111,11 @@
 ## 元信息元素
 
 ### 引用 (Quote) {#quote}
+
+| 属性      | 类型       | 范围 | 描述      |
+|---------|----------|----|---------|
+| id      | String?  | 发  | 消息的 ID  |
+| forward | Boolean? | 发  | 是否为转发消息 |
 
 ### 作者 (Author) {#author}
 
