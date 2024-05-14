@@ -2,30 +2,18 @@
 
 - Yutori-Next 是一个 [Satori 协议](https://satori.chat) 的 [Kotlin](https://kotlinlang.org) 多平台机器人开发框架
 - Yutori-Next 的名称来源于作者 Yurn 与 Satori 名字的结合
-- 本项目不依赖也不建议配合 Spring 进行开发
+
+# 快速开始
+
+## 说在前面
+
+- 建议拥有一定 Kotlin & Gradle 基础
+- 不建议使用 Maven 作为依赖管理
+- 不建议搭配 SpringFramework 使用
 
 ## 依赖引入
 
 - 获取版本请查看 [Jitpack](https://jitpack.io/#Nyayurn/Yutori-Next)
-
-### Maven
-
-```xml
-<repository>
-    <id>jitpack.io</id>
-    <url>https://jitpack.io</url>
-</repository>
-```
-
-```xml
-<dependency>
-    <groupId>com.github.Nyayurn</groupId>
-    <artifactId>Yutori-Next</artifactId>
-    <version>${version}</version>
-</dependency>
-```
-
-### Gradle Kotlin DSL
 
 ```kotlin
 maven { url = URI("https://jitpack.io") }
@@ -35,35 +23,21 @@ maven { url = URI("https://jitpack.io") }
 implementation("com.github.Nyayurn:Yutori-Next:$version")
 ```
 
-### Gradle Groovy DSL
-
-
-```groovy
-maven { url 'https://jitpack.io' }
-```
-
-```groovy
-implementation 'com.github.Nyayurn:Yutori:${version}'
-```
-
-## 基础使用
+## 做一个复读机
 
 ```kotlin
 fun main() {
     val satori = satori {
         install(Adapter.Satori) {
+            host = "127.0.0.1"
+            port = 8080
             token = "token"
         }
         listening {
-            core.message.created {
-                if (event.message.content == "在吗") {
-                    actions.core.message.create {
-                        channel_id = event.channel.id
-                        content {
-                            core.at { id = event.user.id }
-                            text { " 我在!" }
-                        }
-                    }
+            message.created {
+                actions.message.create {
+                    channel_id = event.channel.id
+                    content = event.message.content
                 }
             }
         }
@@ -74,4 +48,4 @@ fun main() {
 }
 ```
 
-如果日志打印"无法建立事件推送服务: READY 响应超时", 可能是 Token 错误(Chronocat)
+- 如果日志打印"无法建立事件推送服务: READY 响应超时", 可能是 Token 设置错误(Chronocat)

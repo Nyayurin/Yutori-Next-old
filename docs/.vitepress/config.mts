@@ -53,6 +53,26 @@ export default defineConfig({
                         link: "/advanced/admin"
                     }
                 ]
+            }, {
+                text: "扩展",
+                items: [
+                    {
+                        text: "模块(Coming soon)",
+                        items: [
+                            {
+                                text: "动作容器 & 动作服务(Coming soon)"
+                            }, {
+                                text: "消息元素 & Builder(Coming soon)"
+                            }, {
+                                text: "监听器容器(Coming soon)"
+                            }, {
+                                text: "事件(Coming soon)"
+                            }
+                        ]
+                    }, {
+                        text: "适配器(Coming soon)"
+                    }
+                ]
             }
         ]
     }

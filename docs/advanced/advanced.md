@@ -1,9 +1,5 @@
 # 进阶
 
-## 为何要有多余的 core 前缀
-
-- 目前仍在 0.2 开发阶段, 分离出 Core 模块仅是为了框架开发方便, 待后续模块相关机制的文档及 Chronocat 适配器完善后自会将 Core 模块移回本体
-
 ## 注册监听器
 
 - 可以通过 `container.any` 方法注册监听任意事件的监听器
@@ -40,8 +36,8 @@ satori {
 ## 主动发送消息
 
 ```kotlin
-val actions = Actions("platform", "selfId", "Satori", SatoriActionService(properties, "Satori"))
-actions.core.message.create {
+val actions = ActionsContainer("platform", "selfId", SatoriActionService(properties, satori.name), satori)
+actions.message.create {
     channel_id = "channel_id"
     content = "Hello, world!"
 }
@@ -52,6 +48,13 @@ actions.core.message.create {
 ```kotlin
 val chain = MessageUtil.parse(context.satori, context.event.message.content)
 chain.forEach(::println)
+```
+
+## 递归寻找消息元素
+
+```kotlin
+element.select("img")
+MessageUtil.select("img", *elements)
 ```
 
 ## WebHook
@@ -98,10 +101,10 @@ message {
 
 ```kotlin
 message {
-    core.img { this["prop"] = "prop" } 
+    img { this["prop"] = "prop" } 
 }
 ```
 
 ## 事件扩展属性
 
-- Event 类 properties 属性中包含
+- Event 类 properties 属性中包含对应属性, 请自行获取
