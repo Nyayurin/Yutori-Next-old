@@ -100,7 +100,7 @@ object MessageUtil {
     fun String.decode() = replace("&gt;", ">").replace("&lt;", "<").replace("&quot;", "\"").replace("&amp;", "&")
     fun String.toElements(satori: Satori) = parse(satori, this)
 
-    fun select(elements: List<MessageElement>, element: String): MessageElement? {
+    fun select(element: String, vararg elements: MessageElement): MessageElement? {
         for (e in elements) {
             if (e is NodeMessageElement) return e.select(element) ?: continue
             if (e is Text && element == "text") return e
@@ -108,8 +108,8 @@ object MessageUtil {
         return null
     }
 
-    fun parse(satori: Satori, str: String): List<MessageElement> {
-        val nodes = Jsoup.parse(str).body().childNodes().stream().filter {
+    fun parse(satori: Satori, context: String): List<MessageElement> {
+        val nodes = Jsoup.parse(context).body().childNodes().stream().filter {
             it !is Comment && it !is DocumentType
         }.toList()
         return List(nodes.size) { i -> parseElement(satori, nodes[i]) }

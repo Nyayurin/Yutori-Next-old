@@ -14,9 +14,8 @@ See the Mulan PSL v2 for more details.
 
 package github.nyayurn.yutori_next
 
-import github.nyayurn.yutori_next.message.ExtendedMessageBuilder
-import github.nyayurn.yutori_next.message.MessageBuilder
-import github.nyayurn.yutori_next.message.NodeMessageElement
+import github.nyayurn.yutori_next.message.*
+import github.nyayurn.yutori_next.message.Message
 import org.jsoup.nodes.Element
 
 fun satori(name: String = "Satori", block: Satori.() -> Unit) = Satori(name).apply(block)
@@ -28,6 +27,34 @@ class Satori(val name: String) {
     val elements = mutableMapOf<String, (Element) -> NodeMessageElement>()
     val actions_containers = mutableMapOf<String, (String, String, ActionService) -> ExtendedActionsContainer>()
     val message_builders = mutableMapOf<String, (MessageBuilder) -> ExtendedMessageBuilder>()
+
+    init {
+        elements["at"] = { At() }
+        elements["sharp"] = { Sharp(it.attr("id")) }
+        elements["a"] = { Href(it.attr("href")) }
+        elements["img"] = { Image(it.attr("src")) }
+        elements["audio"] = { Audio(it.attr("src")) }
+        elements["video"] = { Video(it.attr("src")) }
+        elements["file"] = { File(it.attr("src")) }
+        elements["b"] = { Bold() }
+        elements["strong"] = { Strong() }
+        elements["i"] = { Idiomatic() }
+        elements["em"] = { Em() }
+        elements["u"] = { Underline() }
+        elements["ins"] = { Ins() }
+        elements["s"] = { Strikethrough() }
+        elements["del"] = { Delete() }
+        elements["spl"] = { Spl() }
+        elements["code"] = { Code() }
+        elements["sup"] = { Sup() }
+        elements["sub"] = { Sub() }
+        elements["br"] = { Br() }
+        elements["p"] = { Paragraph() }
+        elements["message"] = { Message() }
+        elements["quote"] = { Quote() }
+        elements["author"] = { Author() }
+        elements["button"] = { Button() }
+    }
 
     fun <T : Module> install(module: T, block: T.() -> Unit = {}) {
         module.block()
