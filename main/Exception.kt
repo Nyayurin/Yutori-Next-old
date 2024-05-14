@@ -15,3 +15,6 @@ package github.nyayurn.yutori_next
 class EventParsingException(e: Throwable) : RuntimeException(e)
 class ResponseParsingException(message: String) : RuntimeException(message)
 class NumberParsingException(value: String) : RuntimeException(value)
+class MessageElementParsingException(message: String) : RuntimeException(message)
+class MessageElementPropertyParsingException(type: String) : RuntimeException(type)
+class UnknownSignalingException(signaling: Int) : RuntimeException(signaling.toString())

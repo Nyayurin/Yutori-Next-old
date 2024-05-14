@@ -219,7 +219,7 @@ class Signaling(op: Int, body: Body? = null) : Entity("op" to op, "body" to body
 
                 READY -> Signaling(op, Ready(mapper.readValue(node["body"]["logins"].toString())))
                 PONG -> Signaling(op)
-                else -> throw NoSuchElementException()
+                else -> throw UnknownSignalingException(op)
             }
         }
 

@@ -125,7 +125,7 @@ object MessageUtil {
                 for (attr in node.attributes()) {
                     val key = attr.key
                     val value = attr.value
-                    this.properties[key] = when (run {
+                    this.properties[key] = when (val type = run {
                         val property = this::class.memberProperties.find { it.name == key }
                         if (property != null) return@run property.returnType.toString()
                         val extension = this::class.memberExtensionProperties.find { it.name == key }
@@ -171,7 +171,7 @@ object MessageUtil {
                             }
                         }
 
-                        else -> ""
+                        else -> throw MessageElementPropertyParsingException(type)
                     }
                 }
                 for (property in this::class.memberProperties.filter { it.getter.call(this) == null }) {
@@ -181,7 +181,7 @@ object MessageUtil {
                                 "kotlin.String", "kotlin.String?" -> ""
                                 "kotlin.Number", "kotlin.Number?" -> 0
                                 "kotlin.Boolean", "kotlin.Boolean?" -> false
-                                else -> throw ClassCastException(property.returnType.toString())
+                                else -> throw MessageElementPropertyParsingException(property.returnType.toString())
                             }
                         )
                     }
@@ -190,6 +190,6 @@ object MessageUtil {
             }
         }
 
-        else -> throw UnsupportedOperationException(node.toString())
+        else -> throw MessageElementParsingException(node.toString())
     }
 }
