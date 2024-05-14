@@ -14,12 +14,14 @@ See the Mulan PSL v2 for more details.
 
 package github.nyayurn.yutori_next
 
-import github.nyayurn.yutori_next.message.MessageElement
-import github.nyayurn.yutori_next.message.NodeMessageElement
-import github.nyayurn.yutori_next.message.Text
+import github.nyayurn.yutori_next.message.element.MessageElement
+import github.nyayurn.yutori_next.message.element.NodeMessageElement
+import github.nyayurn.yutori_next.message.element.Text
 import org.jsoup.Jsoup
 import org.jsoup.nodes.*
-import org.jsoup.nodes.Element
+import kotlin.reflect.KMutableProperty1
+import kotlin.reflect.full.memberExtensionProperties
+import kotlin.reflect.full.memberProperties
 
 @DslMarker
 annotation class BuilderMarker
@@ -120,7 +122,70 @@ object MessageUtil {
         is Element -> {
             val function = satori.elements[node.tagName()] ?: { NodeMessageElement(it.tagName()) }
             function(node).apply {
-                for (attr in node.attributes()) this.properties[attr.key] = attr.value
+                for (attr in node.attributes()) {
+                    val key = attr.key
+                    val value = attr.value
+                    this.properties[key] = when (run {
+                        val property = this::class.memberProperties.find { it.name == key }
+                        if (property != null) return@run property.returnType.toString()
+                        val extension = this::class.memberExtensionProperties.find { it.name == key }
+                        if (extension != null) return@run extension.returnType.toString()
+                        return@run "kotlin.String?"
+                    }) {
+                        "kotlin.String", "kotlin.String?" -> value
+                        "kotlin.Number", "kotlin.Number?" -> {
+                            var result: Number
+                            if (value.contains(".")) {
+                                result = try {
+                                    value.toDouble()
+                                } catch (_: NumberFormatException) {
+                                    try {
+                                        value.toBigDecimal()
+                                    } catch (_: NumberFormatException) {
+                                        throw NumberParsingException(value)
+                                    }
+                                }
+                            } else {
+                                result = try {
+                                    value.toInt()
+                                } catch (_: NumberFormatException) {
+                                    try {
+                                        value.toLong()
+                                    } catch (_: NumberFormatException) {
+                                        try {
+                                            value.toBigInteger()
+                                        } catch (_: NumberFormatException) {
+                                            throw NumberParsingException(value)
+                                        }
+                                    }
+                                }
+                            }
+                            result
+                        }
+
+                        "kotlin.Boolean", "kotlin.Boolean?" -> {
+                            try {
+                                if (attr.toString().contains("=")) value.toBooleanStrict() else true
+                            } catch (_: IllegalArgumentException) {
+                                throw NumberParsingException(value)
+                            }
+                        }
+
+                        else -> ""
+                    }
+                }
+                for (property in this::class.memberProperties.filter { it.getter.call(this) == null }) {
+                    if (property is KMutableProperty1) {
+                        property.setter.call(
+                            this, when (property.returnType.toString()) {
+                                "kotlin.String", "kotlin.String?" -> ""
+                                "kotlin.Number", "kotlin.Number?" -> 0
+                                "kotlin.Boolean", "kotlin.Boolean?" -> false
+                                else -> throw ClassCastException(property.returnType.toString())
+                            }
+                        )
+                    }
+                }
                 for (child in node.childNodes()) this.children += parseElement(satori, child)
             }
         }

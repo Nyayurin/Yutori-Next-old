@@ -18,8 +18,8 @@ import github.nyayurn.yutori_next.BuilderMarker
 import github.nyayurn.yutori_next.Satori
 import github.nyayurn.yutori_next.message.ExtendedMessageBuilder
 import github.nyayurn.yutori_next.message.MessageBuilder
-import github.nyayurn.yutori_next.message.NodeMessageElement
 import github.nyayurn.yutori_next.message.PropertiedMessageBuilder
+import github.nyayurn.yutori_next.message.element.NodeMessageElement
 
 @BuilderMarker
 open class ChronocatMessageBuilder(builder: MessageBuilder) : ExtendedMessageBuilder(builder) {
@@ -28,8 +28,12 @@ open class ChronocatMessageBuilder(builder: MessageBuilder) : ExtendedMessageBui
 
     @BuilderMarker
     class Poke(satori: Satori) : MessageBuilder(satori), PropertiedMessageBuilder {
-        override val properties = mutableMapOf<String, Any?>("user_id" to null)
-        var user_id: Number? by properties
+        override val properties = mutableMapOf<String, Any?>("user-id" to null)
+        var user_id: Number?
+            get() = properties["user-id"] as Number?
+            set(value) {
+                properties["user-id"] = value
+            }
         override fun buildElement(): NodeMessageElement = buildElement(Chronocat.Poke(user_id))
     }
 }

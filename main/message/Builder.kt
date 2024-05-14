@@ -16,6 +16,7 @@ package github.nyayurn.yutori_next.message
 
 import github.nyayurn.yutori_next.BuilderMarker
 import github.nyayurn.yutori_next.Satori
+import github.nyayurn.yutori_next.message.element.*
 
 inline fun message(satori: Satori, block: MessageBuilder.() -> Unit) =
     MessageBuilder(satori).apply(block).buildMessage()

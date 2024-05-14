@@ -10,8 +10,16 @@ MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
 See the Mulan PSL v2 for more details.
  */
 
-package github.nyayurn.yutori_next
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
 
-class EventParsingException(e: Throwable) : RuntimeException(e)
-class ResponseParsingException(message: String) : RuntimeException(message)
-class NumberParsingException(value: String) : RuntimeException(value)
+package github.nyayurn.yutori_next.message.element
+
+class Br : NodeMessageElement("br")
+class Paragraph : NodeMessageElement("p")
+class Message(
+    id: String? = null,
+    forward: Boolean? = null
+) : NodeMessageElement("message", "id" to id, "forward" to forward) {
+    var id: String? by super.properties
+    var forward: Boolean? by super.properties
+}

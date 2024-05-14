@@ -70,12 +70,7 @@ class WebSocketEventService(val properties: SatoriProperties, val satori: Satori
                     }
                     for (frame in incoming) {
                         frame as? Frame.Text ?: continue
-                        try {
-                            onEvent(frame.readText())
-                        } catch (e: Exception) {
-                            logger.warn(satori.name, "处理事件时出错(${frame.readText()}): ${e.localizedMessage}")
-                            e.printStackTrace()
-                        }
+                        onEvent(frame.readText())
                     }
                 }
             } catch (e: Exception) {
@@ -133,22 +128,29 @@ class WebSocketEventService(val properties: SatoriProperties, val satori: Satori
             }
 
             Signaling.EVENT -> launch {
-                val event = signaling.body as Event
-                when (event.type) {
-                    MessageEvents.Created -> logger.info(satori.name, buildString {
-                        append("${event.platform}(${event.self_id}) 接收事件(${event.type}): ")
-                        append("\u001B[38;5;4m").append("${event.channel!!.name}(${event.channel!!.id})")
-                        append("\u001B[38;5;8m").append("-")
-                        append("\u001B[38;5;6m")
-                        append("${event.member?.nick ?: event.user!!.nick ?: event.user!!.name}(${event.user!!.id})")
-                        append("\u001B[0m").append(": ").append(event.message!!.content)
-                    })
+                try {
+                    val event = signaling.body as Event
+                    when (event.type) {
+                        MessageEvents.Created -> logger.info(satori.name, buildString {
+                            append("${event.platform}(${event.self_id}) 接收事件(${event.type}): ")
+                            append("\u001B[38;5;4m").append("${event.channel!!.name}(${event.channel!!.id})")
+                            append("\u001B[38;5;8m").append("-")
+                            append("\u001B[38;5;6m")
+                            append(
+                                "${event.member?.nick ?: event.user!!.nick ?: event.user!!.name}(${event.user!!.id})"
+                            )
+                            append("\u001B[0m").append(": ").append(event.message!!.content)
+                        })
 
-                    else -> logger.info(satori.name, "${event.platform}(${event.self_id}) 接收事件: ${event.type}")
+                        else -> logger.info(satori.name, "${event.platform}(${event.self_id}) 接收事件: ${event.type}")
+                    }
+                    logger.debug(satori.name, "事件详细信息: $body")
+                    sequence = event.id
+                    satori.container(event, satori, service)
+                } catch (e: Exception) {
+                    logger.warn(satori.name, "处理事件时出错($body): ${e.localizedMessage}")
+                    e.printStackTrace()
                 }
-                logger.debug(satori.name, "事件详细信息: $body")
-                sequence = event.id
-                satori.container(event, satori, service)
             }
 
             Signaling.PONG -> {

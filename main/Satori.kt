@@ -15,7 +15,8 @@ See the Mulan PSL v2 for more details.
 package github.nyayurn.yutori_next
 
 import github.nyayurn.yutori_next.message.*
-import github.nyayurn.yutori_next.message.Message
+import github.nyayurn.yutori_next.message.element.*
+import github.nyayurn.yutori_next.message.element.NodeMessageElement
 import org.jsoup.nodes.Element
 
 fun satori(name: String = "Satori", block: Satori.() -> Unit) = Satori(name).apply(block)

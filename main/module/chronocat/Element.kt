@@ -15,13 +15,17 @@ See the Mulan PSL v2 for more details.
 package github.nyayurn.yutori_next.module.chronocat
 
 import github.nyayurn.yutori_next.message.MessageBuilder
-import github.nyayurn.yutori_next.message.NodeMessageElement
+import github.nyayurn.yutori_next.message.element.NodeMessageElement
 
 val MessageBuilder.chronocat: ChronocatMessageBuilder
     get() = this.builders["chronocat"] as ChronocatMessageBuilder
 
 object Chronocat {
     class Poke(user_id: Number? = null) : NodeMessageElement("chronocat:poke", "user-id" to user_id) {
-        var user_id: Number? by super.properties
+        var user_id: Number?
+            get() = properties["user-id"] as Number?
+            set(value) {
+                properties["user-id"] = value
+            }
     }
 }
