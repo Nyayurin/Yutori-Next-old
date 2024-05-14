@@ -61,7 +61,8 @@ open class MessageBuilder(val satori: Satori) : ChildedMessageBuilder {
     fun element(element: MessageElement) = elements.add(element)
 
     inline fun text(block: () -> String) = Text(block()).apply { elements += this }
-    inline fun node(block: Node.() -> Unit) = Node(satori).apply(block).buildElement().apply { elements += this }
+    inline fun node(name: String, block: Node.() -> Unit) =
+        Node(name, satori).apply(block).buildElement().apply { elements += this }
 
     inline fun at(block: At.() -> Unit) =
         At(satori).apply(block).buildElement().apply { elements += this }
@@ -142,10 +143,9 @@ open class MessageBuilder(val satori: Satori) : ChildedMessageBuilder {
     override fun toString() = elements.joinToString("") { it.toString() }
 
     @BuilderMarker
-    class Node(satori: Satori) : MessageBuilder(satori), PropertiedMessageBuilder {
+    class Node(private val name: String, satori: Satori) : MessageBuilder(satori), PropertiedMessageBuilder {
         override val properties = mutableMapOf<String, Any?>()
-        lateinit var node_name: String
-        override fun buildElement(): NodeMessageElement = buildElement(NodeMessageElement(node_name))
+        override fun buildElement(): NodeMessageElement = buildElement(NodeMessageElement(name))
     }
 
     @BuilderMarker
