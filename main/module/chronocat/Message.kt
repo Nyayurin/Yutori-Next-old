@@ -28,7 +28,7 @@ open class ChronocatMessageBuilder(builder: MessageBuilder) : ExtendedMessageBui
 
     @BuilderMarker
     class Poke(satori: Satori) : MessageBuilder(satori), PropertiedMessageBuilder {
-        override val properties = mutableMapOf<String, Any?>("user-id" to null)
+        override val properties = mutableMapOf<String, Any?>("user_id" to null)
         var user_id: Number? by properties
         override fun buildElement(): NodeMessageElement = buildElement(Chronocat.Poke(user_id))
     }
