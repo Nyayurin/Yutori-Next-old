@@ -10,6 +10,7 @@ val jackson_version = "2.17.0"
 val jsoup_version = "1.17.2"
 val ktor_version = "2.3.9"
 val junit_version = "5.10.1"
+val mordant_version = "2.3.0"
 
 repositories {
     mavenCentral()
@@ -23,6 +24,8 @@ dependencies {
     api("io.ktor:ktor-client-core:$ktor_version")
     api("io.ktor:ktor-client-cio:$ktor_version")
     api("io.ktor:ktor-client-websockets:$ktor_version")
+    api("io.ktor:ktor-serialization-jackson:$ktor_version")
+    api("com.github.ajalt.mordant:mordant:$mordant_version")
     testImplementation("org.junit.jupiter:junit-jupiter:$junit_version")
 }
 

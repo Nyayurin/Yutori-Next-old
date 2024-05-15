@@ -14,17 +14,9 @@ See the Mulan PSL v2 for more details.
 
 package github.nyayurn.yutori_next
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.node.ObjectNode
-import com.fasterxml.jackson.databind.node.TextNode
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 import github.nyayurn.yutori_next.message.MessageBuilder
-
-abstract class Entity(vararg pairs: Pair<String, Any?>) {
-    protected val properties = mapOf(*pairs)
-    override fun toString() = jsonObj { for ((key, value) in properties) put(key, value) }
-}
 
 /**
  * 频道
@@ -33,14 +25,7 @@ abstract class Entity(vararg pairs: Pair<String, Any?>) {
  * @property name 频道名称
  * @property parent_id 父频道 ID
  */
-class Channel(id: String, type: Type, name: String? = null, parent_id: String? = null) : Entity(
-    "id" to id, "type" to type, "name" to name, "parent_id" to parent_id
-) {
-    val id: String by super.properties
-    val type: Type by super.properties
-    val name: String? by super.properties
-    val parent_id: String? by super.properties
-
+data class Channel(val id: String, val type: Type, val name: String? = null, val parent_id: String? = null) {
     enum class Type(val number: Number) {
         TEXT(0), VOICE(1), CATEGORY(2), DIRECT(3);
 
@@ -54,13 +39,7 @@ class Channel(id: String, type: Type, name: String? = null, parent_id: String? =
  * @property name 群组名称
  * @property avatar 群组头像
  */
-class Guild(id: String, name: String? = null, avatar: String? = null) : Entity(
-    "id" to id, "name" to name, "avatar" to avatar
-) {
-    val id: String by super.properties
-    val name: String? by super.properties
-    val avatar: String? by super.properties
-}
+data class Guild(val id: String, val name: String? = null, val avatar: String? = null)
 
 /**
  * 群组成员
@@ -69,24 +48,16 @@ class Guild(id: String, name: String? = null, avatar: String? = null) : Entity(
  * @property avatar 用户在群组中的头像
  * @property joined_at 加入时间
  */
-class GuildMember(user: User? = null, nick: String? = null, avatar: String? = null, joined_at: Number?) : Entity(
-    "user" to user, "nick" to nick, "avatar" to avatar, "joined_at" to joined_at
-) {
-    val user: User? by super.properties
-    val nick: String? by super.properties
-    val avatar: String? by super.properties
-    val joined_at: Number? by super.properties
-}
+data class GuildMember(
+    val user: User? = null, val nick: String? = null, val avatar: String? = null, val joined_at: Number?
+)
 
 /**
  * 群组角色
  * @property id 角色 ID
  * @property name 角色名称
  */
-class GuildRole(id: String, name: String? = null) : Entity("id" to id, "name" to name) {
-    val id: String by super.properties
-    val name: String? by super.properties
-}
+data class GuildRole(val id: String, val name: String? = null)
 
 /**
  * 交互
@@ -98,21 +69,13 @@ interface Interaction {
      * @property arguments 参数
      * @property options 选项
      */
-    class Argv(name: String, arguments: List<Any>, options: Any) : Entity(
-        "name" to name, "arguments" to arguments, "options" to options
-    ), Interaction {
-        val name: String by super.properties
-        val arguments: List<Any> by super.properties
-        val options: Any by super.properties
-    }
+    data class Argv(val name: String, val arguments: List<Any>, val options: Any) : Interaction
 
     /**
      * Button
      * @property id 按钮 ID
      */
-    class Button(id: String) : Entity("id" to id), Interaction {
-        val id: String by super.properties
-    }
+    data class Button(val id: String) : Interaction
 }
 
 /**
@@ -122,14 +85,9 @@ interface Interaction {
  * @property platform 平台名称
  * @property status 登录状态
  */
-class Login(user: User? = null, self_id: String? = null, platform: String? = null, status: Status) : Entity(
-    "user" to user, "self_id" to self_id, "platform" to platform, "status" to status
+data class Login(
+    val user: User? = null, val self_id: String? = null, val platform: String? = null, val status: Status
 ) {
-    val user: User? by super.properties
-    val self_id: String? by super.properties
-    val platform: String? by super.properties
-    val status: Status by super.properties
-
     enum class Status(val number: Number) {
         OFFLINE(0), ONLINE(1), CONNECT(2), DISCONNECT(3), RECONNECT(4);
 
@@ -148,34 +106,16 @@ class Login(user: User? = null, self_id: String? = null, platform: String? = nul
  * @property created_at 消息发送的时间戳
  * @property updated_at 消息修改的时间戳
  */
-class Message(
-    id: String,
-    content: String,
-    channel: Channel? = null,
-    guild: Guild? = null,
-    member: GuildMember? = null,
-    user: User? = null,
-    created_at: Number? = null,
-    updated_at: Number? = null
-) : Entity(
-    "id" to id,
-    "content" to content,
-    "channel" to channel,
-    "guild" to guild,
-    "member" to member,
-    "user" to user,
-    "created_at" to created_at,
-    "updated_at" to updated_at
-) {
-    val id: String by super.properties
-    val content: String by super.properties
-    val channel: Channel? by super.properties
-    val guild: Guild? by super.properties
-    val member: GuildMember? by super.properties
-    val user: User? by super.properties
-    val created_at: Number? by super.properties
-    val updated_at: Number? by super.properties
-}
+data class Message(
+    val id: String,
+    val content: String,
+    val channel: Channel? = null,
+    val guild: Guild? = null,
+    val member: GuildMember? = null,
+    val user: User? = null,
+    val created_at: Number? = null,
+    val updated_at: Number? = null
+)
 
 /**
  * 用户
@@ -185,88 +125,41 @@ class Message(
  * @property avatar 用户头像
  * @property is_bot 是否为机器人
  */
-class User(
-    id: String, name: String? = null, nick: String? = null, avatar: String? = null, is_bot: Boolean? = null
-) : Entity(
-    "id" to id, "name" to name, "nick" to nick, "avatar" to avatar, "is_bot" to is_bot
-) {
-    val id: String by super.properties
-    val name: String? by super.properties
-    val nick: String? by super.properties
-    val avatar: String? by super.properties
-    val is_bot: Boolean? by super.properties
-}
+data class User(
+    val id: String,
+    val name: String? = null,
+    val nick: String? = null,
+    val avatar: String? = null,
+    val is_bot: Boolean? = null
+)
 
-/**
- * 信令
- * @property op 信令类型
- * @property body 信令数据
- */
-class Signaling(op: Int, body: Body? = null) : Entity("op" to op, "body" to body) {
-    val op: Int by super.properties
-    val body: Body? by super.properties
-
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "op")
+@JsonSubTypes(value = [
+    JsonSubTypes.Type(value = EventSignaling::class, name = "0"),
+    JsonSubTypes.Type(value = PingSignaling::class, name = "1"),
+    JsonSubTypes.Type(value = PongSignaling::class, name = "2"),
+    JsonSubTypes.Type(value = IdentifySignaling::class, name = "3"),
+    JsonSubTypes.Type(value = ReadySignaling::class, name = "4")
+])
+abstract class Signaling(val op: Int) {
     interface Body
-
     companion object {
-        fun parse(json: String): Signaling {
-            val mapper = jacksonObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-            val node = mapper.readTree(json)
-            return when (val op = node["op"].asInt()) {
-                EVENT -> Signaling(op, mapper.readValue<Event>((node["body"] as ObjectNode).apply {
-                    set<ObjectNode>("raw", TextNode(this.toString()))
-                }.toString()))
-
-                READY -> Signaling(op, Ready(mapper.readValue(node["body"]["logins"].toString())))
-                PONG -> Signaling(op)
-                else -> throw UnknownSignalingException(op)
-            }
-        }
-
-        /**
-         * 事件
-         */
         const val EVENT = 0
-
-        /**
-         * 心跳
-         */
         const val PING = 1
-
-        /**
-         * 心跳回复
-         */
         const val PONG = 2
-
-        /**
-         * 鉴权
-         */
         const val IDENTIFY = 3
-
-        /**
-         * 鉴权回复
-         */
         const val READY = 4
     }
 }
 
-/**
- * 鉴权回复
- * @property logins 登录信息
- */
-data class Ready(val logins: List<Login>) : Signaling.Body
+data class EventSignaling(val body: Event) : Signaling(EVENT)
+object PingSignaling : Signaling(PING)
+object PongSignaling : Signaling(PONG)
+data class IdentifySignaling(val body: Identify) : Signaling(IDENTIFY)
+data class ReadySignaling(val body: Ready) : Signaling(READY)
 
-/**
- * 鉴权
- * @property token 鉴权令牌
- * @property sequence 序列号
- */
-class Identify(token: String? = null, sequence: Number? = null) : Entity(
-    "token" to token, "sequence" to sequence
-), Signaling.Body {
-    val token: String? by super.properties
-    val sequence: Number? by super.properties
-}
+data class Identify(val token: String? = null, val sequence: Number? = null) : Signaling.Body
+data class Ready(val logins: List<Login>) : Signaling.Body
 
 /**
  * 分页数据
@@ -274,10 +167,7 @@ class Identify(token: String? = null, sequence: Number? = null) : Entity(
  * @property data 数据
  * @property next 下一页的令牌
  */
-data class PaginatedData<T>(
-    val data: List<T>,
-    val next: String? = null
-)
+data class PaginatedData<T>(val data: List<T>, val next: String? = null)
 
 /**
  * Satori Server 配置

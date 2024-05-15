@@ -19,5 +19,5 @@ fun interface ActionService {
 }
 
 interface EventService : AutoCloseable {
-    fun connect(): EventService
+    suspend fun connect()
 }

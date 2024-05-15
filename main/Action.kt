@@ -617,7 +617,6 @@ class GeneralAction(
         try {
             return mapper.readValue<T>(response)
         } catch (e: Exception) {
-            logger.warn(name, response)
             throw ResponseParsingException(response)
         }
     }
