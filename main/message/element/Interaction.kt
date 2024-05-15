@@ -14,6 +14,8 @@ See the Mulan PSL v2 for more details.
 
 package github.nyayurn.yutori_next.message.element
 
+import org.jsoup.nodes.Element
+
 class Button(
     id: String? = null,
     type: String? = null,
@@ -26,4 +28,8 @@ class Button(
     var href: String? by super.properties
     var text: String? by super.properties
     var theme: String? by super.properties
+}
+
+object ButtonContainer : MessageElementContainer("id" to "", "name" to "", "role" to "", "type" to "") {
+    override operator fun invoke(element: Element) = Button()
 }

@@ -14,6 +14,8 @@ See the Mulan PSL v2 for more details.
 
 package github.nyayurn.yutori_next.message.element
 
+import org.jsoup.nodes.Element
+
 class Quote(
     id: String? = null,
     forward: Boolean? = null
@@ -30,4 +32,12 @@ class Author(
     var id: String? by super.properties
     var name: String? by super.properties
     var avatar: String? by super.properties
+}
+
+object QuoteContainer : MessageElementContainer("id" to "", "name" to "", "role" to "", "type" to "") {
+    override operator fun invoke(element: Element) = Quote()
+}
+
+object AuthorContainer : MessageElementContainer("id" to "", "name" to "", "role" to "", "type" to "") {
+    override operator fun invoke(element: Element) = Author()
 }

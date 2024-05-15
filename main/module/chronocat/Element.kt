@@ -15,7 +15,9 @@ See the Mulan PSL v2 for more details.
 package github.nyayurn.yutori_next.module.chronocat
 
 import github.nyayurn.yutori_next.message.MessageBuilder
+import github.nyayurn.yutori_next.message.element.MessageElementContainer
 import github.nyayurn.yutori_next.message.element.NodeMessageElement
+import org.jsoup.nodes.Element
 
 val MessageBuilder.chronocat: ChronocatMessageBuilder
     get() = this.builders["chronocat"] as ChronocatMessageBuilder
@@ -27,5 +29,9 @@ object Chronocat {
             set(value) {
                 properties["user-id"] = value
             }
+    }
+
+    object PokeContainer : MessageElementContainer("user-id" to 0) {
+        override fun invoke(element: Element) = Poke()
     }
 }

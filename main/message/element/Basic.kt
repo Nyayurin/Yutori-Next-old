@@ -15,6 +15,7 @@ See the Mulan PSL v2 for more details.
 package github.nyayurn.yutori_next.message.element
 
 import github.nyayurn.yutori_next.MessageUtil.encode
+import org.jsoup.nodes.Element
 
 class Text(var text: String) : MessageElement() {
     override fun toString() = text.encode()
@@ -39,4 +40,16 @@ class Sharp(id: String, name: String? = null) : NodeMessageElement("sharp", "id"
 
 class Href(href: String) : NodeMessageElement("a", "href" to href) {
     var href: String by super.properties
+}
+
+object AtContainer : MessageElementContainer("id" to "", "name" to "", "role" to "", "type" to "") {
+    override operator fun invoke(element: Element) = At()
+}
+
+object SharpContainer : MessageElementContainer("id" to "", "name" to "") {
+    override operator fun invoke(element: Element) = Sharp(element.attr("id"))
+}
+
+object HrefContainer : MessageElementContainer("href" to "") {
+    override operator fun invoke(element: Element) = Href(element.attr("href"))
 }

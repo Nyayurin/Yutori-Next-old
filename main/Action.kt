@@ -23,9 +23,6 @@ import kotlin.properties.Delegates
 
 abstract class ExtendedActionsContainer
 
-/**
- * 封装所有 Action, 应通过本类对 Satori Server 发送 Satori Action
- */
 class ActionsContainer(platform: String, self_id: String, service: ActionService, satori: Satori) {
     val channel = ChannelAction(platform, self_id, satori.name, service)
     val guild = GuildAction(platform, self_id, satori.name, service)
@@ -42,9 +39,6 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
     class ChannelAction(platform: String, self_id: String, name: String, service: ActionService) {
         private val action = GeneralAction(platform, self_id, "channel", name, service)
 
-        /**
-         * 获取群组频道
-         */
         fun get(block: GetBuilder.() -> Unit): Channel {
             val builder = GetBuilder().apply(block)
             return action.sendWithParse("get") {
@@ -52,9 +46,6 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
             }
         }
 
-        /**
-         * 获取群组频道列表
-         */
         fun list(block: ListBuilder.() -> Unit): List<PaginatedData<Channel>> {
             val builder = ListBuilder().apply(block)
             return action.sendWithParse("list") {
@@ -63,9 +54,6 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
             }
         }
 
-        /**
-         * 创建群组频道
-         */
         fun create(block: CreateBuilder.() -> Unit): Channel {
             val builder = CreateBuilder().apply(block)
             return action.sendWithParse("create") {
@@ -74,9 +62,6 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
             }
         }
 
-        /**
-         * 修改群组频道
-         */
         fun update(block: UpdateBuilder.() -> Unit) {
             val builder = UpdateBuilder().apply(block)
             action.send("update") {
@@ -85,9 +70,6 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
             }
         }
 
-        /**
-         * 删除群组频道
-         */
         fun delete(block: DeleteBuilder.() -> Unit) {
             val builder = DeleteBuilder().apply(block)
             action.send("delete") {
@@ -129,9 +111,6 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
         val role = RoleAction(platform, self_id, name, service)
         private val action = GeneralAction(platform, self_id, "guild", name, service)
 
-        /**
-         * 获取群组
-         */
         fun get(block: GetBuilder.() -> Unit): Guild {
             val builder = GetBuilder().apply(block)
             return action.sendWithParse("get") {
@@ -139,9 +118,6 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
             }
         }
 
-        /**
-         * 获取群组列表
-         */
         fun list(block: ListBuilder.() -> Unit): List<PaginatedData<Guild>> {
             val builder = ListBuilder().apply(block)
             return action.sendWithParse("list") {
@@ -149,9 +125,6 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
             }
         }
 
-        /**
-         * 处理群组邀请
-         */
         fun approve(block: ApproveBuilder.() -> Unit) {
             val builder = ApproveBuilder().apply(block)
             action.send("approve") {
@@ -182,9 +155,6 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
             val role = RoleAction(platform, self_id, name, service)
             private val action = GeneralAction(platform, self_id, "guild.member", name, service)
 
-            /**
-             * 获取群组成员
-             */
             fun get(block: GetBuilder.() -> Unit): GuildMember {
                 val builder = GetBuilder().apply(block)
                 return action.sendWithParse("get") {
@@ -193,9 +163,6 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
                 }
             }
 
-            /**
-             * 获取群组成员列表
-             */
             fun list(block: ListBuilder.() -> Unit): List<PaginatedData<GuildMember>> {
                 val builder = ListBuilder().apply(block)
                 return action.sendWithParse("list") {
@@ -204,9 +171,6 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
                 }
             }
 
-            /**
-             * 踢出群组成员
-             */
             fun kick(block: KickBuilder.() -> Unit) {
                 val builder = KickBuilder().apply(block)
                 action.send("kick") {
@@ -216,9 +180,6 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
                 }
             }
 
-            /**
-             * 通过群组成员申请
-             */
             fun approve(block: ApproveBuilder.() -> Unit) {
                 val builder = ApproveBuilder().apply(block)
                 action.send("approve") {
@@ -257,9 +218,6 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
             class RoleAction(platform: String, self_id: String, name: String, service: ActionService) {
                 private val action = GeneralAction(platform, self_id, "guild.member.role", name, service)
 
-                /**
-                 * 设置群组成员角色
-                 */
                 fun set(block: SetBuilder.() -> Unit) {
                     val builder = SetBuilder().apply(block)
                     action.send("set") {
@@ -269,9 +227,6 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
                     }
                 }
 
-                /**
-                 * 取消群组成员角色
-                 */
                 fun unset(block: UnsetBuilder.() -> Unit) {
                     val builder = UnsetBuilder().apply(block)
                     action.send("unset") {
@@ -300,9 +255,6 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
         class RoleAction(platform: String, self_id: String, name: String, service: ActionService) {
             private val action = GeneralAction(platform, self_id, "guild.role", name, service)
 
-            /**
-             * 获取群组角色列表
-             */
             fun list(block: ListBuilder.() -> Unit): List<PaginatedData<GuildRole>> {
                 val builder = ListBuilder().apply(block)
                 return action.sendWithParse("list") {
@@ -311,9 +263,6 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
                 }
             }
 
-            /**
-             * 创建群组角色
-             */
             fun create(block: CreateBuilder.() -> Unit): GuildRole {
                 val builder = CreateBuilder().apply(block)
                 return action.sendWithParse("create") {
@@ -322,9 +271,6 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
                 }
             }
 
-            /**
-             * 修改群组角色
-             */
             fun update(block: UpdateBuilder.() -> Unit) {
                 val builder = UpdateBuilder().apply(block)
                 action.send("update") {
@@ -334,9 +280,6 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
                 }
             }
 
-            /**
-             * 删除群组角色
-             */
             fun delete(block: DeleteBuilder.() -> Unit) {
                 val builder = DeleteBuilder().apply(block)
                 action.send("delete") {
@@ -375,18 +318,12 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
     class LoginAction(platform: String, self_id: String, name: String, service: ActionService) {
         private val action = GeneralAction(platform, self_id, "login", name, service)
 
-        /**
-         * 获取登录信息
-         */
         fun get(): Login = action.sendWithParse("get")
     }
 
     class MessageAction(private val satori: Satori, platform: String, self_id: String, service: ActionService) {
         private val action = GeneralAction(platform, self_id, "message", satori.name, service)
 
-        /**
-         * 发送消息
-         */
         fun create(block: CreateBuilder.() -> Unit): List<Message> {
             val builder = CreateBuilder(satori).apply(block)
             return action.sendWithParse("create") {
@@ -395,9 +332,6 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
             }
         }
 
-        /**
-         * 获取消息
-         */
         fun get(block: GetBuilder.() -> Unit): Message {
             val builder = GetBuilder().apply(block)
             return action.sendWithParse("get") {
@@ -406,9 +340,6 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
             }
         }
 
-        /**
-         * 撤回消息
-         */
         fun delete(block: DeleteBuilder.() -> Unit) {
             val builder = DeleteBuilder().apply(block)
             action.send("delete") {
@@ -417,9 +348,6 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
             }
         }
 
-        /**
-         * 编辑消息
-         */
         fun update(block: UpdateBuilder.() -> Unit) {
             val builder = UpdateBuilder(satori).apply(block)
             action.send("update") {
@@ -429,9 +357,6 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
             }
         }
 
-        /**
-         * 获取消息列表
-         */
         fun list(block: ListBuilder.() -> Unit): List<PaginatedData<Message>> {
             val builder = ListBuilder().apply(block)
             return action.sendWithParse("list") {
@@ -483,9 +408,6 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
     class ReactionAction(platform: String, self_id: String, name: String, service: ActionService) {
         private val action = GeneralAction(platform, self_id, "reaction", name, service)
 
-        /**
-         * 添加表态
-         */
         fun create(block: CreateBuilder.() -> Unit) {
             val builder = CreateBuilder().apply(block)
             action.send("create") {
@@ -495,9 +417,6 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
             }
         }
 
-        /**
-         * 删除表态
-         */
         fun delete(block: DeleteBuilder.() -> Unit) {
             val builder = DeleteBuilder().apply(block)
             action.send("delete") {
@@ -508,9 +427,6 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
             }
         }
 
-        /**
-         * 清除表态
-         */
         fun clear(block: ClearBuilder.() -> Unit) {
             val builder = ClearBuilder().apply(block)
             action.send("clear") {
@@ -520,9 +436,6 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
             }
         }
 
-        /**
-         * 获取表态列表
-         */
         fun list(block: ListBuilder.() -> Unit): List<PaginatedData<User>> {
             val builder = ListBuilder().apply(block)
             return action.sendWithParse("list") {
@@ -568,9 +481,6 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
         val channel = ChannelAction(platform, self_id, name, service)
         private val action = GeneralAction(platform, self_id, "user", name, service)
 
-        /**
-         * 获取用户信息
-         */
         fun get(block: GetBuilder.() -> Unit): User {
             val builder = GetBuilder().apply(block)
             return action.sendWithParse("get") {
@@ -586,9 +496,6 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
         class ChannelAction(platform: String, self_id: String, name: String, service: ActionService) {
             private val action = GeneralAction(platform, self_id, "user.channel", name, service)
 
-            /**
-             * 创建私聊频道
-             */
             fun create(block: CreateBuilder.() -> Unit): Channel {
                 val builder = CreateBuilder().apply(block)
                 return action.sendWithParse("create") {
@@ -608,9 +515,6 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
     class FriendAction(platform: String, self_id: String, name: String, service: ActionService) {
         private val action = GeneralAction(platform, self_id, "friend", name, service)
 
-        /**
-         * 获取好友列表
-         */
         fun list(block: ListBuilder.() -> Unit): List<PaginatedData<User>> {
             val builder = ListBuilder().apply(block)
             return action.sendWithParse("list") {
@@ -618,9 +522,6 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
             }
         }
 
-        /**
-         * 处理好友申请
-         */
         fun approve(block: ApproveBuilder.() -> Unit) {
             val builder = ApproveBuilder().apply(block)
             action.send("approve") {
@@ -651,9 +552,6 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
         class LoginAction(name: String, service: ActionService) {
             private val action = GeneralAction(null, null, "login", name, service)
 
-            /**
-             * 获取登录信息列表
-             */
             fun list(): List<Login> = action.sendWithParse("list")
         }
 
@@ -661,9 +559,6 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
         class WebhookAction(name: String, service: ActionService) {
             private val action = GeneralAction(null, null, "webhook", name, service)
 
-            /**
-             * 创建 WebHook
-             */
             fun create(block: CreateBuilder.() -> Unit) {
                 val builder = CreateBuilder().apply(block)
                 action.send("list") {
@@ -672,9 +567,6 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
                 }
             }
 
-            /**
-             * 移除 WebHook
-             */
             fun delete(block: DeleteBuilder.() -> Unit) {
                 val builder = DeleteBuilder().apply(block)
                 action.send("approve") {
@@ -699,11 +591,12 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
 }
 
 /**
- * Satori Action 实现
+ * Satori Action 对接层
  * @property platform 平台
  * @property self_id 自身的 ID
  * @property resource 资源路径
- * @property name 隶属哪个 Event Service
+ * @property name Satori.name
+ * @property service ActionService 实现
  * @property mapper JSON 反序列化
  * @property logger 日志接口
  */
@@ -720,13 +613,12 @@ class GeneralAction(
     fun send(method: String, content: String? = null) = service.send(resource, method, platform, self_id, content)
     inline fun send(method: String, block: JsonObjectDSLBuilder.() -> Unit) = send(method, jsonObj(block))
     inline fun <reified T> sendWithParse(method: String, block: JsonObjectDSLBuilder.() -> Unit = {}): T {
-        return send(method, jsonObj(block)).let { response ->
-            try {
-                mapper.readValue<T>(response)
-            } catch (e: Exception) {
-                logger.warn(name, response)
-                throw ResponseParsingException(response)
-            }
+        val response = send(method, jsonObj(block))
+        try {
+            return mapper.readValue<T>(response)
+        } catch (e: Exception) {
+            logger.warn(name, response)
+            throw ResponseParsingException(response)
         }
     }
 }

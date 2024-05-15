@@ -36,7 +36,7 @@ object ChronocatModule : Module {
 
     private object Element : Module {
         override fun install(satori: Satori) {
-            satori.elements["chronocat:poke"] = { Chronocat.Poke() }
+            satori.elements["chronocat:poke"] = Chronocat.PokeContainer
         }
 
         override fun uninstall(satori: Satori) {

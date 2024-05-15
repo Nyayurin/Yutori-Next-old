@@ -14,19 +14,7 @@ See the Mulan PSL v2 for more details.
 
 package github.nyayurn.yutori_next.message.element
 
-abstract class ResourceElement(
-    name: String,
-    src: String,
-    title: String?,
-    cache: Boolean?,
-    timeout: String?,
-    vararg pairs: Pair<String, Any?>
-) : NodeMessageElement(name, "src" to src, "title" to title, "cache" to cache, "timeout" to timeout, *pairs) {
-    var src: String by super.properties
-    var title: String? by super.properties
-    var cache: Boolean? by super.properties
-    var timeout: String? by super.properties
-}
+import org.jsoup.nodes.Element
 
 class Image(
     src: String,
@@ -35,7 +23,15 @@ class Image(
     timeout: String? = null,
     width: Number? = null,
     height: Number? = null
-) : ResourceElement("img", src, title, cache, timeout, "width" to width, "height" to height) {
+) : NodeMessageElement(
+    "img",
+    "src" to src,
+    "title" to title,
+    "cache" to cache,
+    "timeout" to timeout,
+    "width" to width,
+    "height" to height
+) {
     var width: Number? by super.properties
     var height: Number? by super.properties
 }
@@ -47,7 +43,15 @@ class Audio(
     timeout: String? = null,
     duration: Number? = null,
     poster: String? = null
-) : ResourceElement("audio", src, title, cache, timeout, "duration" to duration, "poster" to poster) {
+) : NodeMessageElement(
+    "audio",
+    "src" to src,
+    "title" to title,
+    "cache" to cache,
+    "timeout" to timeout,
+    "duration" to duration,
+    "poster" to poster
+) {
     var duration: Number? by super.properties
     var poster: String? by super.properties
 }
@@ -61,8 +65,12 @@ class Video(
     height: Number? = null,
     duration: Number? = null,
     poster: String? = null
-) : ResourceElement(
-    "video", src, title, cache, timeout,
+) : NodeMessageElement(
+    "video",
+    "src" to src,
+    "title" to title,
+    "cache" to cache,
+    "timeout" to timeout,
     "width" to width,
     "height" to height,
     "duration" to duration,
@@ -80,6 +88,58 @@ class File(
     cache: Boolean? = null,
     timeout: String? = null,
     poster: String? = null
-) : ResourceElement("file", src, title, cache, timeout, "poster" to poster) {
+) : NodeMessageElement(
+    "file",
+    "src" to src,
+    "title" to title,
+    "cache" to cache,
+    "timeout" to timeout,
+    "poster" to poster
+) {
     var poster: String? by super.properties
+}
+
+object ImageContainer : MessageElementContainer(
+    "src" to "",
+    "title" to "",
+    "cache" to false,
+    "timeout" to "",
+    "width" to 0,
+    "height" to 0
+) {
+    override operator fun invoke(element: Element) = Image(element.attr("src"))
+}
+
+object AudioContainer : MessageElementContainer(
+    "src" to "",
+    "title" to "",
+    "cache" to false,
+    "timeout" to "",
+    "duration" to 0,
+    "poster" to ""
+) {
+    override operator fun invoke(element: Element) = Audio(element.attr("src"))
+}
+
+object VideoContainer : MessageElementContainer(
+    "src" to "",
+    "title" to "",
+    "cache" to false,
+    "timeout" to "",
+    "width" to 0,
+    "height" to 0,
+    "duration" to 0,
+    "poster" to ""
+) {
+    override operator fun invoke(element: Element) = Video(element.attr("src"))
+}
+
+object FileContainer : MessageElementContainer(
+    "src" to "",
+    "title" to "",
+    "cache" to false,
+    "timeout" to "",
+    "poster" to ""
+) {
+    override operator fun invoke(element: Element) = File(element.attr("src"))
 }

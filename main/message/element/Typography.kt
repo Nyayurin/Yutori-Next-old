@@ -14,6 +14,8 @@ See the Mulan PSL v2 for more details.
 
 package github.nyayurn.yutori_next.message.element
 
+import org.jsoup.nodes.Element
+
 class Br : NodeMessageElement("br")
 class Paragraph : NodeMessageElement("p")
 class Message(
@@ -22,4 +24,16 @@ class Message(
 ) : NodeMessageElement("message", "id" to id, "forward" to forward) {
     var id: String? by super.properties
     var forward: Boolean? by super.properties
+}
+
+object BrContainer : MessageElementContainer("id" to "", "name" to "", "role" to "", "type" to "") {
+    override operator fun invoke(element: Element) = Br()
+}
+
+object ParagraphContainer : MessageElementContainer("id" to "", "name" to "", "role" to "", "type" to "") {
+    override operator fun invoke(element: Element) = Paragraph()
+}
+
+object MessageContainer : MessageElementContainer("id" to "", "name" to "", "role" to "", "type" to "") {
+    override operator fun invoke(element: Element) = Message()
 }

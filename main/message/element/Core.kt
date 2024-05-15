@@ -15,14 +15,20 @@ See the Mulan PSL v2 for more details.
 package github.nyayurn.yutori_next.message.element
 
 import github.nyayurn.yutori_next.MessageUtil.encode
+import org.jsoup.nodes.Element
+
+abstract class MessageElementContainer(vararg pairs: Pair<String,Any>) {
+    val properties_default = mutableMapOf(*pairs)
+    abstract operator fun invoke(element: Element): NodeMessageElement
+}
 
 abstract class MessageElement {
     abstract override fun toString(): String
 }
 
 open class NodeMessageElement(val node_name: String, vararg pairs: Pair<String, Any?>) : MessageElement() {
-    val properties: MutableMap<String, Any?> = mutableMapOf(*pairs)
-    val children: MutableList<MessageElement> = mutableListOf()
+    val properties = mutableMapOf(*pairs)
+    val children = mutableListOf<MessageElement>()
 
     override fun toString() = buildString {
         append("<$node_name")
@@ -57,4 +63,8 @@ open class NodeMessageElement(val node_name: String, vararg pairs: Pair<String, 
         }
         return null
     }
+}
+
+class NodeContainer(val node_name: String) : MessageElementContainer() {
+    override operator fun invoke(element: Element) = NodeMessageElement(node_name)
 }
