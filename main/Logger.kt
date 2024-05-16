@@ -10,8 +10,12 @@ MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
 See the Mulan PSL v2 for more details.
  */
 
+@file:Suppress("unused")
+
 package github.nyayurn.yutori_next
 
+import com.github.ajalt.mordant.rendering.TextColors.*
+import com.github.ajalt.mordant.terminal.Terminal
 import github.nyayurn.yutori_next.Level.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -31,19 +35,17 @@ fun interface LoggerFactory {
 }
 
 class DefaultLogger(private val clazz: Class<*>, private val useLevel: Level) : Logger {
-    private infix fun String.deco(context: String) = "\u001b[${this}m$context\u001b[0m"
-
+    private val terminal = Terminal()
     override fun log(level: Level, service: String, msg: String) {
         if (level.num < useLevel.num) return
-        val time = "38;5;8" deco "[${LocalDateTime.now().format(DateTimeFormatter.ofPattern("MM-dd HH:mm:ss"))}]"
-        val className = "38;5;2" deco "[${clazz.simpleName}]"
-        val levelAndMsg = when (level) {
-            ERROR -> "38;5;9"
-            WARN -> "38;5;11"
-            INFO -> "0"
-            DEBUG -> "38;5;8"
-        } deco "[${level.name}]: $msg"
-        println("[$service]$time$className$levelAndMsg")
+        val time = gray(LocalDateTime.now().format(DateTimeFormatter.ofPattern("MM-dd HH:mm:ss")))
+        val leveled_msg = when (level) {
+            ERROR -> terminal.theme.danger("${level.name} | $msg")
+            WARN -> terminal.theme.warning("${level.name} | $msg")
+            INFO -> "${level.name} | $msg"
+            DEBUG -> terminal.theme.muted("${level.name} | $msg")
+        }
+        println("$service | $time | ${green(clazz.simpleName)} | $leveled_msg")
     }
 }
 

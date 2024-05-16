@@ -186,6 +186,9 @@ data class SatoriProperties(
 )
 
 data class Context<T : Event>(val actions: ActionsContainer, val event: T, val satori: Satori) {
+    val nick: String?
+        get() = event.member?.nick ?: event.user?.nick ?: event.user?.name
+
     fun reply(quote: Boolean = true, content: MessageBuilder.() -> Unit) {
         actions.message.create {
             channel_id = event.channel!!.id

@@ -23,18 +23,17 @@ val ActionsContainer.chronocat: ChronocatActionsContainer
 class ChronocatActionsContainer(
     platform: String,
     self_id: String,
-    name: String,
     service: ActionService
 ) : ExtendedActionsContainer() {
-    val unsafe = UnsafeAction(platform, self_id, name, service)
+    val unsafe = UnsafeAction(platform, self_id, service)
 
-    class UnsafeAction(platform: String, self_id: String, name: String, service: ActionService) {
-        val channel = ChannelAction(platform, self_id, name, service)
-        val guild = GuildAction(platform, self_id, name, service)
-        val friend = FriendAction(platform, self_id, name, service)
+    class UnsafeAction(platform: String, self_id: String, service: ActionService) {
+        val channel = ChannelAction(platform, self_id, service)
+        val guild = GuildAction(platform, self_id, service)
+        val friend = FriendAction(platform, self_id, service)
 
-        class ChannelAction(platform: String, self_id: String, name: String, service: ActionService) {
-            private val action = GeneralAction(platform, self_id, "unsafe.channel", name, service)
+        class ChannelAction(platform: String, self_id: String, service: ActionService) {
+            private val action = GeneralAction(platform, self_id, "unsafe.channel", service)
 
             fun mute(block: MuteBuilder.() -> Unit) {
                 val builder = MuteBuilder().apply(block)
@@ -51,8 +50,8 @@ class ChronocatActionsContainer(
             }
         }
 
-        class GuildAction(platform: String, self_id: String, name: String, service: ActionService) {
-            private val action=GeneralAction(platform, self_id, "unsafe.guild", name, service)
+        class GuildAction(platform: String, self_id: String, service: ActionService) {
+            private val action=GeneralAction(platform, self_id, "unsafe.guild", service)
 
             fun remove(block: RemoveBuilder.() -> Unit) {
                 val builder = RemoveBuilder().apply(block)
@@ -67,8 +66,8 @@ class ChronocatActionsContainer(
             }
         }
 
-        class FriendAction(platform: String, self_id: String, name: String, service: ActionService) {
-            private val action = GeneralAction(platform, self_id, "unsafe.friend", name, service)
+        class FriendAction(platform: String, self_id: String, service: ActionService) {
+            private val action = GeneralAction(platform, self_id, "unsafe.friend", service)
 
             fun remove(block: RemoveBuilder.() -> Unit) {
                 val builder = RemoveBuilder().apply(block)

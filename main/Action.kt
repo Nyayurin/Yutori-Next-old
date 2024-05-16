@@ -14,7 +14,6 @@ See the Mulan PSL v2 for more details.
 
 package github.nyayurn.yutori_next
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import github.nyayurn.yutori_next.message.MessageBuilder
@@ -24,20 +23,20 @@ import kotlin.properties.Delegates
 abstract class ExtendedActionsContainer
 
 class ActionsContainer(platform: String, self_id: String, service: ActionService, satori: Satori) {
-    val channel = ChannelAction(platform, self_id, satori.name, service)
-    val guild = GuildAction(platform, self_id, satori.name, service)
-    val login = LoginAction(platform, self_id, satori.name, service)
+    val channel = ChannelAction(platform, self_id, service)
+    val guild = GuildAction(platform, self_id, service)
+    val login = LoginAction(platform, self_id, service)
     val message = MessageAction(satori, platform, self_id, service)
-    val reaction = ReactionAction(platform, self_id, satori.name, service)
-    val user = UserAction(platform, self_id, satori.name, service)
-    val friend = FriendAction(platform, self_id, satori.name, service)
-    val admin = AdminAction(satori.name, service)
+    val reaction = ReactionAction(platform, self_id, service)
+    val user = UserAction(platform, self_id, service)
+    val friend = FriendAction(platform, self_id, service)
+    val admin = AdminAction(service)
     val containers = mutableMapOf<String, ExtendedActionsContainer>().apply {
         for ((key, value) in satori.actions_containers) this[key] = value(platform, self_id, service)
     }
 
-    class ChannelAction(platform: String, self_id: String, name: String, service: ActionService) {
-        private val action = GeneralAction(platform, self_id, "channel", name, service)
+    class ChannelAction(platform: String, self_id: String, service: ActionService) {
+        private val action = GeneralAction(platform, self_id, "channel", service)
 
         fun get(block: GetBuilder.() -> Unit): Channel {
             val builder = GetBuilder().apply(block)
@@ -106,10 +105,10 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
         }
     }
 
-    class GuildAction(platform: String, self_id: String, name: String, service: ActionService) {
-        val member = MemberAction(platform, self_id, name, service)
-        val role = RoleAction(platform, self_id, name, service)
-        private val action = GeneralAction(platform, self_id, "guild", name, service)
+    class GuildAction(platform: String, self_id: String, service: ActionService) {
+        val member = MemberAction(platform, self_id, service)
+        val role = RoleAction(platform, self_id, service)
+        private val action = GeneralAction(platform, self_id, "guild", service)
 
         fun get(block: GetBuilder.() -> Unit): Guild {
             val builder = GetBuilder().apply(block)
@@ -151,9 +150,9 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
             lateinit var comment: String
         }
 
-        class MemberAction(platform: String, self_id: String, name: String, service: ActionService) {
-            val role = RoleAction(platform, self_id, name, service)
-            private val action = GeneralAction(platform, self_id, "guild.member", name, service)
+        class MemberAction(platform: String, self_id: String, service: ActionService) {
+            val role = RoleAction(platform, self_id, service)
+            private val action = GeneralAction(platform, self_id, "guild.member", service)
 
             fun get(block: GetBuilder.() -> Unit): GuildMember {
                 val builder = GetBuilder().apply(block)
@@ -215,8 +214,8 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
                 lateinit var comment: String
             }
 
-            class RoleAction(platform: String, self_id: String, name: String, service: ActionService) {
-                private val action = GeneralAction(platform, self_id, "guild.member.role", name, service)
+            class RoleAction(platform: String, self_id: String, service: ActionService) {
+                private val action = GeneralAction(platform, self_id, "guild.member.role", service)
 
                 fun set(block: SetBuilder.() -> Unit) {
                     val builder = SetBuilder().apply(block)
@@ -252,8 +251,8 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
             }
         }
 
-        class RoleAction(platform: String, self_id: String, name: String, service: ActionService) {
-            private val action = GeneralAction(platform, self_id, "guild.role", name, service)
+        class RoleAction(platform: String, self_id: String, service: ActionService) {
+            private val action = GeneralAction(platform, self_id, "guild.role", service)
 
             fun list(block: ListBuilder.() -> Unit): List<PaginatedData<GuildRole>> {
                 val builder = ListBuilder().apply(block)
@@ -315,14 +314,14 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
         }
     }
 
-    class LoginAction(platform: String, self_id: String, name: String, service: ActionService) {
-        private val action = GeneralAction(platform, self_id, "login", name, service)
+    class LoginAction(platform: String, self_id: String, service: ActionService) {
+        private val action = GeneralAction(platform, self_id, "login", service)
 
         fun get(): Login = action.sendWithParse("get")
     }
 
     class MessageAction(private val satori: Satori, platform: String, self_id: String, service: ActionService) {
-        private val action = GeneralAction(platform, self_id, "message", satori.name, service)
+        private val action = GeneralAction(platform, self_id, "message", service)
 
         fun create(block: CreateBuilder.() -> Unit): List<Message> {
             val builder = CreateBuilder(satori).apply(block)
@@ -405,8 +404,8 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
         }
     }
 
-    class ReactionAction(platform: String, self_id: String, name: String, service: ActionService) {
-        private val action = GeneralAction(platform, self_id, "reaction", name, service)
+    class ReactionAction(platform: String, self_id: String, service: ActionService) {
+        private val action = GeneralAction(platform, self_id, "reaction", service)
 
         fun create(block: CreateBuilder.() -> Unit) {
             val builder = CreateBuilder().apply(block)
@@ -477,9 +476,9 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
         }
     }
 
-    class UserAction(platform: String, self_id: String, name: String, service: ActionService) {
-        val channel = ChannelAction(platform, self_id, name, service)
-        private val action = GeneralAction(platform, self_id, "user", name, service)
+    class UserAction(platform: String, self_id: String, service: ActionService) {
+        val channel = ChannelAction(platform, self_id, service)
+        private val action = GeneralAction(platform, self_id, "user", service)
 
         fun get(block: GetBuilder.() -> Unit): User {
             val builder = GetBuilder().apply(block)
@@ -493,8 +492,8 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
             lateinit var user_id: String
         }
 
-        class ChannelAction(platform: String, self_id: String, name: String, service: ActionService) {
-            private val action = GeneralAction(platform, self_id, "user.channel", name, service)
+        class ChannelAction(platform: String, self_id: String, service: ActionService) {
+            private val action = GeneralAction(platform, self_id, "user.channel", service)
 
             fun create(block: CreateBuilder.() -> Unit): Channel {
                 val builder = CreateBuilder().apply(block)
@@ -512,8 +511,8 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
         }
     }
 
-    class FriendAction(platform: String, self_id: String, name: String, service: ActionService) {
-        private val action = GeneralAction(platform, self_id, "friend", name, service)
+    class FriendAction(platform: String, self_id: String, service: ActionService) {
+        private val action = GeneralAction(platform, self_id, "friend", service)
 
         fun list(block: ListBuilder.() -> Unit): List<PaginatedData<User>> {
             val builder = ListBuilder().apply(block)
@@ -545,19 +544,19 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
     }
 
 
-    class AdminAction(name: String, service: ActionService) {
-        val login = LoginAction(name, service)
-        val webhook = WebhookAction(name, service)
+    class AdminAction(service: ActionService) {
+        val login = LoginAction(service)
+        val webhook = WebhookAction(service)
 
-        class LoginAction(name: String, service: ActionService) {
-            private val action = GeneralAction(null, null, "login", name, service)
+        class LoginAction(service: ActionService) {
+            private val action = GeneralAction(null, null, "login", service)
 
             fun list(): List<Login> = action.sendWithParse("list")
         }
 
 
-        class WebhookAction(name: String, service: ActionService) {
-            private val action = GeneralAction(null, null, "webhook", name, service)
+        class WebhookAction(service: ActionService) {
+            private val action = GeneralAction(null, null, "webhook", service)
 
             fun create(block: CreateBuilder.() -> Unit) {
                 val builder = CreateBuilder().apply(block)
@@ -592,23 +591,9 @@ class ActionsContainer(platform: String, self_id: String, service: ActionService
 
 /**
  * Satori Action 对接层
- * @property platform 平台
- * @property self_id 自身的 ID
- * @property resource 资源路径
- * @property name Satori.name
- * @property service ActionService 实现
- * @property mapper JSON 反序列化
- * @property logger 日志接口
  */
-class GeneralAction(
-    val platform: String?,
-    val self_id: String?,
-    val resource: String,
-    val name: String,
-    val service: ActionService
-) {
-    val mapper: ObjectMapper = jacksonObjectMapper()
-    val logger = GlobalLoggerFactory.getLogger(this::class.java)
+class GeneralAction(val platform: String?, val self_id: String?, val resource: String, val service: ActionService) {
+    val mapper = jacksonObjectMapper()
 
     fun send(method: String, content: String? = null) = service.send(resource, method, platform, self_id, content)
     inline fun send(method: String, block: JsonObjectDSLBuilder.() -> Unit) = send(method, jsonObj(block))

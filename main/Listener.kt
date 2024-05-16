@@ -58,7 +58,6 @@ class ListenersContainer {
         val request = mutableListOf<Listener<GuildEvent>>()
         val member = Member()
         val role = Role()
-        private val logger = GlobalLoggerFactory.getLogger(this::class.java)
 
         fun added(listener: Context<GuildEvent>.() -> Unit) = added.add { it.listener() }
         fun updated(listener: Context<GuildEvent>.() -> Unit) = updated.add { it.listener() }
@@ -86,7 +85,6 @@ class ListenersContainer {
             val updated = mutableListOf<Listener<GuildMemberEvent>>()
             val removed = mutableListOf<Listener<GuildMemberEvent>>()
             val request = mutableListOf<Listener<GuildMemberEvent>>()
-            private val logger = GlobalLoggerFactory.getLogger(this::class.java)
 
             fun added(listener: Context<GuildMemberEvent>.() -> Unit) = added.add { it.listener() }
             fun updated(listener: Context<GuildMemberEvent>.() -> Unit) = updated.add { it.listener() }
@@ -110,7 +108,6 @@ class ListenersContainer {
             val created = mutableListOf<Listener<GuildRoleEvent>>()
             val updated = mutableListOf<Listener<GuildRoleEvent>>()
             val deleted = mutableListOf<Listener<GuildRoleEvent>>()
-            private val logger = GlobalLoggerFactory.getLogger(this::class.java)
 
             fun created(listener: Context<GuildRoleEvent>.() -> Unit) = created.add { it.listener() }
             fun updated(listener: Context<GuildRoleEvent>.() -> Unit) = updated.add { it.listener() }
@@ -132,7 +129,6 @@ class ListenersContainer {
     class Interaction {
         val button = mutableListOf<Listener<InteractionButtonEvent>>()
         val command = mutableListOf<Listener<InteractionCommandEvent>>()
-        private val logger = GlobalLoggerFactory.getLogger(this::class.java)
 
         fun button(listener: Context<InteractionButtonEvent>.() -> Unit) = button.add { it.listener() }
         fun command(listener: Context<InteractionCommandEvent>.() -> Unit) = command.add { it.listener() }
@@ -155,7 +151,6 @@ class ListenersContainer {
         val added = mutableListOf<Listener<LoginEvent>>()
         val removed = mutableListOf<Listener<LoginEvent>>()
         val updated = mutableListOf<Listener<LoginEvent>>()
-        private val logger = GlobalLoggerFactory.getLogger(this::class.java)
 
         fun added(listener: Context<LoginEvent>.() -> Unit) = added.add { it.listener() }
         fun removed(listener: Context<LoginEvent>.() -> Unit) = removed.add { it.listener() }
@@ -177,7 +172,6 @@ class ListenersContainer {
         val created = mutableListOf<Listener<MessageEvent>>()
         val updated = mutableListOf<Listener<MessageEvent>>()
         val deleted = mutableListOf<Listener<MessageEvent>>()
-        private val logger = GlobalLoggerFactory.getLogger(this::class.java)
 
         fun created(listener: Context<MessageEvent>.() -> Unit) = created.add { it.listener() }
         fun updated(listener: Context<MessageEvent>.() -> Unit) = updated.add { it.listener() }
@@ -198,7 +192,6 @@ class ListenersContainer {
     class Reaction {
         val added = mutableListOf<Listener<ReactionEvent>>()
         val removed = mutableListOf<Listener<ReactionEvent>>()
-        private val logger = GlobalLoggerFactory.getLogger(this::class.java)
 
         fun added(listener: Context<ReactionEvent>.() -> Unit) = added.add { it.listener() }
         fun removed(listener: Context<ReactionEvent>.() -> Unit) = removed.add { it.listener() }
@@ -216,7 +209,6 @@ class ListenersContainer {
     @BuilderMarker
     class Friend {
         val request = mutableListOf<Listener<UserEvent>>()
-        private val logger = GlobalLoggerFactory.getLogger(this::class.java)
 
         fun request(listener: Context<UserEvent>.() -> Unit) = request.add { it.listener() }
 
