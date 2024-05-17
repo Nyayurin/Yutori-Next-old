@@ -35,3 +35,4 @@ build/
 gradle.properties
 /.gradle/
 /docs/.vitepress/cache/
+/local.properties

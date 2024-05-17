@@ -1,0 +1,166 @@
+/*
+Copyright (c) 2024 Yurn
+Yutori-Next is licensed under Mulan PSL v2.
+You can use this software according to the terms and conditions of the Mulan PSL v2.
+You may obtain a copy of Mulan PSL v2 at:
+         http://license.coscl.org.cn/MulanPSL2
+THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
+EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
+MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+See the Mulan PSL v2 for more details.
+ */
+
+@file:Suppress("unused", "MemberVisibilityCanBePrivate")
+
+package com.github.nyayurn.yutori
+
+import com.github.nyayurn.yutori.message.element.MessageElement
+import com.github.nyayurn.yutori.message.element.NodeContainer
+import com.github.nyayurn.yutori.message.element.NodeMessageElement
+import com.github.nyayurn.yutori.message.element.Text
+import org.jsoup.Jsoup
+import org.jsoup.nodes.*
+import kotlin.streams.toList
+
+@DslMarker
+annotation class BuilderMarker
+
+/**
+ * JsonObject 字符串 DSL 构建器
+ */
+inline fun jsonObj(dsl: JsonObjectDSLBuilder.() -> Unit) = JsonObjectDSLBuilder().apply(dsl).toString()
+
+/**
+ * JsonArray 字符串 DSL 构建器
+ */
+inline fun jsonArr(dsl: JsonArrayDSLBuilder.() -> Unit) = JsonArrayDSLBuilder().apply(dsl).toString()
+
+class JsonObjectDSLBuilder {
+    val map = mutableMapOf<String, Any?>()
+    fun put(key: String, value: Any?) {
+        map[key] = value
+    }
+
+    fun put(key: String, block: () -> Any?) {
+        map[key] = block()
+    }
+
+    fun putJsonObj(key: String, dsl: JsonObjectDSLBuilder.() -> Unit) {
+        map[key] = JsonObjectDSLBuilder().apply(dsl)
+    }
+
+    fun putJsonArr(key: String, block: JsonArrayDSLBuilder.() -> Unit) {
+        map[key] = JsonArrayDSLBuilder().apply(block)
+    }
+
+    override fun toString() = map.entries.filter { it.value != null }.joinToString(",", "{", "}") { (key, value) ->
+        buildString {
+            append("\"$key\":")
+            append(
+                when (value) {
+                    is String -> "\"$value\""
+                    else -> value.toString()
+                }
+            )
+        }
+    }
+}
+
+class JsonArrayDSLBuilder {
+    val list = mutableListOf<Any?>()
+    fun add(value: Any?) {
+        list += value
+    }
+
+    fun add(block: () -> Any?) {
+        list += block
+    }
+
+    fun addJsonArr(dsl: JsonArrayDSLBuilder.() -> Unit) {
+        list += JsonArrayDSLBuilder().apply(dsl)
+    }
+
+    fun addJsonObj(block: JsonObjectDSLBuilder.() -> Unit) {
+        list += JsonObjectDSLBuilder().apply(block)
+    }
+
+    override fun toString() = list.filterNotNull().joinToString(",", "[", "]") { value ->
+        buildString {
+            append(
+                when (value) {
+                    is String -> "\"$value\""
+                    else -> value.toString()
+                }
+            )
+        }
+    }
+}
+
+object MessageUtil {
+    fun String.encode() = replace("&", "&amp;").replace("\"", "&quot;").replace("<", "&lt;").replace(">", "&gt;")
+    fun String.decode() = replace("&gt;", ">").replace("&lt;", "<").replace("&quot;", "\"").replace("&amp;", "&")
+    fun String.toElements(satori: Satori) = parse(satori, this)
+
+    fun select(element: String, vararg elements: MessageElement): MessageElement? {
+        for (e in elements) {
+            if (e is NodeMessageElement) return e.select(element) ?: continue
+            if (e is Text && element == "text") return e
+        }
+        return null
+    }
+
+    fun parse(satori: Satori, context: String): List<MessageElement> {
+        val nodes = Jsoup.parse(context).body().childNodes().stream().filter {
+            it !is Comment && it !is DocumentType
+        }.toList()
+        return List(nodes.size) { i -> parseElement(satori, nodes[i]) }
+    }
+
+    private fun parseElement(satori: Satori, node: Node): MessageElement = when (node) {
+        is TextNode -> Text(node.text())
+        is Element -> {
+            val container = satori.elements[node.tagName()] ?: NodeContainer(node.tagName())
+            container(node).apply {
+                for (attr in node.attributes()) {
+                    val key = attr.key
+                    val value = attr.value
+                    this.properties[key] = when (val type = container.properties_default[key] ?: "") {
+                        is String -> value
+                        is Number -> try {
+                            if (value.contains(".")) {
+                                runCatching {
+                                    value.toDouble()
+                                }.getOrElse {
+                                    value.toBigDecimal()
+                                }
+                            } else {
+                                runCatching {
+                                    value.toInt()
+                                }.getOrElse {
+                                    runCatching {
+                                        value.toLong()
+                                    }.getOrElse {
+                                        value.toBigInteger()
+                                    }
+                                }
+                            }
+                        } catch (_: NumberFormatException) {
+                            throw NumberParsingException(value)
+                        }
+
+                        is Boolean -> try {
+                            if (attr.toString().contains("=")) value.toBooleanStrict() else true
+                        } catch (_: IllegalArgumentException) {
+                            throw NumberParsingException(value)
+                        }
+
+                        else -> throw MessageElementPropertyParsingException(type::class.toString())
+                    }
+                }
+                for (child in node.childNodes()) this.children += parseElement(satori, child)
+            }
+        }
+
+        else -> throw MessageElementParsingException(node.toString())
+    }
+}
