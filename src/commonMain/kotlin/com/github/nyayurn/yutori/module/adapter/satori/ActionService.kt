@@ -14,14 +14,18 @@ See the Mulan PSL v2 for more details.
 
 package com.github.nyayurn.yutori.module.adapter.satori
 
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.github.nyayurn.yutori.ActionService
 import com.github.nyayurn.yutori.GlobalLoggerFactory
 import com.github.nyayurn.yutori.SatoriProperties
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.http.*
+import io.ktor.serialization.jackson.*
+import io.ktor.util.reflect.*
 import kotlinx.coroutines.runBlocking
 
 class SatoriActionService(val properties: SatoriProperties, val name: String) : ActionService {
@@ -33,9 +37,16 @@ class SatoriActionService(val properties: SatoriProperties, val name: String) : 
         method: String,
         platform: String?,
         self_id: String?,
-        content: String?
-    ): String = runBlocking {
-        HttpClient(CIO).use { client ->
+        content: Map<String, Any?>,
+        typeInfo: TypeInfo
+    ): Any = runBlocking {
+        HttpClient(CIO) {
+            install(ContentNegotiation) {
+                jackson {
+                    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                }
+            }
+        }.use { client ->
             val response = client.post {
                 url {
                     host = properties.host
@@ -48,7 +59,17 @@ class SatoriActionService(val properties: SatoriProperties, val name: String) : 
                     platform?.let { append("X-Platform", platform) }
                     self_id?.let { append("X-Self-ID", self_id) }
                 }
-                content?.let { setBody(content) }
+                setBody(content.entries.filter { it.value != null }.joinToString(",", "{", "}") { (key, value) ->
+                    buildString {
+                        append("\"$key\":")
+                        append(
+                            when (value) {
+                                is String -> "\"$value\""
+                                else -> value.toString()
+                            }
+                        )
+                    }
+                })
                 logger.debug(
                     name, """
                     Satori Action: url: ${this.url},
@@ -58,7 +79,7 @@ class SatoriActionService(val properties: SatoriProperties, val name: String) : 
                 )
             }
             logger.debug(name, "Satori Action Response: $response")
-            response.body()
+            response.body(typeInfo)
         }
     }
 }

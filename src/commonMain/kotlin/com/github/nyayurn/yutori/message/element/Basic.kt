@@ -14,7 +14,7 @@ See the Mulan PSL v2 for more details.
 
 package com.github.nyayurn.yutori.message.element
 
-import com.github.nyayurn.yutori.MessageUtil.encode
+import com.github.nyayurn.yutori.encode
 import org.jsoup.nodes.Element
 
 class Text(var text: String) : MessageElement() {

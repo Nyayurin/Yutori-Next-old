@@ -32,6 +32,10 @@ class Image(
     "width" to width,
     "height" to height
 ) {
+    var src: String by super.properties
+    var title: String? by super.properties
+    var cache: Boolean? by super.properties
+    var timeout: String? by super.properties
     var width: Number? by super.properties
     var height: Number? by super.properties
 }
@@ -52,6 +56,10 @@ class Audio(
     "duration" to duration,
     "poster" to poster
 ) {
+    var src: String by super.properties
+    var title: String? by super.properties
+    var cache: Boolean? by super.properties
+    var timeout: String? by super.properties
     var duration: Number? by super.properties
     var poster: String? by super.properties
 }
@@ -76,6 +84,10 @@ class Video(
     "duration" to duration,
     "poster" to poster
 ) {
+    var src: String by super.properties
+    var title: String? by super.properties
+    var cache: Boolean? by super.properties
+    var timeout: String? by super.properties
     var width: Number? by super.properties
     var height: Number? by super.properties
     var duration: Number? by super.properties
@@ -96,6 +108,10 @@ class File(
     "timeout" to timeout,
     "poster" to poster
 ) {
+    var src: String by super.properties
+    var title: String? by super.properties
+    var cache: Boolean? by super.properties
+    var timeout: String? by super.properties
     var poster: String? by super.properties
 }
 

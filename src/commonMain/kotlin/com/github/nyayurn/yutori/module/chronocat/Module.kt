@@ -22,7 +22,7 @@ val Module.Companion.Chronocat: ChronocatModule
 object ChronocatModule : Module {
     override fun install(satori: Satori) {
         satori.actions_containers["chronocat"] = { platform, self_id, service ->
-            ChronocatActionsContainer(platform, self_id, service)
+            ChronocatActions(platform, self_id, service)
         }
         satori.message_builders["chronocat"] = { ChronocatMessageBuilder(it) }
         Element.install(satori)

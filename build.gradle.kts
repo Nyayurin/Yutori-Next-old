@@ -6,8 +6,6 @@ plugins {
 
 group = "com.github.Nyayurn"
 
-val ktor_version = "2.3.9"
-
 kotlin {
     jvmToolchain(17)
     withSourcesJar()
@@ -16,9 +14,6 @@ kotlin {
         publishLibraryVariants("release")
     }
     sourceSets {
-        jvmMain.dependencies {
-            api(libs.mordant)
-        }
         commonMain.dependencies {
             api(libs.jackson.module.kotlin)
             api(libs.jsoup)
@@ -27,7 +22,11 @@ kotlin {
             api(libs.ktor.client.core)
             api(libs.ktor.client.cio)
             api(libs.ktor.client.websockets)
+            api(libs.ktor.client.content.negotiation)
             api(libs.ktor.serialization.jackson)
+        }
+        jvmMain.dependencies {
+            api(libs.mordant)
         }
         androidMain.dependencies {
         }

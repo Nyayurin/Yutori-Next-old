@@ -14,10 +14,20 @@ See the Mulan PSL v2 for more details.
 
 package com.github.nyayurn.yutori
 
-fun interface ActionService {
-    fun send(resource: String, method: String, platform: String?, self_id: String?, content: String?): String
+import io.ktor.util.reflect.*
+
+interface ActionService {
+    fun send(
+        resource: String,
+        method: String,
+        platform: String?,
+        self_id: String?,
+        content: Map<String, Any?>,
+        typeInfo: TypeInfo
+    ): Any
 }
 
-interface EventService : AutoCloseable {
+interface EventService {
     suspend fun connect()
+    fun disconnect()
 }

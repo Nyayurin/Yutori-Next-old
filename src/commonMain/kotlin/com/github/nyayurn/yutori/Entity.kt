@@ -16,7 +16,6 @@ package com.github.nyayurn.yutori
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import com.github.nyayurn.yutori.message.MessageBuilder
 
 /**
  * 频道
@@ -185,17 +184,4 @@ data class SatoriProperties(
     val version: String = "v1"
 )
 
-data class Context<T : Event>(val actions: ActionsContainer, val event: T, val satori: Satori) {
-    val nick: String?
-        get() = event.member?.nick ?: event.user?.nick ?: event.user?.name
-
-    fun reply(quote: Boolean = true, content: MessageBuilder.() -> Unit) {
-        actions.message.create {
-            channel_id = event.channel!!.id
-            content {
-                if (quote) quote { id = event.message!!.id }
-                content()
-            }
-        }
-    }
-}
+data class Context<T : Event>(val actions: RootActions, val event: T, val satori: Satori)

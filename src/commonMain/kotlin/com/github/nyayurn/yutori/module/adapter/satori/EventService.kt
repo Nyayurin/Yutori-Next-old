@@ -40,7 +40,13 @@ import kotlinx.coroutines.withTimeoutOrNull
  * @param properties Satori Server 配置
  * @param satori Satori 配置
  */
-class WebSocketEventService(val properties: SatoriProperties, val satori: Satori) : EventService {
+class WebSocketEventService(
+    val properties: SatoriProperties,
+    val open: () -> Unit = { },
+    val connect: (List<Login>, SatoriActionService, Satori) -> Unit = { _, _, _ -> },
+    val error: () -> Unit = { },
+    val satori: Satori
+) : EventService {
     private var is_received_pong = false
     private var sequence: Number? = null
     private val service = SatoriActionService(properties, satori.name)
@@ -55,65 +61,29 @@ class WebSocketEventService(val properties: SatoriProperties, val satori: Satori
         HttpMethod.Get, properties.host, properties.port, "${properties.path}/${properties.version}/events"
     ) {
         try {
-            logger.info(satori.name, "成功建立 WebSocket 连接, 发送身份验证并尝试建立事件推送服务")
-            sendSerialized(IdentifySignaling(body = Identify(properties.token, sequence)))
+            open()
+            sendSerialized(IdentifySignaling(Identify(properties.token, sequence)))
+            logger.info(satori.name, "成功建立 WebSocket 连接, 尝试建立事件推送服务")
             withTimeoutOrNull(10000L) {
                 val ready = receiveDeserialized<ReadySignaling>().body
+                connect(ready.logins, service, satori)
                 logger.info(satori.name, "成功建立事件推送服务: ${ready.logins}")
-                satori.establish_event_service(ready.logins, service, satori)
             } ?: throw TimeoutException("无法建立事件推送服务: READY 响应超时")
-            launch {
-                delay(10000)
-                logger.debug(satori.name, "发送 PING")
-                sendSerialized(PingSignaling)
-                delay(10000)
-                if (!is_received_pong) throw TimeoutException("PONG 响应超时")
-            }
+            sendPing()
             while (true) try {
                 when (val signaling = receiveDeserialized<Signaling>()) {
-                    is EventSignaling -> launch {
-                        try {
-                            val event = signaling.body
-                            when (event.type) {
-                                MessageEvents.Created -> logger.info(satori.name , buildString {
-                                    append("${event.platform}(${event.self_id}) 接收事件(${event.type}): ")
-                                    append(blue("${event.channel!!.name}(${event.channel!!.id})"))
-                                    append(gray("-"))
-                                    append(cyan("${event.member?.nick ?: event.user!!.nick ?: event.user!!.name}(${event.user!!.id})"))
-                                    append(": ")
-                                    append(event.message!!.content)
-                                })
-
-                                else -> logger.info(
-                                    satori.name, "${event.platform}(${event.self_id}) 接收事件: ${event.type}"
-                                )
-                            }
-                            logger.debug(satori.name, "事件详细信息: $signaling")
-                            sequence = event.id
-                            satori.container(event, satori, service)
-                        } catch (e: Exception) {
-                            logger.warn(satori.name, "处理事件时出错($signaling): ${e.localizedMessage}")
-                            e.printStackTrace()
-                        }
-                    }
-
+                    is EventSignaling -> onEvent(signaling.body)
                     is PongSignaling -> {
-                        logger.debug(satori.name, "收到 PONG")
                         is_received_pong = true
-                        launch {
-                            delay(10000)
-                            logger.debug(satori.name, "发送 PING")
-                            sendSerialized(PingSignaling)
-                            is_received_pong = false
-                            delay(10000)
-                            if (!is_received_pong) throw TimeoutException("PONG 响应超时")
-                        }
+                        logger.debug(satori.name, "收到 PONG")
+                        sendPing()
                     }
                 }
             } catch (e: JsonConvertException) {
                 logger.warn(satori.name, "事件解析错误: ${e.localizedMessage}")
             }
         } catch (e: Exception) {
+            error()
             logger.warn(satori.name, "WebSocket 连接断开: ${e.localizedMessage}")
             e.printStackTrace()
             launch {
@@ -126,7 +96,51 @@ class WebSocketEventService(val properties: SatoriProperties, val satori: Satori
         }
     }
 
-    override fun close() {
+    private fun DefaultClientWebSocketSession.sendPing() = launch {
+        delay(9000)
+        sendSerialized(PingSignaling)
+        is_received_pong = false
+        logger.debug(satori.name, "发送 PING")
+        delay(10000)
+        if (!is_received_pong) {
+            error()
+            logger.warn(satori.name, "WebSocket 连接断开: PONG 响应超时")
+            launch {
+                close()
+                logger.info(satori.name, "将在5秒后尝试重新连接")
+                delay(5000)
+                logger.info(satori.name, "尝试重新连接")
+                connect()
+            }
+        }
+    }
+
+    private fun DefaultClientWebSocketSession.onEvent(event: Event) = launch {
+        try {
+            when (event.type) {
+                MessageEvents.Created -> logger.info(satori.name, buildString {
+                    append("${event.platform}(${event.self_id}) 接收事件(${event.type}): ")
+                    append(blue("${event.channel!!.name}(${event.channel!!.id})"))
+                    append(gray("-"))
+                    append(cyan("${event.nick()}(${event.user!!.id})"))
+                    append(": ")
+                    append(event.message!!.content)
+                })
+
+                else -> logger.info(
+                    satori.name, "${event.platform}(${event.self_id}) 接收事件: ${event.type}"
+                )
+            }
+            logger.debug(satori.name, "事件详细信息: $event")
+            sequence = event.id
+            satori.container(event, satori, service)
+        } catch (e: Exception) {
+            logger.warn(satori.name, "处理事件时出错($event): ${e.localizedMessage}")
+            e.printStackTrace()
+        }
+    }
+
+    override fun disconnect() {
         client.close()
     }
 }
@@ -164,7 +178,7 @@ class WebhookEventService(
                                     append("${event.platform}(${event.self_id}) 接收事件(${event.type}): ")
                                     append("\u001B[38;5;4m").append("${event.channel.name}(${event.channel.id})")
                                     append("\u001B[38;5;6m")
-                                    append(event.member?.nick ?: event.user.nick ?: event.user.name)
+                                    append(event.nick())
                                     append("(${event.user.id})")
                                     append("\u001B[0m").append(": ").append(event.message.content)
                                 })
@@ -186,16 +200,15 @@ class WebhookEventService(
             }
         }.start()
         logger.info(satori.name, "成功启动 HTTP 服务器")
-        ActionsContainer.AdminAction(service).webhook.create {
-            url = "http://${properties.host}:${properties.port}${properties.path}"
-            token = properties.token
-        }
+        RootActions.AdminAction(service).webhook.create(
+            "http://${properties.host}:${properties.port}${properties.path}", properties.token
+        )
     }
 
-    override fun close() {
-        ActionsContainer.AdminAction(service).webhook.delete {
-            url = "http://${properties.host}:${properties.port}${properties.path}"
-        }
+    override fun disconnect() {
+        RootActions.AdminAction(service).webhook.delete(
+            "http://${properties.host}:${properties.port}${properties.path}"
+        )
         client?.stop()
     }
 }

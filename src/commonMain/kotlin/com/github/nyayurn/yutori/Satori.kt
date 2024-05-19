@@ -17,7 +17,6 @@ package com.github.nyayurn.yutori
 import com.github.nyayurn.yutori.message.ExtendedMessageBuilder
 import com.github.nyayurn.yutori.message.MessageBuilder
 import com.github.nyayurn.yutori.message.element.*
-import com.github.nyayurn.yutori.module.adapter.satori.SatoriActionService
 
 fun satori(name: String = "Satori", block: Satori.() -> Unit) = Satori(name).apply(block)
 
@@ -26,9 +25,8 @@ class Satori(val name: String) {
     val container = ListenersContainer()
     val modules = mutableMapOf<Class<out Module>, Module>()
     val elements = mutableMapOf<String, MessageElementContainer>()
-    val actions_containers = mutableMapOf<String, (String, String, ActionService) -> ExtendedActionsContainer>()
+    val actions_containers = mutableMapOf<String, (String, String, ActionService) -> Actions>()
     val message_builders = mutableMapOf<String, (MessageBuilder) -> ExtendedMessageBuilder>()
-    var establish_event_service: (List<Login>, SatoriActionService, Satori) -> Unit = { _, _, _ -> }
 
     init {
         elements["at"] = AtContainer
@@ -67,10 +65,6 @@ class Satori(val name: String) {
     inline fun <reified T : Module> uninstall() {
         modules[T::class.java]?.uninstall(this)
         modules.remove(T::class.java)
-    }
-
-    fun onEstablishEventService(block: (List<Login>, SatoriActionService, Satori) -> Unit) {
-        establish_event_service = block
     }
 
     fun listening(block: ListenersContainer.() -> Unit) = container.run(block)

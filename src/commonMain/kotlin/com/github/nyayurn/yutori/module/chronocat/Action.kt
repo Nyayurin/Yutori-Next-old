@@ -14,17 +14,15 @@ See the Mulan PSL v2 for more details.
 
 package com.github.nyayurn.yutori.module.chronocat
 
-import com.github.nyayurn.yutori.*
-import kotlin.properties.Delegates
+import com.github.nyayurn.yutori.Action
+import com.github.nyayurn.yutori.ActionService
+import com.github.nyayurn.yutori.Actions
+import com.github.nyayurn.yutori.RootActions
 
-val ActionsContainer.chronocat: ChronocatActionsContainer
-    get() = containers["chronocat"] as ChronocatActionsContainer
+val RootActions.chronocat: ChronocatActions
+    get() = containers["chronocat"] as ChronocatActions
 
-class ChronocatActionsContainer(
-    platform: String,
-    self_id: String,
-    service: ActionService
-) : ExtendedActionsContainer() {
+class ChronocatActions(platform: String, self_id: String, service: ActionService) : Actions() {
     val unsafe = UnsafeAction(platform, self_id, service)
 
     class UnsafeAction(platform: String, self_id: String, service: ActionService) {
@@ -32,54 +30,23 @@ class ChronocatActionsContainer(
         val guild = GuildAction(platform, self_id, service)
         val friend = FriendAction(platform, self_id, service)
 
-        class ChannelAction(platform: String, self_id: String, service: ActionService) {
-            private val action = GeneralAction(platform, self_id, "unsafe.channel", service)
-
-            fun mute(block: MuteBuilder.() -> Unit) {
-                val builder = MuteBuilder().apply(block)
-                action.send("mute") {
-                    put("channel_id", builder.channel_id)
-                    put("enable", builder.enable)
-                }
-            }
-
-            @BuilderMarker
-            class MuteBuilder {
-                lateinit var channel_id: String
-                var enable: Boolean by Delegates.notNull()
-            }
+        class ChannelAction(platform: String, self_id: String, service: ActionService) : Action(
+            platform, self_id, "unsafe.channel", service
+        ) {
+            fun mute(channel_id: String, enable: Boolean): Unit =
+                send("mute", "channel_id" to channel_id, "enable" to enable)
         }
 
-        class GuildAction(platform: String, self_id: String, service: ActionService) {
-            private val action=GeneralAction(platform, self_id, "unsafe.guild", service)
-
-            fun remove(block: RemoveBuilder.() -> Unit) {
-                val builder = RemoveBuilder().apply(block)
-                action.send("remove") {
-                    put("guild_id", builder.guild_id)
-                }
-            }
-
-            @BuilderMarker
-            class RemoveBuilder {
-                lateinit var guild_id: String
-            }
+        class GuildAction(platform: String, self_id: String, service: ActionService) : Action(
+            platform, self_id, "unsafe.guild", service
+        ) {
+            fun remove(guild_id: String): Unit = send("remove", "guild_id" to guild_id)
         }
 
-        class FriendAction(platform: String, self_id: String, service: ActionService) {
-            private val action = GeneralAction(platform, self_id, "unsafe.friend", service)
-
-            fun remove(block: RemoveBuilder.() -> Unit) {
-                val builder = RemoveBuilder().apply(block)
-                action.send("remove") {
-                    put("user_id", builder.user_id)
-                }
-            }
-
-            @BuilderMarker
-            class RemoveBuilder {
-                lateinit var user_id: String
-            }
+        class FriendAction(platform: String, self_id: String, service: ActionService) : Action(
+            platform, self_id, "unsafe.friend", service
+        ) {
+            fun remove(user_id: String): Unit = send("remove", "user_id" to user_id)
         }
     }
 }

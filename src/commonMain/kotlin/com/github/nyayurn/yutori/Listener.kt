@@ -36,7 +36,7 @@ class ListenersContainer {
 
     operator fun invoke(event: Event, satori: Satori, service: ActionService) {
         try {
-            val context = Context(ActionsContainer(event.platform, event.self_id, service, satori), event, satori)
+            val context = Context(RootActions(event.platform, event.self_id, service, satori), event, satori)
             for (listener in this.any) listener(context)
             guild(context)
             interaction(context)

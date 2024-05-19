@@ -30,7 +30,22 @@ class SatoriAdapter : Adapter {
     var token: String? = null
     var version: String = "v1"
     var webhook: WebHook? = null
+    var open: () -> Unit = { }
+    var connect: (List<Login>, SatoriActionService, Satori) -> Unit = { _, _, _ -> }
+    var error: () -> Unit = { }
     private var service: EventService? = null
+
+    fun onOpen(block: () -> Unit) {
+        open = block
+    }
+
+    fun onConnect(block: (List<Login>, SatoriActionService, Satori) -> Unit) {
+        connect = block
+    }
+
+    fun onError(block: () -> Unit) {
+        error = block
+    }
 
     fun useWebHook(block: WebHook.() -> Unit) {
         webhook = WebHook().apply(block)
@@ -43,14 +58,14 @@ class SatoriAdapter : Adapter {
     override fun start(satori: Satori) {
         val properties = SatoriProperties(host, port, path, token, version)
         service = webhook?.run { WebhookEventService(listen, port, path, properties, satori) }
-                  ?: WebSocketEventService(properties, satori)
+                  ?: WebSocketEventService(properties, open, connect, error, satori)
         GlobalScope.launch {
             service!!.connect()
         }
     }
 
     override fun stop(satori: Satori) {
-        service?.close()
+        service?.disconnect()
         service = null
     }
 

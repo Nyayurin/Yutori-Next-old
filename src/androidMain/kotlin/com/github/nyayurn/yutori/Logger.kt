@@ -14,30 +14,23 @@ See the Mulan PSL v2 for more details.
 
 package com.github.nyayurn.yutori
 
+import android.util.Log
 import com.github.nyayurn.yutori.Level.*
-import java.text.SimpleDateFormat
-import java.util.*
 
 actual object LoggerColor {
-    actual fun blue(msg: String) = "\u001B[38;5;4m$msg\u001B[0m"
-    actual fun gray(msg: String) = ""
-    actual fun cyan(msg: String) = ""
+    actual fun blue(msg: String) = msg
+    actual fun gray(msg: String) = msg
+    actual fun cyan(msg: String) = msg
 }
 
 actual class DefaultLogger actual constructor(private val clazz: Class<*>, private val useLevel: Level) : Logger {
-    private infix fun String.deco(context: String) = "\u001b[${this}m$context\u001b[0m"
-
     override fun log(level: Level, service: String, msg: String) {
         if (level.num < useLevel.num) return
-        val time = "38;5;8" deco "[${SimpleDateFormat("MM-dd HH:mm:ss", Locale.SIMPLIFIED_CHINESE)
-            .format(Date(System.currentTimeMillis()))}]"
-        val className = "38;5;2" deco "[${clazz.simpleName}]"
-        val levelAndMsg = when (level) {
-            ERROR -> "38;5;9"
-            WARN -> "38;5;11"
-            INFO -> "0"
-            DEBUG -> "38;5;8"
-        } deco "[${level.name}]: $msg"
-        println("[$service]$time$className$levelAndMsg")
+        when (level) {
+            ERROR -> Log.e(clazz.simpleName, "$service | $msg")
+            WARN -> Log.w(clazz.simpleName, "$service | $msg")
+            INFO -> Log.i(clazz.simpleName, "$service | $msg")
+            DEBUG -> Log.d(clazz.simpleName, "$service | $msg")
+        }
     }
 }
