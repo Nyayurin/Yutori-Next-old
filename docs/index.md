@@ -10,7 +10,7 @@ hero:
       link: /introduction
     - theme: alt
       text: 示例
-      link: https://github.com/Nyayurn/Yutori-Next/tree/master/example
+      link: https://github.com/Nyayurn/YurnQbot
     - theme: alt
       text: Github
       link: https://github.com/Nyayurn/Yutori-Next

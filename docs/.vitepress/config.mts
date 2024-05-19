@@ -46,9 +46,11 @@ export default defineConfig({
                 ]
             }, {
                 text: "进阶",
-                link: "/advanced/advanced",
                 items: [
                     {
+                       text: "进阶",
+                        link: "/advanced/advanced",
+                    }, {
                         text: "管理接口",
                         link: "/advanced/admin"
                     }
