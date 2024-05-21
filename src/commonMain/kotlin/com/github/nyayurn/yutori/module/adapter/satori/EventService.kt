@@ -50,48 +50,51 @@ class WebSocketEventService(
     private var is_received_pong = false
     private var sequence: Number? = null
     private val service = SatoriActionService(properties, satori.name)
-    private val client = HttpClient {
-        install(WebSockets) {
-            contentConverter = JacksonWebsocketContentConverter()
-        }
-    }
+    private var client: HttpClient? = null
     private val logger = GlobalLoggerFactory.getLogger(this::class.java)
 
-    override suspend fun connect(): Unit = client.webSocket(
-        HttpMethod.Get, properties.host, properties.port, "${properties.path}/${properties.version}/events"
-    ) {
-        try {
-            open()
-            sendSerialized(IdentifySignaling(Identify(properties.token, sequence)))
-            logger.info(satori.name, "成功建立 WebSocket 连接, 尝试建立事件推送服务")
-            withTimeoutOrNull(10000L) {
-                val ready = receiveDeserialized<ReadySignaling>().body
-                connect(ready.logins, service, satori)
-                logger.info(satori.name, "成功建立事件推送服务: ${ready.logins}")
-            } ?: throw TimeoutException("无法建立事件推送服务: READY 响应超时")
-            sendPing()
-            while (true) try {
-                when (val signaling = receiveDeserialized<Signaling>()) {
-                    is EventSignaling -> onEvent(signaling.body)
-                    is PongSignaling -> {
-                        is_received_pong = true
-                        logger.debug(satori.name, "收到 PONG")
-                        sendPing()
-                    }
-                }
-            } catch (e: JsonConvertException) {
-                logger.warn(satori.name, "事件解析错误: ${e.localizedMessage}")
+    override suspend fun connect() {
+        client = HttpClient {
+            install(WebSockets) {
+                contentConverter = JacksonWebsocketContentConverter()
             }
-        } catch (e: Exception) {
-            error()
-            logger.warn(satori.name, "WebSocket 连接断开: ${e.localizedMessage}")
-            e.printStackTrace()
-            launch {
-                close()
-                logger.info(satori.name, "将在5秒后尝试重新连接")
-                delay(5000)
-                logger.info(satori.name, "尝试重新连接")
-                connect()
+        }
+        client!!.webSocket(
+            HttpMethod.Get, properties.host, properties.port, "${properties.path}/${properties.version}/events"
+        ) {
+            try {
+                open()
+                sendSerialized(IdentifySignaling(Identify(properties.token, sequence)))
+                logger.info(satori.name, "成功建立 WebSocket 连接, 尝试建立事件推送服务")
+                withTimeoutOrNull(10000L) {
+                    val ready = receiveDeserialized<ReadySignaling>().body
+                    connect(ready.logins, service, satori)
+                    logger.info(satori.name, "成功建立事件推送服务: ${ready.logins}")
+                } ?: throw TimeoutException("无法建立事件推送服务: READY 响应超时")
+                sendPing()
+                while (true) try {
+                    when (val signaling = receiveDeserialized<Signaling>()) {
+                        is EventSignaling -> onEvent(signaling.body)
+                        is PongSignaling -> {
+                            is_received_pong = true
+                            logger.debug(satori.name, "收到 PONG")
+                            sendPing()
+                        }
+                    }
+                } catch (e: JsonConvertException) {
+                    logger.warn(satori.name, "事件解析错误: ${e.localizedMessage}")
+                }
+            } catch (e: Exception) {
+                error()
+                logger.warn(satori.name, "WebSocket 连接断开: ${e.localizedMessage}")
+                e.printStackTrace()
+                launch {
+                    close()
+                    logger.info(satori.name, "将在5秒后尝试重新连接")
+                    delay(5000)
+                    logger.info(satori.name, "尝试重新连接")
+                    reconnect()
+                }
             }
         }
     }
@@ -110,7 +113,7 @@ class WebSocketEventService(
                 logger.info(satori.name, "将在5秒后尝试重新连接")
                 delay(5000)
                 logger.info(satori.name, "尝试重新连接")
-                connect()
+                reconnect()
             }
         }
     }
@@ -141,7 +144,14 @@ class WebSocketEventService(
     }
 
     override fun disconnect() {
-        client.close()
+        client?.close()
+        client = null
+    }
+
+    override suspend fun reconnect() {
+        client?.close()
+        client = null
+        connect()
     }
 }
 
@@ -203,6 +213,10 @@ class WebhookEventService(
         RootActions.AdminAction(service).webhook.create(
             "http://${properties.host}:${properties.port}${properties.path}", properties.token
         )
+    }
+
+    override suspend fun reconnect() {
+        TODO("Not yet implemented")
     }
 
     override fun disconnect() {

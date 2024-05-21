@@ -29,5 +29,6 @@ interface ActionService {
 
 interface EventService {
     suspend fun connect()
+    suspend fun reconnect()
     fun disconnect()
 }
