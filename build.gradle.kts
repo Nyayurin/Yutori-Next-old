@@ -6,6 +6,11 @@ plugins {
 
 group = "com.github.Nyayurn"
 
+repositories {
+    google()
+    mavenCentral()
+}
+
 kotlin {
     jvmToolchain(17)
     withSourcesJar()
