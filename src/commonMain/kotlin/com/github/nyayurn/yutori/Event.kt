@@ -48,7 +48,7 @@ open class Event(
     operator: User? = null,
     role: GuildRole? = null,
     user: User? = null,
-    vararg pair: Pair<String, Any?>
+    vararg pair: Pair<String, Any?> = arrayOf(),
 ) : Signaling.Body {
     val properties = mutableMapOf(
         "id" to id,
