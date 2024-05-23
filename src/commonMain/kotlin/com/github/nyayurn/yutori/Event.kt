@@ -14,76 +14,50 @@ See the Mulan PSL v2 for more details.
 
 package com.github.nyayurn.yutori
 
-/**
- * 事件
- * @property id 事件 ID
- * @property type 事件类型
- * @property platform 接收者的平台名称
- * @property self_id 接收者的平台账号
- * @property timestamp 事件的时间戳
- * @property argv 交互指令
- * @property button 交互按钮
- * @property channel 事件所属的频道
- * @property guild 事件所属的群组
- * @property login 事件的登录信息
- * @property member 事件的目标成员
- * @property message 事件的消息
- * @property operator 事件的操作者
- * @property role 事件的目标角色
- * @property user 事件的目标用户
- */
-open class Event(
-    id: Number,
-    type: String,
-    platform: String,
-    self_id: String,
-    timestamp: Number,
-    argv: Interaction.Argv? = null,
-    button: Interaction.Button? = null,
-    channel: Channel? = null,
-    guild: Guild? = null,
-    login: Login? = null,
-    member: GuildMember? = null,
-    message: Message? = null,
-    operator: User? = null,
-    role: GuildRole? = null,
-    user: User? = null,
-    vararg pair: Pair<String, Any?> = arrayOf(),
-) : Signaling.Body {
-    val properties = mutableMapOf(
-        "id" to id,
-        "type" to type,
-        "platform" to platform,
-        "self_id" to self_id,
-        "timestamp" to timestamp,
-        "argv" to argv,
-        "button" to button,
-        "channel" to channel,
-        "guild" to guild,
-        "login" to login,
-        "member" to member,
-        "message" to message,
-        "operator" to operator,
-        "role" to role,
-        "user" to user,
-        *pair
-    )
-    val id: Number by properties
-    val type: String by properties
-    val platform: String by properties
-    val self_id: String by properties
-    val timestamp: Number by properties
-    open val argv: Interaction.Argv? by properties
-    open val button: Interaction.Button? by properties
-    open val channel: Channel? by properties
-    open val guild: Guild? by properties
-    open val login: Login? by properties
-    open val member: GuildMember? by properties
-    open val message: Message? by properties
-    open val operator: User? by properties
-    open val role: GuildRole? by properties
-    open val user: User? by properties
-}
+abstract class SigningEvent
+
+interface ArgvNotNullEvent
+interface ButtonNotNullEvent
+interface ChannelNotNullEvent
+interface GuildNotNullEvent
+interface LoginNotNullEvent
+interface MemberNotNullEvent
+interface MessageNotNullEvent
+interface OperatorNotNullEvent
+interface RoleNotNullEvent
+interface UserNotNullEvent
+
+val <T> Event<T>.argv: Interaction.Argv where T : SigningEvent, T : ArgvNotNullEvent
+    get() = nullable_argv as Interaction.Argv
+
+val <T> Event<T>.button: Interaction.Button where T : SigningEvent, T : ButtonNotNullEvent
+    get() = this.properties["button"] as Interaction.Button
+
+val <T> Event<T>.channel: Channel where T : SigningEvent, T : ChannelNotNullEvent
+    get() = this.properties["channel"] as Channel
+
+val <T> Event<T>.guild: Guild where T : SigningEvent, T : GuildNotNullEvent
+    get() = this.properties["guild"] as Guild
+
+val <T> Event<T>.login: Login where T : SigningEvent, T : LoginNotNullEvent
+    get() = this.properties["login"] as Login
+
+val <T> Event<T>.member: GuildMember where T : SigningEvent, T : MemberNotNullEvent
+    get() = this.properties["member"] as GuildMember
+
+val <T> Event<T>.message: Message where T : SigningEvent, T : MessageNotNullEvent
+    get() = this.properties["message"] as Message
+
+val <T> Event<T>.operator: User where T : SigningEvent, T : OperatorNotNullEvent
+    get() = this.properties["operator"] as User
+
+val <T> Event<T>.role: GuildRole where T : SigningEvent, T : RoleNotNullEvent
+    get() = this.properties["role"] as GuildRole
+
+val <T> Event<T>.user: User where T : SigningEvent, T : UserNotNullEvent
+    get() = properties["user"] as User
+
+class AnyEvent private constructor() : SigningEvent()
 
 /**
  * 群组事件列表
@@ -99,30 +73,12 @@ object GuildEvents {
 /**
  * 群组事件实体类
  */
-class GuildEvent(event: Event, vararg pair: Pair<String, Any?>) : Event(
-    event.id,
-    event.type,
-    event.platform,
-    event.self_id,
-    event.timestamp,
-    event.argv,
-    event.button,
-    event.channel,
-    event.guild!!,
-    event.login,
-    event.member,
-    event.message,
-    event.operator,
-    event.role,
-    event.user,
-    *pair
-) {
-    override val guild: Guild by properties
-}
+class GuildEvent private constructor() : SigningEvent(), GuildNotNullEvent
 
 /**
  * 群组成员事件列表
  */
+
 object GuildMemberEvents {
     const val Added = "guild-member-added"
     const val Updated = "guild-member-updated"
@@ -134,28 +90,7 @@ object GuildMemberEvents {
 /**
  * 群组成员事件实体类
  */
-class GuildMemberEvent(event: Event, vararg pair: Pair<String, Any?>) : Event(
-    event.id,
-    event.type,
-    event.platform,
-    event.self_id,
-    event.timestamp,
-    event.argv,
-    event.button,
-    event.channel,
-    event.guild!!,
-    event.login,
-    event.member!!,
-    event.message,
-    event.operator,
-    event.role,
-    event.user!!,
-    *pair
-) {
-    override val guild: Guild by properties
-    override val member: GuildMember by properties
-    override val user: User by properties
-}
+class GuildMemberEvent private constructor() : SigningEvent(), GuildNotNullEvent, MemberNotNullEvent, UserNotNullEvent
 
 /**
  * 群组角色事件列表
@@ -170,27 +105,7 @@ object GuildRoleEvents {
 /**
  * 群组角色事件实体类
  */
-class GuildRoleEvent(event: Event, vararg pair: Pair<String, Any?>) : Event(
-    event.id,
-    event.type,
-    event.platform,
-    event.self_id,
-    event.timestamp,
-    event.argv,
-    event.button,
-    event.channel,
-    event.guild!!,
-    event.login,
-    event.member,
-    event.message,
-    event.operator,
-    event.role!!,
-    event.user,
-    *pair
-) {
-    override val guild: Guild by properties
-    override val role: GuildRole by properties
-}
+class GuildRoleEvent private constructor() : SigningEvent(), GuildNotNullEvent, RoleNotNullEvent
 
 /**
  * 交互事件列表
@@ -204,48 +119,12 @@ object InteractionEvents {
 /**
  * 交互事件 interaction/button 实体类
  */
-class InteractionButtonEvent(event: Event, vararg pair: Pair<String, Any?>) : Event(
-    event.id,
-    event.type,
-    event.platform,
-    event.self_id,
-    event.timestamp,
-    event.argv,
-    event.button!!,
-    event.channel,
-    event.guild,
-    event.login,
-    event.member,
-    event.message,
-    event.operator,
-    event.role,
-    event.user,
-    *pair
-) {
-    override val button: Interaction.Button by properties
-}
+class InteractionButtonEvent private constructor() : SigningEvent(), ButtonNotNullEvent
 
 /**
  * 交互事件 interaction/command 实体类
  */
-class InteractionCommandEvent(event: Event, vararg pair: Pair<String, Any?>) : Event(
-    event.id,
-    event.type,
-    event.platform,
-    event.self_id,
-    event.timestamp,
-    event.argv,
-    event.button,
-    event.channel,
-    event.guild,
-    event.login,
-    event.member,
-    event.message,
-    event.operator,
-    event.role,
-    event.user,
-    *pair
-)
+class InteractionCommandEvent private constructor() : SigningEvent()
 
 /**
  * 登录事件列表
@@ -260,26 +139,7 @@ object LoginEvents {
 /**
  * 登录事件实体类
  */
-class LoginEvent(event: Event, vararg pair: Pair<String, Any?>) : Event(
-    event.id,
-    event.type,
-    event.platform,
-    event.self_id,
-    event.timestamp,
-    event.argv,
-    event.button,
-    event.channel,
-    event.guild,
-    event.login!!,
-    event.member,
-    event.message,
-    event.operator,
-    event.role,
-    event.user,
-    *pair
-) {
-    override val login: Login by properties
-}
+class LoginEvent private constructor() : SigningEvent(), LoginNotNullEvent
 
 /**
  * 消息事件列表
@@ -294,28 +154,7 @@ object MessageEvents {
 /**
  * 消息事件实体类
  */
-class MessageEvent(event: Event, vararg pair: Pair<String, Any?>) : Event(
-    event.id,
-    event.type,
-    event.platform,
-    event.self_id,
-    event.timestamp,
-    event.argv,
-    event.button,
-    event.channel!!,
-    event.guild,
-    event.login,
-    event.member,
-    event.message!!,
-    event.operator,
-    event.role,
-    event.user!!,
-    *pair
-) {
-    override val channel: Channel by properties
-    override val message: Message by properties
-    override val user: User by properties
-}
+class MessageEvent private constructor() : SigningEvent(), ChannelNotNullEvent, MessageNotNullEvent, UserNotNullEvent
 
 /**
  * 表态事件列表
@@ -329,24 +168,7 @@ object ReactionEvents {
 /**
  * 表态事件实体类
  */
-class ReactionEvent(event: Event, vararg pair: Pair<String, Any?>) : Event(
-    event.id,
-    event.type,
-    event.platform,
-    event.self_id,
-    event.timestamp,
-    event.argv,
-    event.button,
-    event.channel,
-    event.guild,
-    event.login,
-    event.member,
-    event.message,
-    event.operator,
-    event.role,
-    event.user,
-    *pair
-)
+class ReactionEvent private constructor() : SigningEvent()
 
 /**
  * 用户事件列表
@@ -359,23 +181,4 @@ object UserEvents {
 /**
  * 用户事件实体类
  */
-class UserEvent(event: Event, vararg pair: Pair<String, Any?>) : Event(
-    event.id,
-    event.type,
-    event.platform,
-    event.self_id,
-    event.timestamp,
-    event.argv,
-    event.button,
-    event.channel,
-    event.guild,
-    event.login,
-    event.member,
-    event.message,
-    event.operator,
-    event.role,
-    event.user!!,
-    *pair
-) {
-    override val user: User by properties
-}
+class UserEvent private constructor() : SigningEvent(), UserNotNullEvent

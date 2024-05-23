@@ -64,18 +64,18 @@ class WebSocketEventService(
         ) {
             try {
                 open()
-                sendSerialized(IdentifySignaling(Identify(properties.token, sequence)))
+                sendSerialized(IdentifySignal(Identify(properties.token, sequence)))
                 logger.info(satori.name, "成功建立 WebSocket 连接, 尝试建立事件推送服务")
                 withTimeoutOrNull(10000L) {
-                    val ready = receiveDeserialized<ReadySignaling>().body
+                    val ready = receiveDeserialized<ReadySignal>().body
                     connect(ready.logins, service, satori)
                     logger.info(satori.name, "成功建立事件推送服务: ${ready.logins}")
                 } ?: throw TimeoutException("无法建立事件推送服务: READY 响应超时")
                 sendPing()
                 while (true) try {
-                    when (val signaling = receiveDeserialized<Signaling>()) {
-                        is EventSignaling -> onEvent(signaling.body)
-                        is PongSignaling -> {
+                    when (val signal = receiveDeserialized<Signal>()) {
+                        is EventSignal -> onEvent(signal.body)
+                        is PongSignal -> {
                             is_received_pong = true
                             logger.debug(satori.name, "收到 PONG")
                             sendPing()
@@ -101,7 +101,7 @@ class WebSocketEventService(
 
     private fun DefaultClientWebSocketSession.sendPing() = launch {
         delay(9000)
-        sendSerialized(PingSignaling)
+        sendSerialized(PingSignal)
         is_received_pong = false
         logger.debug(satori.name, "发送 PING")
         delay(10000)
@@ -118,16 +118,16 @@ class WebSocketEventService(
         }
     }
 
-    private fun DefaultClientWebSocketSession.onEvent(event: Event) = launch {
+    private fun DefaultClientWebSocketSession.onEvent(event: Event<AnyEvent>) = launch {
         try {
             when (event.type) {
                 MessageEvents.Created -> logger.info(satori.name, buildString {
                     append("${event.platform}(${event.self_id}) 接收事件(${event.type}): ")
-                    append(blue("${event.channel!!.name}(${event.channel!!.id})"))
+                    append(blue("${event.nullable_channel!!.name}(${event.nullable_channel!!.id})"))
                     append(gray("-"))
-                    append(cyan("${event.nick()}(${event.user!!.id})"))
+                    append(cyan("${event.nick()}(${event.nullable_user!!.id})"))
                     append(": ")
-                    append(event.message!!.content)
+                    append(event.nullable_message!!.content)
                 })
 
                 else -> logger.info(
@@ -181,16 +181,20 @@ class WebhookEventService(
                         val mapper = jacksonObjectMapper().configure(
                             DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false
                         )
-                        val event = mapper.readValue<Event>(body)
+                        val event = mapper.readValue<Event<AnyEvent>>(body)
                         launch {
-                            when (event) {
-                                is MessageEvent -> logger.info(satori.name, buildString {
+                            when (event.type) {
+                                in MessageEvents.Types -> logger.info(satori.name, buildString {
                                     append("${event.platform}(${event.self_id}) 接收事件(${event.type}): ")
-                                    append("\u001B[38;5;4m").append("${event.channel.name}(${event.channel.id})")
+                                    append("\u001B[38;5;4m").append(
+                                        "${event.nullable_channel!!.name}(${
+                                            event.nullable_channel!!.id
+                                        })"
+                                    )
                                     append("\u001B[38;5;6m")
                                     append(event.nick())
-                                    append("(${event.user.id})")
-                                    append("\u001B[0m").append(": ").append(event.message.content)
+                                    append("(${event.nullable_user!!.id})")
+                                    append("\u001B[0m").append(": ").append(event.nullable_message!!.content)
                                 })
 
                                 else -> logger.info(

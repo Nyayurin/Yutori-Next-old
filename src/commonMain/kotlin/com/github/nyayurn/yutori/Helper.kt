@@ -97,12 +97,12 @@ object MessageUtil {
 
 fun Context<*>.reply(quote: Boolean = true, content: MessageBuilder.() -> Unit) {
     actions.message.create(
-        channel_id = event.channel!!.id,
+        channel_id = event.nullable_channel!!.id,
         content = {
-            if (quote) quote { id = event.message!!.id }
+            if (quote) quote { id = event.nullable_message!!.id }
             content()
         }
     )
 }
 
-fun Event.nick() = member?.nick ?: user?.nick ?: user?.name
+fun Event<*>.nick() = nullable_member?.nick ?: nullable_user?.nick ?: nullable_user?.name

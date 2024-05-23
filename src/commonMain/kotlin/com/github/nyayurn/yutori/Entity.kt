@@ -14,6 +14,7 @@ See the Mulan PSL v2 for more details.
 
 package com.github.nyayurn.yutori
 
+import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 
@@ -134,13 +135,13 @@ data class User(
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "op")
 @JsonSubTypes(value = [
-    JsonSubTypes.Type(value = EventSignaling::class, name = "0"),
-    JsonSubTypes.Type(value = PingSignaling::class, name = "1"),
-    JsonSubTypes.Type(value = PongSignaling::class, name = "2"),
-    JsonSubTypes.Type(value = IdentifySignaling::class, name = "3"),
-    JsonSubTypes.Type(value = ReadySignaling::class, name = "4")
+    JsonSubTypes.Type(value = EventSignal::class, name = "0"),
+    JsonSubTypes.Type(value = PingSignal::class, name = "1"),
+    JsonSubTypes.Type(value = PongSignal::class, name = "2"),
+    JsonSubTypes.Type(value = IdentifySignal::class, name = "3"),
+    JsonSubTypes.Type(value = ReadySignal::class, name = "4")
 ])
-abstract class Signaling(val op: Int) {
+abstract class Signal(val op: Int) {
     interface Body
     companion object {
         const val EVENT = 0
@@ -151,14 +152,14 @@ abstract class Signaling(val op: Int) {
     }
 }
 
-data class EventSignaling(val body: Event) : Signaling(EVENT)
-object PingSignaling : Signaling(PING)
-object PongSignaling : Signaling(PONG)
-data class IdentifySignaling(val body: Identify) : Signaling(IDENTIFY)
-data class ReadySignaling(val body: Ready) : Signaling(READY)
+data class EventSignal(val body: Event<AnyEvent>) : Signal(EVENT)
+object PingSignal : Signal(PING)
+object PongSignal : Signal(PONG)
+data class IdentifySignal(val body: Identify) : Signal(IDENTIFY)
+data class ReadySignal(val body: Ready) : Signal(READY)
 
-data class Identify(val token: String? = null, val sequence: Number? = null) : Signaling.Body
-data class Ready(val logins: List<Login>) : Signaling.Body
+data class Identify(val token: String? = null, val sequence: Number? = null) : Signal.Body
+data class Ready(val logins: List<Login>) : Signal.Body
 
 /**
  * 分页数据
@@ -184,4 +185,71 @@ data class SatoriProperties(
     val version: String = "v1"
 )
 
-data class Context<T : Event>(val actions: RootActions, val event: T, val satori: Satori)
+data class Context<T : SigningEvent>(val actions: RootActions, val event: Event<T>, val satori: Satori)
+
+data class Event<T : SigningEvent>(val properties: MutableMap<String, Any?> = mutableMapOf()) {
+    val id: Number by properties
+    val type: String by properties
+    val platform: String by properties
+    val self_id: String by properties
+    val timestamp: Number by properties
+    val nullable_argv: Interaction.Argv?
+        get() = properties["argv"] as Interaction.Argv?
+    val nullable_button: Interaction.Button?
+        get() = properties["button"] as Interaction.Button?
+    val nullable_channel: Channel?
+        get() = properties["channel"] as Channel?
+    val nullable_guild: Guild?
+        get() = properties["guild"] as Guild?
+    val nullable_login: Login?
+        get() = properties["login"] as Login?
+    val nullable_member: GuildMember?
+        get() = properties["member"] as GuildMember?
+    val nullable_message: Message?
+        get() = properties["message"] as Message?
+    val nullable_operator: User?
+        get() = properties["operator"] as User?
+    val nullable_role: GuildRole?
+        get() = properties["role"] as GuildRole?
+    val nullable_user: User?
+        get() = properties["user"] as User?
+
+    constructor(event: Event<*>) : this(event.properties)
+
+    @JsonCreator
+    constructor(
+        id: Number,
+        type: String,
+        platform: String,
+        self_id: String,
+        timestamp: Number,
+        argv: Interaction.Argv? = null,
+        button: Interaction.Button? = null,
+        channel: Channel? = null,
+        guild: Guild? = null,
+        login: Login? = null,
+        member: GuildMember? = null,
+        message: Message? = null,
+        operator: User? = null,
+        role: GuildRole? = null,
+        user: User? = null,
+        vararg pair: Pair<String, Any?> = arrayOf(),
+    ) : this(mutableMapOf(
+        "id" to id,
+        "type" to type,
+        "platform" to platform,
+        "self_id" to self_id,
+        "timestamp" to timestamp,
+        "argv" to argv,
+        "button" to button,
+        "channel" to channel,
+        "guild" to guild,
+        "login" to login,
+        "member" to member,
+        "message" to message,
+        "operator" to operator,
+        "role" to role,
+        "user" to user,
+        *pair
+    ))
+}
