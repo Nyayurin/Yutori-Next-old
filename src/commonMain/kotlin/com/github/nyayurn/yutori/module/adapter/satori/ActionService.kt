@@ -115,7 +115,7 @@ class SatoriActionService(val properties: SatoriProperties, val name: String) : 
                         data.filename?.let { filename ->
                             append(HttpHeaders.ContentDisposition, "filename=\"$filename\"")
                         }
-                        append(HttpHeaders.ContentType, data.contentType)
+                        append(HttpHeaders.ContentType, data.type)
                     })
                 }
             }

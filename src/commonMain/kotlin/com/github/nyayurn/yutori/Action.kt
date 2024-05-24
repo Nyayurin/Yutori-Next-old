@@ -151,7 +151,7 @@ class RootActions(platform: String, self_id: String, service: ActionService, sat
             direction: BidiPagingList.Direction? = null,
             limit: Number? = null,
             order: BidiPagingList.Order? = null
-        ): PagingList<Message> = send(
+        ): BidiPagingList<Message> = send(
             "list", "channel_id" to channel_id, "next" to next, "direction" to direction?.value, "limit" to limit,
             "order" to order?.value
         )

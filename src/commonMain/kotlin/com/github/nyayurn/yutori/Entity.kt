@@ -91,7 +91,7 @@ data class Login(
     val platform: String? = null,
     val status: Status,
     val features: List<String> = listOf(),
-    val resourceUrls: List<String> = listOf(),
+    val resource_urls: List<String> = listOf(),
 ) {
     enum class Status(val number: Number) {
         OFFLINE(0), ONLINE(1), CONNECT(2), DISCONNECT(3), RECONNECT(4);
@@ -182,14 +182,18 @@ data class PagingList<T>(val data: List<T>, val next: String? = null)
  */
 data class BidiPagingList<T>(val data: List<T>, val prev: String? = null, val next: String? = null) {
     enum class Direction(val value: String) {
-        Before("before"), After("after"), Around("around")
+        Before("before"), After("after"), Around("around");
+
+        override fun toString() = value
     }
     enum class Order(val value: String) {
-        Asc("asc"), Desc("desc")
+        Asc("asc"), Desc("desc");
+
+        override fun toString() = value
     }
 }
 
-data class FormData(val name: String, val filename: String? = null, val contentType: String, val content: ByteArray)
+class FormData(val name: String, val filename: String? = null, val type: String, val content: ByteArray)
 
 /**
  * Satori Server 配置

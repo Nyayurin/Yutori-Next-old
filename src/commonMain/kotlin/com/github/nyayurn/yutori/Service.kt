@@ -25,6 +25,7 @@ interface ActionService {
         content: Map<String, Any?>,
         typeInfo: TypeInfo
     ): Any
+
     fun upload(
         resource: String,
         method: String,
