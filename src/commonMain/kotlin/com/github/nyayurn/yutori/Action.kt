@@ -24,9 +24,12 @@ abstract class Action(
 ) {
     protected inline fun <reified T> send(method: String, vararg content: Pair<String, Any?>): T =
         service.send(resource, method, platform, self_id, mapOf(*content), typeInfo<T>()) as T
+
+    protected fun upload(method: String, content: List<FormData>): Map<String, String> =
+        service.upload(resource, method, platform!!, self_id!!, content)
 }
 
-class RootActions(platform: String, self_id: String, service: ActionService, satori: Satori): Actions() {
+class RootActions(platform: String, self_id: String, service: ActionService, satori: Satori) : Actions() {
     val channel = ChannelAction(platform, self_id, service)
     val guild = GuildAction(platform, self_id, service)
     val login = LoginAction(platform, self_id, service)
@@ -34,6 +37,7 @@ class RootActions(platform: String, self_id: String, service: ActionService, sat
     val reaction = ReactionAction(platform, self_id, service)
     val user = UserAction(platform, self_id, service)
     val friend = FriendAction(platform, self_id, service)
+    val upload = UploadAction(platform, self_id, service)
     val admin = AdminAction(service)
     val containers = mutableMapOf<String, Actions>().apply {
         for ((key, value) in satori.actions_containers) this[key] = value(platform, self_id, service)
@@ -43,12 +47,14 @@ class RootActions(platform: String, self_id: String, service: ActionService, sat
         platform, self_id, "channel", service
     ) {
         fun get(channel_id: String): Channel = send("get", "channel_id" to channel_id)
-        fun list(guild_id: String, next: String? = null): PaginatedData<Channel> =
+        fun list(guild_id: String, next: String? = null): PagingList<Channel> =
             send("list", "guild_id" to guild_id, "next" to next)
 
         fun create(guild_id: String, data: Channel): Channel = send("create", "guild_id" to guild_id, "data" to data)
         fun update(channel_id: String, data: Channel): Unit = send("update", "channel_id" to channel_id, "data" to data)
         fun delete(channel_id: String): Unit = send("delete", "channel_id" to channel_id)
+        fun mute(channel_id: String, duration: Number): Unit =
+            send("mute", "channel_id" to channel_id, "duration" to duration)
     }
 
     class GuildAction(platform: String, self_id: String, service: ActionService) : Action(
@@ -58,7 +64,7 @@ class RootActions(platform: String, self_id: String, service: ActionService, sat
         val role = RoleAction(platform, self_id, service)
 
         fun get(guild_id: String): Guild = send("get", "guild_id" to guild_id)
-        fun list(next: String? = null): PaginatedData<Guild> = send("list", "next" to next)
+        fun list(next: String? = null): PagingList<Guild> = send("list", "next" to next)
         fun approve(message_id: String, approve: Boolean, comment: String): Unit =
             send("approve", "message_id" to message_id, "approve" to approve, "comment" to comment)
 
@@ -70,11 +76,14 @@ class RootActions(platform: String, self_id: String, service: ActionService, sat
             fun get(guild_id: String, user_id: String): GuildMember =
                 send("get", "guild_id" to guild_id, "user_id" to user_id)
 
-            fun list(guild_id: String, next: String? = null): PaginatedData<GuildMember> =
+            fun list(guild_id: String, next: String? = null): PagingList<GuildMember> =
                 send("list", "guild_id" to guild_id, "next" to next)
 
             fun kick(guild_id: String, user_id: String, permanent: Boolean? = null): Unit =
                 send("kick", "guild_id" to guild_id, "user_id" to user_id, "permanent" to permanent)
+
+            fun mute(guild_id: String, user_id: String, duration: Number): Unit =
+                send("mute", "guild_id" to guild_id, "user_id" to user_id, "duration" to duration)
 
             fun approve(message_id: String, approve: Boolean, comment: String): Unit =
                 send("approve", "message_id" to message_id, "approve" to approve, "comment" to comment)
@@ -93,7 +102,7 @@ class RootActions(platform: String, self_id: String, service: ActionService, sat
         class RoleAction(platform: String, self_id: String, service: ActionService) : Action(
             platform, self_id, "guild.role", service
         ) {
-            fun list(guild_id: String, next: String? = null): PaginatedData<GuildRole> =
+            fun list(guild_id: String, next: String? = null): PagingList<GuildRole> =
                 send("list", "guild_id" to guild_id, "next" to next)
 
             fun create(guild_id: String, role: GuildRole): GuildRole =
@@ -136,8 +145,16 @@ class RootActions(platform: String, self_id: String, service: ActionService, sat
         fun update(channel_id: String, message_id: String, content: MessageBuilder.() -> Unit) =
             update(channel_id, message_id, message(satori, content))
 
-        fun list(channel_id: String, next: String? = null): PaginatedData<Message> =
-            send("list", "channel_id" to channel_id, "next" to next)
+        fun list(
+            channel_id: String,
+            next: String? = null,
+            direction: BidiPagingList.Direction? = null,
+            limit: Number? = null,
+            order: BidiPagingList.Order? = null
+        ): PagingList<Message> = send(
+            "list", "channel_id" to channel_id, "next" to next, "direction" to direction?.value, "limit" to limit,
+            "order" to order?.value
+        )
     }
 
     class ReactionAction(platform: String, self_id: String, service: ActionService) : Action(
@@ -153,10 +170,9 @@ class RootActions(platform: String, self_id: String, service: ActionService, sat
         fun clear(channel_id: String, message_id: String, emoji: String? = null): Unit =
             send("clear", "channel_id" to channel_id, "message_id" to message_id, "emoji" to emoji)
 
-        fun list(channel_id: String, message_id: String, emoji: String, next: String? = null): PaginatedData<User> =
-            send(
-                "list", "channel_id" to channel_id, "message_id" to message_id, "emoji" to emoji, "next" to next
-            )
+        fun list(channel_id: String, message_id: String, emoji: String, next: String? = null): PagingList<User> = send(
+            "list", "channel_id" to channel_id, "message_id" to message_id, "emoji" to emoji, "next" to next
+        )
     }
 
     class UserAction(platform: String, self_id: String, service: ActionService) : Action(
@@ -177,9 +193,15 @@ class RootActions(platform: String, self_id: String, service: ActionService, sat
     class FriendAction(platform: String, self_id: String, service: ActionService) : Action(
         platform, self_id, "friend", service
     ) {
-        fun list(next: String? = null): PaginatedData<User> = send("list", "next" to next)
+        fun list(next: String? = null): PagingList<User> = send("list", "next" to next)
         fun approve(message_id: String, approve: Boolean, comment: String? = null): Unit =
             send("approve", "message_id" to message_id, "approve" to approve, "comment" to comment)
+    }
+
+    class UploadAction(platform: String, self_id: String, service: ActionService) : Action(
+        platform, self_id, "upload", service
+    ) {
+        fun create(next: String? = null): PagingList<User> = send("list", "next" to next)
     }
 
     class AdminAction(service: ActionService) {

@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
  */
 data class Channel(val id: String, val type: Type, val name: String? = null, val parent_id: String? = null) {
     enum class Type(val number: Number) {
-        TEXT(0), VOICE(1), CATEGORY(2), DIRECT(3);
+        TEXT(0), DIRECT(1), CATEGORY(2), VOICE(3);
 
         override fun toString() = number.toString()
     }
@@ -86,7 +86,12 @@ interface Interaction {
  * @property status 登录状态
  */
 data class Login(
-    val user: User? = null, val self_id: String? = null, val platform: String? = null, val status: Status
+    val user: User? = null,
+    val self_id: String? = null,
+    val platform: String? = null,
+    val status: Status,
+    val features: List<String> = listOf(),
+    val resourceUrls: List<String> = listOf(),
 ) {
     enum class Status(val number: Number) {
         OFFLINE(0), ONLINE(1), CONNECT(2), DISCONNECT(3), RECONNECT(4);
@@ -162,12 +167,29 @@ data class Identify(val token: String? = null, val sequence: Number? = null) : S
 data class Ready(val logins: List<Login>) : Signal.Body
 
 /**
- * 分页数据
+ * 分页列表
  * @param T 数据类型
  * @property data 数据
  * @property next 下一页的令牌
  */
-data class PaginatedData<T>(val data: List<T>, val next: String? = null)
+data class PagingList<T>(val data: List<T>, val next: String? = null)
+
+/**
+ * 双向分页列表
+ * @param T 数据类型
+ * @property data 数据
+ * @property next 下一页的令牌
+ */
+data class BidiPagingList<T>(val data: List<T>, val prev: String? = null, val next: String? = null) {
+    enum class Direction(val value: String) {
+        Before("before"), After("after"), Around("around")
+    }
+    enum class Order(val value: String) {
+        Asc("asc"), Desc("desc")
+    }
+}
+
+data class FormData(val name: String, val filename: String? = null, val contentType: String, val content: ByteArray)
 
 /**
  * Satori Server 配置

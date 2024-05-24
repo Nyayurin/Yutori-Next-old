@@ -25,6 +25,13 @@ interface ActionService {
         content: Map<String, Any?>,
         typeInfo: TypeInfo
     ): Any
+    fun upload(
+        resource: String,
+        method: String,
+        platform: String,
+        self_id: String,
+        content: List<FormData>
+    ): Map<String, String>
 }
 
 interface EventService {

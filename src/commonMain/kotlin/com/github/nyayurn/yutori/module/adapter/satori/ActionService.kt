@@ -10,12 +10,13 @@ MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
 See the Mulan PSL v2 for more details.
  */
 
-@file:Suppress("MemberVisibilityCanBePrivate", "unused", "HttpUrlsUsage")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused", "HttpUrlsUsage", "UastIncorrectHttpHeaderInspection")
 
 package com.github.nyayurn.yutori.module.adapter.satori
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.github.nyayurn.yutori.ActionService
+import com.github.nyayurn.yutori.FormData
 import com.github.nyayurn.yutori.GlobalLoggerFactory
 import com.github.nyayurn.yutori.SatoriProperties
 import io.ktor.client.*
@@ -23,15 +24,16 @@ import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
+import io.ktor.client.request.forms.*
 import io.ktor.http.*
 import io.ktor.serialization.jackson.*
+import io.ktor.server.util.*
 import io.ktor.util.reflect.*
 import kotlinx.coroutines.runBlocking
 
 class SatoriActionService(val properties: SatoriProperties, val name: String) : ActionService {
     private val logger = GlobalLoggerFactory.getLogger(this::class.java)
 
-    @Suppress("UastIncorrectHttpHeaderInspection")
     override fun send(
         resource: String,
         method: String,
@@ -80,6 +82,52 @@ class SatoriActionService(val properties: SatoriProperties, val name: String) : 
             }
             logger.debug(name, "Satori Action Response: $response")
             response.body(typeInfo)
+        }
+    }
+
+    override fun upload(
+        resource: String,
+        method: String,
+        platform: String,
+        self_id: String,
+        content: List<FormData>
+    ): Map<String, String> = runBlocking {
+        HttpClient(CIO) {
+            install(ContentNegotiation) {
+                jackson {
+                    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                }
+            }
+        }.use { client ->
+            val url = url {
+                host = properties.host
+                port = properties.port
+                appendPathSegments(properties.path, properties.version, "$resource.$method")
+                headers {
+                    properties.token?.let { append(HttpHeaders.Authorization, "Bearer ${properties.token}") }
+                    append("X-Platform", platform)
+                    append("X-Self-ID", self_id)
+                }
+            }
+            val formData = formData {
+                for (data in content) {
+                    append(data.name, data.content, Headers.build {
+                        data.filename?.let { filename ->
+                            append(HttpHeaders.ContentDisposition, "filename=\"$filename\"")
+                        }
+                        append(HttpHeaders.ContentType, data.contentType)
+                    })
+                }
+            }
+            logger.debug(
+                name, """
+                    Satori Action: url: $url,
+                        body: $formData
+                    """.trimIndent()
+            )
+            val response = client.submitFormWithBinaryData(url, formData)
+            logger.debug(name, "Satori Action Response: $response")
+            response.body()
         }
     }
 }
