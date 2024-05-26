@@ -24,6 +24,7 @@ kotlin {
             api(libs.ktor.client.websockets)
             api(libs.ktor.client.content.negotiation)
             api(libs.ktor.serialization.jackson)
+            api(libs.kotlinx.datetime)
         }
         jvmMain.dependencies {
             api(libs.mordant)

@@ -15,11 +15,14 @@ See the Mulan PSL v2 for more details.
 package com.github.nyayurn.yutori
 
 import com.github.ajalt.mordant.rendering.TextColors
-import com.github.ajalt.mordant.rendering.TextColors.*
+import com.github.ajalt.mordant.rendering.TextColors.gray
+import com.github.ajalt.mordant.rendering.TextColors.green
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.nyayurn.yutori.Level.*
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
+import kotlinx.datetime.Clock
+import kotlinx.datetime.format
+import kotlinx.datetime.format.DateTimeComponents
+import kotlinx.datetime.format.char
 
 actual object LoggerColor {
     actual fun blue(msg: String) = TextColors.blue(msg)
@@ -29,9 +32,20 @@ actual object LoggerColor {
 
 actual class DefaultLogger actual constructor(private val clazz: Class<*>, private val useLevel: Level) : Logger {
     private val terminal = Terminal()
+    private val format = DateTimeComponents.Format {
+        monthNumber()
+        char('-')
+        dayOfMonth()
+        char(' ')
+        year()
+        char(':')
+        minute()
+        char(':')
+        second()
+    }
     override fun log(level: Level, service: String, msg: String) {
         if (level.num < useLevel.num) return
-        val time = gray(LocalDateTime.now().format(DateTimeFormatter.ofPattern("MM-dd HH:mm:ss")))
+        val time = gray(Clock.System.now().format(format))
         val leveled_msg = when (level) {
             ERROR -> terminal.theme.danger("${level.name} | $msg")
             WARN -> terminal.theme.warning("${level.name} | $msg")
