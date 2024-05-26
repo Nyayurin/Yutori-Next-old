@@ -91,7 +91,7 @@ data class Login(
     val platform: String? = null,
     val status: Status,
     val features: List<String> = listOf(),
-    val resource_urls: List<String> = listOf(),
+    val proxy_urls: List<String> = listOf(),
 ) {
     enum class Status(val number: Number) {
         OFFLINE(0), ONLINE(1), CONNECT(2), DISCONNECT(3), RECONNECT(4);

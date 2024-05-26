@@ -25,11 +25,13 @@ kotlin {
             api(libs.ktor.client.content.negotiation)
             api(libs.ktor.serialization.jackson)
             api(libs.kotlinx.datetime)
+            api(libs.kotlinx.coroutines.core)
         }
         jvmMain.dependencies {
             api(libs.mordant)
         }
         androidMain.dependencies {
+            api(libs.kotlinx.coroutines.android)
         }
     }
 }
