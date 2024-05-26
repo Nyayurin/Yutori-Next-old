@@ -31,9 +31,12 @@ import io.ktor.server.engine.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import io.ktor.websocket.*
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
+
 
 /**
  * Satori 事件服务的 WebSocket 实现
@@ -47,53 +50,66 @@ class WebSocketEventService(
     val error: () -> Unit = { },
     val satori: Satori
 ) : EventService {
-    private var is_received_pong = false
+    private val status = AtomicReference<ServiceStatus>(Initializing)
+    private val reconnectLock = Mutex()
+    private val is_received_pong = AtomicBoolean(false)
     private var sequence: Number? = null
     private val service = SatoriActionService(properties, satori.name)
-    private var client: HttpClient? = null
+    private val client = AtomicReference<HttpClient?>(null)
     private val logger = GlobalLoggerFactory.getLogger(this::class.java)
 
+    @OptIn(DelicateCoroutinesApi::class)
     override suspend fun connect() {
-        client = HttpClient {
+        val currentClient = HttpClient {
             install(WebSockets) {
                 contentConverter = JacksonWebsocketContentConverter()
             }
         }
-        client!!.webSocket(
-            HttpMethod.Get, properties.host, properties.port, "${properties.path}/${properties.version}/events"
-        ) {
-            try {
-                open()
-                sendSerialized(IdentifySignal(Identify(properties.token, sequence)))
-                logger.info(satori.name, "成功建立 WebSocket 连接, 尝试建立事件推送服务")
-                withTimeoutOrNull(10000L) {
-                    val ready = receiveDeserialized<ReadySignal>().body
-                    connect(ready.logins, service, satori)
-                    logger.info(satori.name, "成功建立事件推送服务: ${ready.logins}")
-                } ?: throw TimeoutException("无法建立事件推送服务: READY 响应超时")
-                sendPing()
-                while (true) try {
-                    when (val signal = receiveDeserialized<Signal>()) {
-                        is EventSignal -> onEvent(signal.body)
-                        is PongSignal -> {
-                            is_received_pong = true
-                            logger.debug(satori.name, "收到 PONG")
-                            sendPing()
+        client.set(currentClient)
+        val name = satori.name
+        GlobalScope.launch {
+            currentClient.webSocket(
+                HttpMethod.Get, properties.host, properties.port, "${properties.path}/${properties.version}/events"
+            ) {
+                try {
+                    open()
+                    sendSerialized(IdentifySignal(Identify(properties.token, sequence)))
+                    logger.info(name, "成功建立 WebSocket 连接, 尝试建立事件推送服务")
+                    withTimeoutOrNull(10000L) {
+                        val ready = receiveDeserialized<ReadySignal>().body
+                        connect(ready.logins, service, satori)
+                        status.set(Running)
+                        logger.info(name, "成功建立事件推送服务: ${ready.logins}")
+                    } ?: throw TimeoutException("无法建立事件推送服务: READY 响应超时")
+                    sendPing()
+                    while (true) try {
+                        when (val signal = receiveDeserialized<Signal>()) {
+                            is EventSignal -> onEvent(signal.body)
+                            is PongSignal -> {
+                                is_received_pong.set(true)
+                                logger.debug(name, "收到 PONG")
+                                sendPing()
+                            }
+                        }
+                    } catch (e: JsonConvertException) {
+                        logger.warn(name, "事件解析错误: ${e.localizedMessage}")
+                    }
+                } catch (e: Exception) {
+                    if (currentClient == client.get() || status.get() == Running) {
+
+                        status.set(Reconnecting)
+                        error()
+                        logger.warn(name, "WebSocket 连接断开: ${e.localizedMessage}")
+
+                        launch {
+                            e.printStackTrace()
+                            close()
+                            logger.info(name, "将在5秒后尝试重新连接")
+                            delay(5000)
+                            logger.info(name, "尝试重新连接")
+                            reconnect()
                         }
                     }
-                } catch (e: JsonConvertException) {
-                    logger.warn(satori.name, "事件解析错误: ${e.localizedMessage}")
-                }
-            } catch (e: Exception) {
-                error()
-                logger.warn(satori.name, "WebSocket 连接断开: ${e.localizedMessage}")
-                e.printStackTrace()
-                launch {
-                    close()
-                    logger.info(satori.name, "将在5秒后尝试重新连接")
-                    delay(5000)
-                    logger.info(satori.name, "尝试重新连接")
-                    reconnect()
                 }
             }
         }
@@ -101,27 +117,30 @@ class WebSocketEventService(
 
     private fun DefaultClientWebSocketSession.sendPing() = launch {
         delay(9000)
+        is_received_pong.set(false)
         sendSerialized(PingSignal)
-        is_received_pong = false
-        logger.debug(satori.name, "发送 PING")
+        val name = satori.name
+        logger.debug(name, "发送 PING")
         delay(10000)
-        if (!is_received_pong) {
+        if (!is_received_pong.get() && this@sendPing.call.client == client.get() && status.get() == Running) {
+            status.set(Reconnecting)
             error()
-            logger.warn(satori.name, "WebSocket 连接断开: PONG 响应超时")
+            logger.warn(name, "WebSocket 连接断开: PONG 响应超时")
             launch {
                 close()
-                logger.info(satori.name, "将在5秒后尝试重新连接")
+                logger.info(name, "将在5秒后尝试重新连接")
                 delay(5000)
-                logger.info(satori.name, "尝试重新连接")
+                logger.info(name, "尝试重新连接")
                 reconnect()
             }
         }
     }
 
     private fun DefaultClientWebSocketSession.onEvent(event: Event<AnyEvent>) = launch {
+        val name = satori.name
         try {
             when (event.type) {
-                MessageEvents.Created -> logger.info(satori.name, buildString {
+                MessageEvents.Created -> logger.info(name, buildString {
                     append("${event.platform}(${event.self_id}) 接收事件(${event.type}): ")
                     append(blue("${event.nullable_channel!!.name}(${event.nullable_channel!!.id})"))
                     append(gray("-"))
@@ -131,26 +150,27 @@ class WebSocketEventService(
                 })
 
                 else -> logger.info(
-                    satori.name, "${event.platform}(${event.self_id}) 接收事件: ${event.type}"
+                    name, "${event.platform}(${event.self_id}) 接收事件: ${event.type}"
                 )
             }
-            logger.debug(satori.name, "事件详细信息: $event")
+            logger.debug(name, "事件详细信息: $event")
             sequence = event.id
             satori.container(event, satori, service)
         } catch (e: Exception) {
-            logger.warn(satori.name, "处理事件时出错($event): ${e.localizedMessage}")
+            logger.warn(name, "处理事件时出错($event): ${e.localizedMessage}")
             e.printStackTrace()
         }
     }
 
     override fun disconnect() {
-        client?.close()
-        client = null
+        client.get()?.close()
+        client.set(null)
+        status.set(Stopped)
     }
 
-    override suspend fun reconnect() {
-        client?.close()
-        client = null
+    override suspend fun reconnect() = reconnectLock.withLock {
+        client.get()?.close()
+        client.set(null)
         connect()
     }
 }
@@ -230,3 +250,28 @@ class WebhookEventService(
         client?.stop()
     }
 }
+
+/**
+ * 服务状态
+ */
+sealed interface ServiceStatus
+
+/**
+ * 初始化
+ */
+object Initializing : ServiceStatus
+
+/**
+ * 运行中
+ */
+object Running : ServiceStatus
+
+/**
+ * 重连接
+ */
+object Reconnecting : ServiceStatus
+
+/**
+ * 停止
+ */
+object Stopped : ServiceStatus
