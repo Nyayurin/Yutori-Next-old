@@ -23,17 +23,49 @@ import com.github.nyayurn.yutori.message.element.NodeMessageElement
 
 @BuilderMarker
 open class ChronocatMessageBuilder(builder: MessageBuilder) : ExtendedMessageBuilder(builder) {
-    inline fun poke(block: Poke.() -> Unit) =
-        Poke(satori).apply(block).buildElement().apply { elements += this }
+    inline fun pc_poke(block: PcPoke.() -> Unit) =
+        PcPoke(satori).apply(block).buildElement().apply { elements += this }
+
+    inline fun face(block: Face.() -> Unit) =
+        Face(satori).apply(block).buildElement().apply { elements += this }
+
+    inline fun market_face(block: MarketFace.() -> Unit) =
+        MarketFace(satori).apply(block).buildElement().apply { elements += this }
+
+    inline fun face_bubble(block: FaceBubble.() -> Unit) =
+        FaceBubble(satori).apply(block).buildElement().apply { elements += this }
 
     @BuilderMarker
-    class Poke(satori: Satori) : MessageBuilder(satori), PropertiedMessageBuilder {
-        override val properties = mutableMapOf<String, Any?>("user-id" to null)
-        var user_id: Number?
-            get() = properties["user-id"] as Number?
-            set(value) {
-                properties["user-id"] = value
-            }
-        override fun buildElement(): NodeMessageElement = buildElement(Chronocat.Poke(user_id))
+    class PcPoke(satori: Satori) : MessageBuilder(satori), PropertiedMessageBuilder {
+        override val properties = mutableMapOf<String, Any?>("id" to 0)
+        var id: Number by properties
+        override fun buildElement(): NodeMessageElement = buildElement(Chronocat.PcPoke(id))
+    }
+
+    @BuilderMarker
+    class Face(satori: Satori) : MessageBuilder(satori), PropertiedMessageBuilder {
+        override val properties = mutableMapOf<String, Any?>("id" to 0, "unsafe_super" to false)
+        var id: Number by properties
+        var unsafe_super: Boolean by properties
+        override fun buildElement(): NodeMessageElement = buildElement(Chronocat.Face(id, unsafe_super))
+    }
+
+    @BuilderMarker
+    class MarketFace(satori: Satori) : MessageBuilder(satori), PropertiedMessageBuilder {
+        override val properties = mutableMapOf<String, Any?>("tab_id" to 0, "face_id" to "", "key" to "")
+        var tab_id: Number by properties
+        var face_id: String by properties
+        var key: String by properties
+        override fun buildElement(): NodeMessageElement = buildElement(Chronocat.MarketFace(tab_id, face_id, key))
+    }
+
+    @BuilderMarker
+    class FaceBubble(satori: Satori) : MessageBuilder(satori), PropertiedMessageBuilder {
+        override val properties = mutableMapOf<String, Any?>("id" to 0, "count" to 0, "name" to "", "content" to "")
+        var id: Number by properties
+        var count: Number by properties
+        var name: String by properties
+        var content: String by properties
+        override fun buildElement(): NodeMessageElement = buildElement(Chronocat.FaceBubble(id, count, name, content))
     }
 }
