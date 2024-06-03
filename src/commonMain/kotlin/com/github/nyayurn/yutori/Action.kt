@@ -46,15 +46,24 @@ class RootActions(platform: String, self_id: String, service: ActionService, sat
     class ChannelAction(platform: String, self_id: String, service: ActionService) : Action(
         platform, self_id, "channel", service
     ) {
-        fun get(channel_id: String): Channel = send("get", "channel_id" to channel_id)
-        fun list(guild_id: String, next: String? = null): PagingList<Channel> =
-            send("list", "guild_id" to guild_id, "next" to next)
+        fun get(channel_id: String, vararg contents: Pair<String, Any> = arrayOf()): Channel =
+            send("get", "channel_id" to channel_id, *contents)
 
-        fun create(guild_id: String, data: Channel): Channel = send("create", "guild_id" to guild_id, "data" to data)
-        fun update(channel_id: String, data: Channel): Unit = send("update", "channel_id" to channel_id, "data" to data)
-        fun delete(channel_id: String): Unit = send("delete", "channel_id" to channel_id)
-        fun mute(channel_id: String, duration: Number): Unit =
-            send("mute", "channel_id" to channel_id, "duration" to duration)
+        fun list(
+            guild_id: String, next: String? = null, vararg contents: Pair<String, Any> = arrayOf()
+        ): PagingList<Channel> = send("list", "guild_id" to guild_id, "next" to next, *contents)
+
+        fun create(guild_id: String, data: Channel, vararg contents: Pair<String, Any> = arrayOf()): Channel =
+            send("create", "guild_id" to guild_id, "data" to data, *contents)
+
+        fun update(channel_id: String, data: Channel, vararg contents: Pair<String, Any> = arrayOf()): Unit =
+            send("update", "channel_id" to channel_id, "data" to data, *contents)
+
+        fun delete(channel_id: String, vararg contents: Pair<String, Any> = arrayOf()): Unit =
+            send("delete", "channel_id" to channel_id, *contents)
+
+        fun mute(channel_id: String, duration: Number, vararg contents: Pair<String, Any> = arrayOf()): Unit =
+            send("mute", "channel_id" to channel_id, "duration" to duration, *contents)
     }
 
     class GuildAction(platform: String, self_id: String, service: ActionService) : Action(
@@ -63,115 +72,159 @@ class RootActions(platform: String, self_id: String, service: ActionService, sat
         val member = MemberAction(platform, self_id, service)
         val role = RoleAction(platform, self_id, service)
 
-        fun get(guild_id: String): Guild = send("get", "guild_id" to guild_id)
-        fun list(next: String? = null): PagingList<Guild> = send("list", "next" to next)
-        fun approve(message_id: String, approve: Boolean, comment: String): Unit =
-            send("approve", "message_id" to message_id, "approve" to approve, "comment" to comment)
+        fun get(guild_id: String, vararg contents: Pair<String, Any> = arrayOf()): Guild =
+            send("get", "guild_id" to guild_id, *contents)
+
+        fun list(next: String? = null, vararg contents: Pair<String, Any> = arrayOf()): PagingList<Guild> =
+            send("list", "next" to next, *contents)
+
+        fun approve(
+            message_id: String, approve: Boolean, comment: String, vararg contents: Pair<String, Any> = arrayOf()
+        ): Unit = send("approve", "message_id" to message_id, "approve" to approve, "comment" to comment, *contents)
 
         class MemberAction(platform: String, self_id: String, service: ActionService) : Action(
             platform, self_id, "guild.member", service
         ) {
             val role = RoleAction(platform, self_id, service)
 
-            fun get(guild_id: String, user_id: String): GuildMember =
-                send("get", "guild_id" to guild_id, "user_id" to user_id)
+            fun get(guild_id: String, user_id: String, vararg contents: Pair<String, Any> = arrayOf()): GuildMember =
+                send("get", "guild_id" to guild_id, "user_id" to user_id, *contents)
 
-            fun list(guild_id: String, next: String? = null): PagingList<GuildMember> =
-                send("list", "guild_id" to guild_id, "next" to next)
+            fun list(
+                guild_id: String, next: String? = null, vararg contents: Pair<String, Any> = arrayOf()
+            ): PagingList<GuildMember> = send("list", "guild_id" to guild_id, "next" to next, *contents)
 
-            fun kick(guild_id: String, user_id: String, permanent: Boolean? = null): Unit =
-                send("kick", "guild_id" to guild_id, "user_id" to user_id, "permanent" to permanent)
+            fun kick(
+                guild_id: String,
+                user_id: String,
+                permanent: Boolean? = null,
+                vararg contents: Pair<String, Any> = arrayOf()
+            ): Unit = send("kick", "guild_id" to guild_id, "user_id" to user_id, "permanent" to permanent, *contents)
 
-            fun mute(guild_id: String, user_id: String, duration: Number): Unit =
-                send("mute", "guild_id" to guild_id, "user_id" to user_id, "duration" to duration)
+            fun mute(
+                guild_id: String, user_id: String, duration: Number, vararg contents: Pair<String, Any> = arrayOf()
+            ): Unit = send("mute", "guild_id" to guild_id, "user_id" to user_id, "duration" to duration, *contents)
 
-            fun approve(message_id: String, approve: Boolean, comment: String): Unit =
-                send("approve", "message_id" to message_id, "approve" to approve, "comment" to comment)
+            fun approve(
+                message_id: String, approve: Boolean, comment: String, vararg contents: Pair<String, Any> = arrayOf()
+            ): Unit = send("approve", "message_id" to message_id, "approve" to approve, "comment" to comment, *contents)
 
             class RoleAction(platform: String, self_id: String, service: ActionService) : Action(
                 platform, self_id, "guild.member.role", service
             ) {
-                fun set(guild_id: String, user_id: String, role_id: String): Unit =
-                    send("set", "guild_id" to guild_id, "user_id" to user_id, "role_id" to role_id)
+                fun set(
+                    guild_id: String, user_id: String, role_id: String, vararg contents: Pair<String, Any> = arrayOf()
+                ): Unit = send("set", "guild_id" to guild_id, "user_id" to user_id, "role_id" to role_id, *contents)
 
-                fun unset(guild_id: String, user_id: String, role_id: String): Unit =
-                    send("unset", "guild_id" to guild_id, "user_id" to user_id, "role_id" to role_id)
+                fun unset(
+                    guild_id: String, user_id: String, role_id: String, vararg contents: Pair<String, Any> = arrayOf()
+                ): Unit = send("unset", "guild_id" to guild_id, "user_id" to user_id, "role_id" to role_id, *contents)
             }
         }
 
         class RoleAction(platform: String, self_id: String, service: ActionService) : Action(
             platform, self_id, "guild.role", service
         ) {
-            fun list(guild_id: String, next: String? = null): PagingList<GuildRole> =
-                send("list", "guild_id" to guild_id, "next" to next)
+            fun list(
+                guild_id: String, next: String? = null, vararg contents: Pair<String, Any> = arrayOf()
+            ): PagingList<GuildRole> = send("list", "guild_id" to guild_id, "next" to next, *contents)
 
-            fun create(guild_id: String, role: GuildRole): GuildRole =
-                send("create", "guild_id" to guild_id, "role" to role)
+            fun create(guild_id: String, role: GuildRole, vararg contents: Pair<String, Any> = arrayOf()): GuildRole =
+                send("create", "guild_id" to guild_id, "role" to role, *contents)
 
-            fun update(guild_id: String, role_id: String, role: GuildRole): Unit =
-                send("update", "guild_id" to guild_id, "role_id" to role_id, "role" to role)
+            fun update(
+                guild_id: String, role_id: String, role: GuildRole, vararg contents: Pair<String, Any> = arrayOf()
+            ): Unit = send("update", "guild_id" to guild_id, "role_id" to role_id, "role" to role, *contents)
 
-            fun delete(guild_id: String, role_id: String): Unit =
-                send("delete", "guild_id" to guild_id, "role_id" to role_id)
+            fun delete(guild_id: String, role_id: String, vararg contents: Pair<String, Any> = arrayOf()): Unit =
+                send("delete", "guild_id" to guild_id, "role_id" to role_id, *contents)
         }
     }
 
     class LoginAction(platform: String, self_id: String, service: ActionService) : Action(
         platform, self_id, "login", service
     ) {
-        fun get(): Login = send("get")
+        fun get(vararg contents: Pair<String, Any> = arrayOf()): Login = send("get", *contents)
     }
 
     class MessageAction(private val satori: Satori, platform: String, self_id: String, service: ActionService) : Action(
         platform, self_id, "message", service
     ) {
-        fun create(channel_id: String, content: String): List<Message> =
-            send("create", "channel_id" to channel_id, "content" to content.replace("\n", "\\n").replace("\"", "\\\""))
+        fun create(channel_id: String, content: String, vararg contents: Pair<String, Any> = arrayOf()): List<Message> =
+            send(
+                "create", "channel_id" to channel_id, "content" to content.replace("\n", "\\n").replace("\"", "\\\""),
+                *contents
+            )
 
-        fun create(channel_id: String, content: MessageBuilder.() -> Unit) =
-            create(channel_id, message(satori, content))
+        fun create(
+            channel_id: String, content: MessageBuilder.() -> Unit, vararg contents: Pair<String, Any> = arrayOf()
+        ) = create(channel_id, message(satori, content), *contents)
 
-        fun get(channel_id: String, message_id: String): Message =
-            send("get", "channel_id" to channel_id, "message_id" to message_id)
+        fun get(channel_id: String, message_id: String, vararg contents: Pair<String, Any> = arrayOf()): Message =
+            send("get", "channel_id" to channel_id, "message_id" to message_id, *contents)
 
-        fun delete(channel_id: String, message_id: String): Unit =
-            send("delete", "channel_id" to channel_id, "message_id" to message_id)
+        fun delete(channel_id: String, message_id: String, vararg contents: Pair<String, Any> = arrayOf()): Unit =
+            send("delete", "channel_id" to channel_id, "message_id" to message_id, *contents)
 
-        fun update(channel_id: String, message_id: String, content: String): Unit = send(
+        fun update(
+            channel_id: String, message_id: String, content: String, vararg contents: Pair<String, Any> = arrayOf()
+        ): Unit = send(
             "update", "channel_id" to channel_id, "message_id" to message_id,
-            "content" to content.replace("\n", "\\n").replace("\"", "\\\"")
+            "content" to content.replace("\n", "\\n").replace("\"", "\\\""), *contents
         )
 
-        fun update(channel_id: String, message_id: String, content: MessageBuilder.() -> Unit) =
-            update(channel_id, message_id, message(satori, content))
+        fun update(
+            channel_id: String,
+            message_id: String,
+            content: MessageBuilder.() -> Unit,
+            vararg contents: Pair<String, Any> = arrayOf()
+        ) = update(channel_id, message_id, message(satori, content), *contents)
 
         fun list(
             channel_id: String,
             next: String? = null,
             direction: BidiPagingList.Direction? = null,
             limit: Number? = null,
-            order: BidiPagingList.Order? = null
+            order: BidiPagingList.Order? = null,
+            vararg contents: Pair<String, Any> = arrayOf()
         ): BidiPagingList<Message> = send(
             "list", "channel_id" to channel_id, "next" to next, "direction" to direction?.value, "limit" to limit,
-            "order" to order?.value
+            "order" to order?.value, *contents
         )
     }
 
     class ReactionAction(platform: String, self_id: String, service: ActionService) : Action(
         platform, self_id, "reaction", service
     ) {
-        fun create(channel_id: String, message_id: String, emoji: String): Unit =
-            send("create", "channel_id" to channel_id, "message_id" to message_id, "emoji" to emoji)
+        fun create(
+            channel_id: String, message_id: String, emoji: String, vararg contents: Pair<String, Any> = arrayOf()
+        ): Unit = send("create", "channel_id" to channel_id, "message_id" to message_id, "emoji" to emoji, *contents)
 
-        fun delete(channel_id: String, message_id: String, emoji: String, user_id: String? = null): Unit = send(
-            "delete", "channel_id" to channel_id, "message_id" to message_id, "emoji" to emoji, "user_id" to user_id
+        fun delete(
+            channel_id: String,
+            message_id: String,
+            emoji: String,
+            user_id: String? = null,
+            vararg contents: Pair<String, Any> = arrayOf()
+        ): Unit = send(
+            "delete", "channel_id" to channel_id, "message_id" to message_id, "emoji" to emoji, "user_id" to user_id, *contents
         )
 
-        fun clear(channel_id: String, message_id: String, emoji: String? = null): Unit =
-            send("clear", "channel_id" to channel_id, "message_id" to message_id, "emoji" to emoji)
+        fun clear(
+            channel_id: String,
+            message_id: String,
+            emoji: String? = null,
+            vararg contents: Pair<String, Any> = arrayOf()
+        ): Unit = send("clear", "channel_id" to channel_id, "message_id" to message_id, "emoji" to emoji, *contents)
 
-        fun list(channel_id: String, message_id: String, emoji: String, next: String? = null): PagingList<User> = send(
-            "list", "channel_id" to channel_id, "message_id" to message_id, "emoji" to emoji, "next" to next
+        fun list(
+            channel_id: String,
+            message_id: String,
+            emoji: String,
+            next: String? = null,
+            vararg contents: Pair<String, Any> = arrayOf()
+        ): PagingList<User> = send(
+            "list", "channel_id" to channel_id, "message_id" to message_id, "emoji" to emoji, "next" to next, *contents
         )
     }
 
@@ -180,28 +233,37 @@ class RootActions(platform: String, self_id: String, service: ActionService, sat
     ) {
         val channel = ChannelAction(platform, self_id, service)
 
-        fun get(user_id: String): User = send("get", "user_id" to user_id)
+        fun get(user_id: String, vararg contents: Pair<String, Any> = arrayOf()): User =
+            send("get", "user_id" to user_id, *contents)
 
         class ChannelAction(platform: String, self_id: String, service: ActionService) : Action(
             platform, self_id, "user.channel", service
         ) {
-            fun create(user_id: String, guild_id: String? = null): Channel =
-                send("create", "user_id" to user_id, "guild_id" to guild_id)
+            fun create(
+                user_id: String, guild_id: String? = null, vararg contents: Pair<String, Any> = arrayOf()
+            ): Channel = send("create", "user_id" to user_id, "guild_id" to guild_id, *contents)
         }
     }
 
     class FriendAction(platform: String, self_id: String, service: ActionService) : Action(
         platform, self_id, "friend", service
     ) {
-        fun list(next: String? = null): PagingList<User> = send("list", "next" to next)
-        fun approve(message_id: String, approve: Boolean, comment: String? = null): Unit =
-            send("approve", "message_id" to message_id, "approve" to approve, "comment" to comment)
+        fun list(next: String? = null, vararg contents: Pair<String, Any> = arrayOf()): PagingList<User> =
+            send("list", "next" to next, *contents)
+
+        fun approve(
+            message_id: String,
+            approve: Boolean,
+            comment: String? = null,
+            vararg contents: Pair<String, Any> = arrayOf()
+        ): Unit = send("approve", "message_id" to message_id, "approve" to approve, "comment" to comment, *contents)
     }
 
     class UploadAction(platform: String, self_id: String, service: ActionService) : Action(
         platform, self_id, "upload", service
     ) {
-        fun create(next: String? = null): PagingList<User> = send("list", "next" to next)
+        fun create(next: String? = null, vararg contents: Pair<String, Any> = arrayOf()): PagingList<User> =
+            send("list", "next" to next, *contents)
     }
 
     class AdminAction(service: ActionService) {
@@ -209,12 +271,15 @@ class RootActions(platform: String, self_id: String, service: ActionService, sat
         val webhook = WebhookAction(service)
 
         class LoginAction(service: ActionService) : Action(null, null, "login", service) {
-            fun list(): List<Login> = send("list")
+            fun list(vararg contents: Pair<String, Any> = arrayOf()): List<Login> = send("list", *contents)
         }
 
         class WebhookAction(service: ActionService) : Action(null, null, "webhook", service) {
-            fun create(url: String, token: String? = null): Unit = send("list", "url" to url, "token" to token)
-            fun delete(url: String): Unit = send("approve", "url" to url)
+            fun create(url: String, token: String? = null, vararg contents: Pair<String, Any> = arrayOf()): Unit =
+                send("list", "url" to url, "token" to token, *contents)
+
+            fun delete(url: String, vararg contents: Pair<String, Any> = arrayOf()): Unit =
+                send("approve", "url" to url, *contents)
         }
     }
 }
