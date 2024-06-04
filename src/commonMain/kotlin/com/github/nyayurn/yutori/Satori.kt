@@ -29,31 +29,31 @@ class Satori(val name: String) {
     val message_builders = mutableMapOf<String, (MessageBuilder) -> ExtendedMessageBuilder>()
 
     init {
-        elements["at"] = AtContainer
-        elements["sharp"] = SharpContainer
-        elements["a"] = HrefContainer
-        elements["img"] = ImageContainer
-        elements["audio"] = AudioContainer
-        elements["video"] = VideoContainer
-        elements["file"] = FileContainer
-        elements["b"] = BoldContainer
-        elements["strong"] = StrongContainer
-        elements["i"] = IdiomaticContainer
-        elements["em"] = EmContainer
-        elements["u"] = UnderlineContainer
-        elements["ins"] = InsContainer
-        elements["s"] = StrikethroughContainer
-        elements["del"] = DeleteContainer
-        elements["spl"] = SplContainer
-        elements["code"] = CodeContainer
-        elements["sup"] = SupContainer
-        elements["sub"] = SubContainer
-        elements["br"] = BrContainer
-        elements["p"] = ParagraphContainer
-        elements["message"] = MessageContainer
-        elements["quote"] = QuoteContainer
-        elements["author"] = AuthorContainer
-        elements["button"] = ButtonContainer
+        elements["at"] = At
+        elements["sharp"] = Sharp
+        elements["a"] = Href
+        elements["img"] = Image
+        elements["audio"] = Audio
+        elements["video"] = Video
+        elements["file"] = File
+        elements["b"] = Bold
+        elements["strong"] = Strong
+        elements["i"] = Idiomatic
+        elements["em"] = Em
+        elements["u"] = Underline
+        elements["ins"] = Ins
+        elements["s"] = Strikethrough
+        elements["del"] = Delete
+        elements["spl"] = Spl
+        elements["code"] = Code
+        elements["sup"] = Sup
+        elements["sub"] = Sub
+        elements["br"] = Br
+        elements["p"] = Paragraph
+        elements["message"] = Message
+        elements["quote"] = Quote
+        elements["author"] = Author
+        elements["button"] = Button
     }
 
     fun <T : Module> install(module: T, block: T.() -> Unit = {}) {

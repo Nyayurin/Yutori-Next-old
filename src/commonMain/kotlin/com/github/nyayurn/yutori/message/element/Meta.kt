@@ -22,6 +22,10 @@ class Quote(
 ) : NodeMessageElement("quote", "id" to id, "forward" to forward) {
     var id: String? by super.properties
     var forward: Boolean? by super.properties
+
+    companion object : MessageElementContainer("id" to "", "forward" to false) {
+        override operator fun invoke(element: Element) = Quote()
+    }
 }
 
 class Author(
@@ -32,12 +36,8 @@ class Author(
     var id: String? by super.properties
     var name: String? by super.properties
     var avatar: String? by super.properties
-}
 
-object QuoteContainer : MessageElementContainer("id" to "", "name" to "", "role" to "", "type" to "") {
-    override operator fun invoke(element: Element) = Quote()
-}
-
-object AuthorContainer : MessageElementContainer("id" to "", "name" to "", "role" to "", "type" to "") {
-    override operator fun invoke(element: Element) = Author()
+    companion object : MessageElementContainer("id" to "", "name" to "", "avatar" to "") {
+        override operator fun invoke(element: Element) = Author()
+    }
 }

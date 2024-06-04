@@ -36,10 +36,10 @@ object ChronocatModule : Module {
 
     private object Element : Module {
         override fun install(satori: Satori) {
-            satori.elements["chronocat:pcpoke"] = Chronocat.PcPokeContainer
-            satori.elements["chronocat:face"] = Chronocat.FaceContainer
-            satori.elements["chronocat:marketface"] = Chronocat.MarketFaceContainer
-            satori.elements["chronocat:facebubble"] = Chronocat.FaceBubbleContainer
+            satori.elements["chronocat:pcpoke"] = Chronocat.PcPoke
+            satori.elements["chronocat:face"] = Chronocat.Face
+            satori.elements["chronocat:marketface"] = Chronocat.MarketFace
+            satori.elements["chronocat:facebubble"] = Chronocat.FaceBubble
         }
 
         override fun uninstall(satori: Satori) {

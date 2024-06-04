@@ -16,7 +16,6 @@ package com.github.nyayurn.yutori
 
 import com.github.nyayurn.yutori.message.MessageBuilder
 import com.github.nyayurn.yutori.message.element.MessageElement
-import com.github.nyayurn.yutori.message.element.NodeContainer
 import com.github.nyayurn.yutori.message.element.NodeMessageElement
 import com.github.nyayurn.yutori.message.element.Text
 import org.jsoup.Jsoup
@@ -49,7 +48,7 @@ object MessageUtil {
     private fun parseElement(satori: Satori, node: Node): MessageElement = when (node) {
         is TextNode -> Text(node.text())
         is Element -> {
-            val container = satori.elements[node.tagName()] ?: NodeContainer(node.tagName())
+            val container = satori.elements[node.tagName()] ?: NodeMessageElement
             container(node).apply {
                 for (attr in node.attributes()) {
                     val key = attr.key

@@ -28,8 +28,8 @@ class Button(
     var href: String? by super.properties
     var text: String? by super.properties
     var theme: String? by super.properties
-}
 
-object ButtonContainer : MessageElementContainer("id" to "", "name" to "", "role" to "", "type" to "") {
-    override operator fun invoke(element: Element) = Button()
+    companion object : MessageElementContainer("id" to "", "type" to "", "href" to "", "text" to "", "theme" to "") {
+        override operator fun invoke(element: Element) = Button()
+    }
 }

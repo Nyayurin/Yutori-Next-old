@@ -38,6 +38,17 @@ class Image(
     var timeout: String? by super.properties
     var width: Number? by super.properties
     var height: Number? by super.properties
+
+    companion object : MessageElementContainer(
+        "src" to "",
+        "title" to "",
+        "cache" to false,
+        "timeout" to "",
+        "width" to 0,
+        "height" to 0
+    ) {
+        override operator fun invoke(element: Element) = Image(element.attr("src"))
+    }
 }
 
 class Audio(
@@ -62,6 +73,17 @@ class Audio(
     var timeout: String? by super.properties
     var duration: Number? by super.properties
     var poster: String? by super.properties
+
+    companion object : MessageElementContainer(
+        "src" to "",
+        "title" to "",
+        "cache" to false,
+        "timeout" to "",
+        "duration" to 0,
+        "poster" to ""
+    ) {
+        override operator fun invoke(element: Element) = Audio(element.attr("src"))
+    }
 }
 
 class Video(
@@ -92,6 +114,19 @@ class Video(
     var height: Number? by super.properties
     var duration: Number? by super.properties
     var poster: String? by super.properties
+
+    companion object : MessageElementContainer(
+        "src" to "",
+        "title" to "",
+        "cache" to false,
+        "timeout" to "",
+        "width" to 0,
+        "height" to 0,
+        "duration" to 0,
+        "poster" to ""
+    ) {
+        override operator fun invoke(element: Element) = Video(element.attr("src"))
+    }
 }
 
 class File(
@@ -113,49 +148,14 @@ class File(
     var cache: Boolean? by super.properties
     var timeout: String? by super.properties
     var poster: String? by super.properties
-}
 
-object ImageContainer : MessageElementContainer(
-    "src" to "",
-    "title" to "",
-    "cache" to false,
-    "timeout" to "",
-    "width" to 0,
-    "height" to 0
-) {
-    override operator fun invoke(element: Element) = Image(element.attr("src"))
-}
-
-object AudioContainer : MessageElementContainer(
-    "src" to "",
-    "title" to "",
-    "cache" to false,
-    "timeout" to "",
-    "duration" to 0,
-    "poster" to ""
-) {
-    override operator fun invoke(element: Element) = Audio(element.attr("src"))
-}
-
-object VideoContainer : MessageElementContainer(
-    "src" to "",
-    "title" to "",
-    "cache" to false,
-    "timeout" to "",
-    "width" to 0,
-    "height" to 0,
-    "duration" to 0,
-    "poster" to ""
-) {
-    override operator fun invoke(element: Element) = Video(element.attr("src"))
-}
-
-object FileContainer : MessageElementContainer(
-    "src" to "",
-    "title" to "",
-    "cache" to false,
-    "timeout" to "",
-    "poster" to ""
-) {
-    override operator fun invoke(element: Element) = File(element.attr("src"))
+    companion object : MessageElementContainer(
+        "src" to "",
+        "title" to "",
+        "cache" to false,
+        "timeout" to "",
+        "poster" to ""
+    ) {
+        override operator fun invoke(element: Element) = File(element.attr("src"))
+    }
 }

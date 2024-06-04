@@ -31,25 +31,25 @@ class At(
     var name: String? by super.properties
     var role: String? by super.properties
     var type: String? by super.properties
+
+    companion object : MessageElementContainer("id" to "", "name" to "", "role" to "", "type" to "") {
+        override operator fun invoke(element: Element) = At()
+    }
 }
 
 class Sharp(id: String, name: String? = null) : NodeMessageElement("sharp", "id" to id, "name" to name) {
     var id: String by super.properties
     var name: String? by super.properties
+
+    companion object : MessageElementContainer("id" to "", "name" to "") {
+        override operator fun invoke(element: Element) = Sharp(element.attr("id"))
+    }
 }
 
 class Href(href: String) : NodeMessageElement("a", "href" to href) {
     var href: String by super.properties
-}
 
-object AtContainer : MessageElementContainer("id" to "", "name" to "", "role" to "", "type" to "") {
-    override operator fun invoke(element: Element) = At()
-}
-
-object SharpContainer : MessageElementContainer("id" to "", "name" to "") {
-    override operator fun invoke(element: Element) = Sharp(element.attr("id"))
-}
-
-object HrefContainer : MessageElementContainer("href" to "") {
-    override operator fun invoke(element: Element) = Href(element.attr("href"))
+    companion object : MessageElementContainer("href" to "") {
+        override operator fun invoke(element: Element) = Href(element.attr("href"))
+    }
 }

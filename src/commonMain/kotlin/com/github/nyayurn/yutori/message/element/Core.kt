@@ -63,8 +63,8 @@ open class NodeMessageElement(val node_name: String, vararg pairs: Pair<String, 
         }
         return null
     }
-}
 
-class NodeContainer(val node_name: String) : MessageElementContainer() {
-    override operator fun invoke(element: Element) = NodeMessageElement(node_name)
+    companion object : MessageElementContainer() {
+        override operator fun invoke(element: Element) = NodeMessageElement(element.tagName())
+    }
 }
