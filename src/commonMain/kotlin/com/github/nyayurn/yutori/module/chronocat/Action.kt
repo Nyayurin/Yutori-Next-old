@@ -36,28 +36,32 @@ class ChronocatActions(platform: String, self_id: String, service: ActionService
         ) {
             val member = MemberAction(platform, self_id, service)
 
-            fun mute(channel_id: String, enable: Boolean): Unit =
-                send("mute", "channel_id" to channel_id, "enable" to enable)
+            fun mute(channel_id: String, enable: Boolean, vararg contents: Pair<String, Any>): Unit =
+                send("mute", "channel_id" to channel_id, "enable" to enable, *contents)
 
             class MemberAction(platform: String, self_id: String, service: ActionService) : Action(
                 platform, self_id, "unsafe.channel.member", service
             ) {
                 @Deprecated("This api already has a same standard api", ReplaceWith("guild.member.mute"))
-                fun mute(channel_id: String, user_id: String, duration: Number): Unit =
-                    send("mute", "channel_id" to channel_id, "user_id" to user_id, "duration" to duration)
+                fun mute(
+                    channel_id: String, user_id: String, duration: Number, vararg contents: Pair<String, Any>
+                ): Unit =
+                    send("mute", "channel_id" to channel_id, "user_id" to user_id, "duration" to duration, *contents)
             }
         }
 
         class GuildAction(platform: String, self_id: String, service: ActionService) : Action(
             platform, self_id, "unsafe.guild", service
         ) {
-            fun remove(guild_id: String): Unit = send("remove", "guild_id" to guild_id)
+            fun remove(guild_id: String, vararg contents: Pair<String, Any>): Unit =
+                send("remove", "guild_id" to guild_id, *contents)
         }
 
         class FriendAction(platform: String, self_id: String, service: ActionService) : Action(
             platform, self_id, "unsafe.friend", service
         ) {
-            fun remove(user_id: String): Unit = send("remove", "user_id" to user_id)
+            fun remove(user_id: String, vararg contents: Pair<String, Any>): Unit =
+                send("remove", "user_id" to user_id, *contents)
         }
     }
 
@@ -70,8 +74,9 @@ class ChronocatActions(platform: String, self_id: String, service: ActionService
             class TitleAction(platform: String, self_id: String, service: ActionService) : Action(
                 platform, self_id, "chronocat.guild.member.title", service
             ) {
-                fun set(guild_id: String, user_id: String, title: String?): Unit =
-                    send("set", "guild_id" to guild_id, "user_id" to user_id, "title" to title)
+                fun set(
+                    guild_id: String, user_id: String, title: String? = null, vararg contents: Pair<String, Any>
+                ): Unit = send("set", "guild_id" to guild_id, "user_id" to user_id, "title" to title, *contents)
             }
         }
     }
