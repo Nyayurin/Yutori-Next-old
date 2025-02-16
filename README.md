@@ -8,4 +8,4 @@
 [![](https://jitpack.io/v/Nyayurn/Yutori-Next.svg?style=flat-square)](https://jitpack.io/#Nyayurn/Yutori-Next)
 </div>
 
-## [文档](https://nyayurn.github.io/Yutori-Next)
+## [文档](https://nyayurin.github.io/Yutori-Next-old)
