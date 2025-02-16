@@ -3,7 +3,7 @@ import {defineConfig} from 'vitepress'
 export default defineConfig({
     title: "Yutori Next",
     description: "Yutori-Next's Documents",
-    base: "/Yutori-Next/",
+    base: "/Yutori-Next-old/",
     themeConfig: {
         sidebar: [
             {
